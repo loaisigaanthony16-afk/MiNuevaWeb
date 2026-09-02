@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vape Premium – E‑commerce de Vapes de Marihuana</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter / Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Configuración de Tailwind personalizada */
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* Tipografía base */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #e2e8f0;
+        }
+        .font-outfit {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Scrollbar minimalista */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+        /* Transiciones suaves */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        /* Ocultar scrollbar en drawer */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-200 antialiased">
+
+    <!-- ===== AGE GATE MODAL ===== -->
+    <div id="ageGate" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="bg-[#0f172a] border border-emerald-500/30 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="flex justify-center mb-4">
+                <i data-lucide="shield-alert" class="w-12 h-12 text-emerald-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-2">Verificación de Edad</h2>
+            <p class="text-center text-slate-400 mb-6">Debes ser mayor de 21 años para acceder a este sitio.</p>
+            <div class="flex flex-col gap-3">
+                <button id="ageYes" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold py-3 rounded-lg transition-all">Soy mayor de 21 años</button>
+                <button id="ageNo" class="bg-slate-700 hover:bg-slate-600 text-slate-200 py-3 rounded-lg transition-all">No tengo la edad legal</button>
+            </div>
+            <p class="text-xs text-slate-500 mt-4 text-center">Al continuar aceptas nuestros términos y política de privacidad.</p>
+        </div>
+    </div>
+
+    <!-- ===== NAVBAR ===== -->
+    <header class="sticky top-0 z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+            <div class="flex items-center gap-2">
+                <i data-lucide="leaf" class="w-6 h-6 text-emerald-400"></i>
+                <span class="font-outfit text-xl font-bold tracking-tight">Vape<span class="text-emerald-400">Premium</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <a href="#catalogo" class="hover:text-emerald-400 transition-colors">Catálogo</a>
+                <a href="#faq" class="hover:text-emerald-400 transition-colors">FAQ</a>
+                <a href="#contacto" class="hover:text-emerald-400 transition-colors">Contacto</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="cartButton" class="relative p-2 rounded-lg hover:bg-slate-800 transition-colors">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-slate-300"></i>
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-emerald-500 text-slate-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-transparent to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 text-center">
+            <h1 class="font-outfit text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+                Vapes de Marihuana<br>
+                <span class="text-emerald-400">Premium</span> para tu experiencia
+            </h1>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+                Descubre nuestra colección curada de cartuchos y dispositivos de alta calidad, diseñados para máxima pureza y sabor.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#catalogo" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold px-8 py-3 rounded-lg transition-all">Explorar Catálogo</a>
+                <a href="#faq" class="border border-slate-600 hover:border-emerald-400 text-slate-200 px-8 py-3 rounded-lg transition-all">Preguntas Frecuentes</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CATÁLOGO ===== -->
+    <section id="catalogo" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+                <div>
+                    <h2 class="font-outfit text-3xl font-bold mb-2">Nuestros Productos</h2>
+                    <p class="text-slate-400">Filtra por tipo de cepa</p>
+                </div>
+                <div class="flex gap-2 mt-4 md:mt-0">
+                    <button data-filter="all" class="filter-btn bg-emerald-500 text-slate-900 px-4 py-2 rounded-lg text-sm font-medium">Todos</button>
+                    <button data-filter="indica" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Indica</button>
+                    <button data-filter="sativa" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Sativa</button>
+                    <button data-filter="hibrida" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Híbrida</button>
+                </div>
+            </div>
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Los productos se inyectarán dinámicamente desde app.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== QUICK VIEW MODAL ===== -->
+    <div id="quickViewModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-[#0f172a] border border-slate-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="quickViewTitle" class="text-xl font-bold"></h3>
+                <button id="closeQuickView" class="text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="quickViewBody" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- ===== CART DRAWER ===== -->
+    <div id="cartDrawer" class="fixed inset-0 z-[80] hidden">
+        <div class="absolute inset-0 bg-black/60" id="cartOverlay"></div>
+        <aside class="absolute right-0 top-0 h-full w-full max-w-md bg-[#0f172a] border-l border-slate-800 shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-slate-800">
+                <h3 class="font-outfit text-lg font-bold">Tu Carrito</h3>
+                <button id="closeCart" class="text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cartItems" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
+            <div class="p-4 border-t border-slate-800 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal">$0.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Impuestos (8%)</span>
+                    <span id="cartTax">$0.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Envío</span>
+                    <span id="shippingInfo">Gratis</span>
+                </div>
+                <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="shippingBar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div>
+                </div>
+                <p id="shippingMessage" class="text-xs text-slate-400">Añade $50.00 para envío gratis</p>
+                <button id="checkoutBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold py-3 rounded-lg transition-all">Proceder al Pago</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="py-16 bg-[#0f172a]">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="font-outfit text-3xl font-bold text-center mb-8">Preguntas Frecuentes</h2>
+            <div id="faqAccordion" class="space-y-4">
+                <!-- FAQ items se generan dinámicamente -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer id="contacto" class="bg-[#020617] border-t border-slate-800 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h4 class="font-outfit text-lg font-bold mb-4">VapePremium</h4>
+                <p class="text-sm text-slate-400">Productos de alta calidad para uso adulto responsable.</p>
+            </div>
+            <div>
+                <h4 class="font-outfit text-lg font-bold mb-4">Enlaces</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#catalogo" class="hover:text-emerald-400 transition-colors">Catálogo</a></li>
+                    <li><a href="#faq" class="hover:text-emerald-400 transition-colors">FAQ</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition-colors">Política de Privacidad</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-outfit text-lg font-bold mb-4">Newsletter</h4>
+                <form id="newsletterForm" class="flex flex-col gap-3">
+                    <input type="email" id="newsletterEmail" placeholder="tu@email.com" class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold py-2 rounded-lg transition-all">Suscribirme</button>
+                </form>
+                <p id="newsletterMsg" class="text-xs text-emerald-400 mt-2 hidden"></p>
+            </div>
+        </div>
+        <div class="mt-8 border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
+            <p>© 2026 VapePremium. Todos los derechos reservados.</p>
+            <p class="mt-2">Este sitio es solo para mayores de 21 años. No vendemos a menores de edad.</p>
+        </div>
+    </footer>
+
+    <!-- Cargar módulo JS -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
