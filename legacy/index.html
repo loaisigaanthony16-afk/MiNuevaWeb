@@ -122,11 +122,12 @@
                     <h2 class="font-outfit text-3xl font-bold mb-2">Nuestros Productos</h2>
                     <p class="text-slate-400">Filtra por tipo de cepa</p>
                 </div>
-                <div class="flex gap-2 mt-4 md:mt-0">
-                    <button data-filter="all" class="filter-btn bg-emerald-500 text-slate-900 px-4 py-2 rounded-lg text-sm font-medium">Todos</button>
-                    <button data-filter="indica" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Indica</button>
-                    <button data-filter="sativa" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Sativa</button>
-                    <button data-filter="hibrida" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Híbrida</button>
+                                <div id="catalogFilters" class="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+                    <button data-filter="all" class="filter-btn bg-emerald-500 text-slate-900 px-4 py-2 rounded-full text-sm font-semibold">Todos</button>
+                    <button data-filter="sativa" class="filter-btn bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2 rounded-full text-sm font-semibold text-amber-200/90">Sativa</button>
+                    <button data-filter="indica" class="filter-btn bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2 rounded-full text-sm font-semibold text-violet-200/90">Indica</button>
+                    <button data-filter="hibrida" class="filter-btn bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2 rounded-full text-sm font-semibold text-emerald-200/90">Híbrida</button>
+                    <button data-filter="desechable" class="filter-btn bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2 rounded-full text-sm font-semibold text-slate-200">Desechables</button>
                 </div>
             </div>
                                     <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>

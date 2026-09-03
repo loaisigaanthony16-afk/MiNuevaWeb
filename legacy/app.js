@@ -41,32 +41,105 @@ function showToast(message) {
 }
 
 // ---------------------------------------------------------------------
-//  Catálogo (metadatos neutrales, sin nombres sensibles)
+//  Catálogo (metadatos visuales ricos, sin nombres sensibles)
 // ---------------------------------------------------------------------
-// Cada ítem solo contiene un identificador, la categoría de filtro,
-// un nombre técnico genérico y su PRECIO. Nada viaja a Stripe como
-// referencia a un producto delicado.
+//  Estructura:
+//   - Atributos TÉCNICOS (id, strain, format, label, price) se usan para
+//     filtros y lógica de carrito/checkout.
+//   - Atributos VISUALES (name, thc, effects, terpenes, unit, img, tone)
+//     se usan exclusivamente para renderizar la experiencia premium de
+//     la interfaz. NUNCA viajan a la pasarela de pago.
+//
+//  format: "cartucho" (vape 510) | "desechable"
+//  tone:   mapea a un gradiente sutil por tipo de cepa para la tarjeta.
+// ---------------------------------------------------------------------
 const products = [
-  { id: 1, strain: "indica", label: DEFAULT_ITEM_LABEL, price: 45.0 },
-  { id: 2, strain: "sativa", label: DEFAULT_ITEM_LABEL, price: 42.0 },
-  { id: 3, strain: "hibrida", label: DEFAULT_ITEM_LABEL, price: 48.0 },
-  { id: 4, strain: "indica", label: DEFAULT_ITEM_LABEL, price: 55.0 },
-  { id: 5, strain: "sativa", label: DEFAULT_ITEM_LABEL, price: 40.0 },
-  { id: 6, strain: "hibrida", label: DEFAULT_ITEM_LABEL, price: 50.0 },
+  { id: 1, strain: "indica", format: "cartucho", label: DEFAULT_ITEM_LABEL, price: 45.0 },
+  { id: 2, strain: "sativa", format: "cartucho", label: DEFAULT_ITEM_LABEL, price: 42.0 },
+  { id: 3, strain: "hibrida", format: "cartucho", label: DEFAULT_ITEM_LABEL, price: 48.0 },
+  { id: 4, strain: "indica", format: "desechable", label: DEFAULT_ITEM_LABEL, price: 55.0 },
+  { id: 5, strain: "sativa", format: "desechable", label: DEFAULT_ITEM_LABEL, price: 40.0 },
+  { id: 6, strain: "hibrida", format: "desechable", label: DEFAULT_ITEM_LABEL, price: 50.0 },
 ];
 
-// Presentación visual SOLO para la interfaz (jamás se envía a pagar).
+// Metadatos visuales (UI solamente). "tint" define el acento de carga
+// de la tarjeta (mercado claro de estilo Eaze) por tipo de cepa.
 const productMeta = [
-  { id: 1, code: "ART-001", tag: "THC 85%", desc: "Efecto relajante profundo.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-001" },
-  { id: 2, code: "ART-002", tag: "THC 80%", desc: "Perfil energizante.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-002" },
-  { id: 3, code: "ART-003", tag: "THC 82%", desc: "Equilibrio completo.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-003" },
-  { id: 4, code: "ART-004", tag: "THC 88%", desc: "Potencia superior.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-004" },
-  { id: 5, code: "ART-005", tag: "THC 78%", desc: "Perfil ligero.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-005" },
-  { id: 6, code: "ART-006", tag: "THC 84%", desc: "Perfil suave.", img: "https://placehold.co/300x200/0a3226/ffffff?text=ART-006" },
+  {
+    id: 1,
+    name: "Ébano Nocturno",
+    thc: 85,
+    effects: "Relajación profunda y serenidad",
+    terpenes: "Mirceno · Limoneno",
+    unit: "Cartucho 510",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Nocturno",
+  },
+  {
+    id: 2,
+    name: "Ámbar Alba",
+    thc: 80,
+    effects: "Energía clara y enfoque",
+    terpenes: "Limoneno · Pineno",
+    unit: "Cartucho 510",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Alba",
+  },
+  {
+    id: 3,
+    name: "Esmeralda Balance",
+    thc: 82,
+    effects: "Armonía entre cuerpo y mente",
+    terpenes: "Cariofileno · Limoneno",
+    unit: "Cartucho 510",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Balance",
+  },
+  {
+    id: 4,
+    name: "Nébula Indigo",
+    thc: 88,
+    effects: "Calma profunda y alivio",
+    terpenes: "Mirceno · Cariofileno",
+    unit: "Desechable 1g",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Indigo",
+  },
+  {
+    id: 5,
+    name: "Cítrico Haze",
+    thc: 78,
+    effects: "Efecto eufórico y creativo",
+    terpenes: "Limoneno · Terpinoleno",
+    unit: "Desechable 1g",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Haze",
+  },
+  {
+    id: 6,
+    name: "Gelato Real",
+    thc: 84,
+    effects: "Equilibrio dulce y sutil",
+    terpenes: "Limoneno · Beta-Cariofileno",
+    unit: "Desechable 1g",
+    img: "https://placehold.co/480x360/F3F4F6/4B5563?text=Gelato",
+  },
 ];
+
+// Acentos vivos por cepa sobre fondo claro (marketplace estilo Eaze).
+const STRAIN_VISUAL = {
+  sativa: { label: "Sativa", pill: "bg-amber-100 text-amber-800", dot: "bg-amber-400" },
+  indica: { label: "Indica", pill: "bg-violet-100 text-violet-800", dot: "bg-violet-400" },
+  hibrida: { label: "Híbrida", pill: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-400" },
+};
+
+function getProduct(id) {
+  return products.find((p) => p.id === Number(id));
+}
 
 function getMeta(id) {
   return productMeta.find((m) => m.id === Number(id)) || {};
+}
+
+// Expone el nombre visual SOLO para la UI; el checkout sigue usando el
+// label genérico neutral. El carrito internamente referencia por id.
+function getDisplayName(id) {
+  return getMeta(id).name || DEFAULT_ITEM_LABEL;
 }
 
 // ---------------------------------------------------------------------
@@ -90,8 +163,28 @@ function addToCart(id) {
   } else {
     cart.push({ id: product.id, qty: 1, price: product.price, label: product.label });
   }
-  saveCart();
+    saveCart();
   showToast("Artículo añadido al carrito.");
+}
+
+// Feedback visual de "¡Añadido!" sobre el botón (ícono ✓ + texto).
+function animateAdded(btn) {
+  if (!btn) return;
+  const plusIcon = btn.querySelector('[data-icon-plus]');
+  const checkIcon = btn.querySelector('[data-icon-check]');
+  const label = btn.querySelector('[data-btn-label]');
+
+  if (plusIcon) plusIcon.classList.add("hidden");
+  if (checkIcon) checkIcon.classList.remove("hidden");
+  if (label) label.textContent = "¡Añadido!";
+  if (window.lucide) lucide.createIcons();
+
+  setTimeout(() => {
+    if (plusIcon) plusIcon.classList.remove("hidden");
+    if (checkIcon) checkIcon.classList.add("hidden");
+    if (label) label.textContent = "Agregar";
+    if (window.lucide) lucide.createIcons();
+  }, 1400);
 }
 
 function changeQty(id, delta) {
@@ -128,15 +221,16 @@ function renderCartItems() {
     return;
   }
 
-  container.innerHTML = cart
+    container.innerHTML = cart
     .map((item) => {
       const meta = getMeta(item.id);
+      const prodName = meta?.name || DEFAULT_ITEM_LABEL;
       return `
       <div class="flex items-start gap-3 border-b border-white/10 pb-4">
-        <img src="${meta.img || ""}" alt="${sanitize(item.label)}" class="w-16 h-16 object-cover rounded-lg bg-white/5 flex-shrink-0" />
+        <img src="${meta.img || ""}" alt="${sanitize(prodName)}" class="w-16 h-16 object-cover rounded-lg bg-white/5 flex-shrink-0" />
         <div class="flex-1 min-w-0">
-          <h4 class="font-medium text-sm text-slate-100">${sanitize(item.label)}</h4>
-          <p class="text-xs text-slate-400 mt-1">${sanitize(meta.code || "")}</p>
+          <h4 class="font-medium text-sm text-slate-100">${sanitize(prodName)}</h4>
+          <p class="text-xs text-slate-400 mt-1">${sanitize(meta?.unit || "")}</p>
           <div class="flex items-center justify-between mt-3 w-full">
             <div class="flex items-center gap-3">
               <button class="cart-qty-btn text-emerald-300 text-xl leading-none hover:text-emerald-200 px-1" data-id="${item.id}" data-action="dec" aria-label="Disminuir">−</button>
@@ -258,37 +352,76 @@ async function proceedToCheckout() {
 const productGrid = $("#productGrid");
 let currentFilter = "all";
 
+// Lista de campos considerados tipo de cepa (para detectar filtros).
+const STRAIN_FILTERS = ["indica", "sativa", "hibrida"];
+const FORMAT_FILTERS = ["cartucho", "desechable"];
+
+function getFilteredProducts(filter) {
+  if (filter === "all") return [...products];
+  if (STRAIN_FILTERS.includes(filter)) return products.filter((p) => p.strain === filter);
+  if (FORMAT_FILTERS.includes(filter)) return products.filter((p) => p.format === filter);
+  return products.filter((p) => p.strain === filter || p.format === filter);
+}
+
 function renderProducts(filter = "all") {
   if (!productGrid) return;
 
-  const filtered =
-    filter === "all" ? products : products.filter((p) => p.strain === filter);
+  const filtered = getFilteredProducts(filter);
 
   productGrid.innerHTML = filtered
     .map((p) => {
       const meta = getMeta(p.id);
+      const visual = STRAIN_VISUAL[p.strain] || STRAIN_VISUAL.hibrida;
+      const productName = meta?.name || p.label;
+      const isDispensable = p.format === "desechable";
+      const badge = isDispensable ? "Desechable 1g" : "Cartucho 510";
+
       return `
       <article
-        class="bg-[#0a3226] border border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-500/60 hover:shadow-xl transition-all"
+        class="product-card group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
         data-id="${p.id}"
         data-name="${sanitize(DEFAULT_ITEM_LABEL)}"
         data-price="${p.price.toFixed(2)}"
       >
-        <div class="relative overflow-hidden h-48">
-          <img src="${meta.img || ""}" alt="${sanitize(DEFAULT_ITEM_LABEL)}" class="w-full h-full object-cover" loading="lazy" />
-          <span class="absolute top-3 left-3 bg-emerald-500 text-slate-900 text-xs font-bold px-2 py-1 rounded-full">${sanitize(meta.tag || "")}</span>
+        <!-- Imagen 3:2 + indicador de strain -->
+        <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
+          <span class="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${visual.pill}">
+            <span class="h-1.5 w-1.5 rounded-full ${visual.dot}"></span>
+            ${visual.label}
+          </span>
+          <img
+            src="${meta.img || ""}"
+            alt="${sanitize(productName)}"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+          <span class="absolute bottom-2.5 right-2.5 z-10 inline-flex items-center rounded-md bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-600 shadow-sm">
+            ${sanitize(badge)}
+          </span>
         </div>
-        <div class="p-5">
-          <h3 class="font-semibold text-lg text-slate-100">${sanitize(meta.code || p.label)}</h3>
-          <p class="text-sm text-slate-400 mt-1 mb-4">${sanitize(meta.desc || "")}</p>
-          <div class="flex items-center justify-between">
-            <span class="text-emerald-300 font-bold text-xl">$${p.price.toFixed(2)}</span>
+
+        <!-- Detalles -->
+        <div class="flex flex-1 flex-col p-4">
+          <div class="mb-1 flex items-center justify-between gap-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">${sanitize(meta?.effects || "")}</span>
+          </div>
+
+          <h3 class="font-semibold leading-snug text-gray-900">${sanitize(productName)}</h3>
+
+          <p class="mt-1 text-xs text-gray-500">${sanitize(meta?.terpenes || "")}</p>
+
+          <div class="mt-3 flex items-center justify-between">
+            <div>
+              <span class="text-lg font-bold text-gray-900">$${p.price.toFixed(2)}</span>
+              <span class="ml-1 text-xs font-bold text-emerald-600">${meta?.thc || 0}% THC</span>
+            </div>
             <button
-              class="add-btn inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-all"
+              class="add-btn inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-500 active:scale-95"
               data-id="${p.id}"
             >
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              Añadir
+              <i data-lucide="plus" class="h-4 w-4" data-icon-plus="1"></i>
+              <span class="hidden sm:inline" data-btn-label>Agregar</span>
+              <i data-lucide="check" class="h-4 w-4 hidden" data-icon-check="1"></i>
             </button>
           </div>
         </div>
@@ -304,15 +437,21 @@ function renderProducts(filter = "all") {
 //  Filtros del catálogo
 // ---------------------------------------------------------------------
 function initFilters() {
+  const ACTIVE_CLASSES = ["bg-emerald-500", "text-slate-900"];
+  const INACTIVE_CLASSES = ["bg-emerald-500", "text-slate-900", "bg-slate-800", "hover:bg-slate-700"];
+
   $$(".filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       currentFilter = btn.dataset.filter;
+
       $$(".filter-btn").forEach((b) => {
-        b.classList.remove("bg-emerald-500", "text-slate-900");
+        b.classList.remove(...ACTIVE_CLASSES, "bg-slate-800");
         b.classList.add("bg-slate-800", "hover:bg-slate-700");
       });
+
       btn.classList.remove("bg-slate-800", "hover:bg-slate-700");
       btn.classList.add("bg-emerald-500", "text-slate-900");
+
       renderProducts(currentFilter);
     });
   });
@@ -412,6 +551,8 @@ document.addEventListener("click", (e) => {
     const id = addBtn.dataset.id || addBtn.dataset.add;
     if (id) {
       addToCart(id);
+      // Feedback premium de "¡Añadido!"
+      if (addBtn.classList.contains("add-btn")) animateAdded(addBtn);
       return;
     }
   }

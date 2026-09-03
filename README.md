@@ -1,38 +1,76 @@
-# VapePremium – Frontend E‑commerce
+# PremiumVapes — Tienda Next.js (React + TypeScript)
 
-Este proyecto es un frontend completo para una tienda de vapes de marihuana, con diseño minimalista premium en modo oscuro.
+Tienda premium que reemplaza el frontend vanilla original (ahora en `/legacy`).
+Incluye catálogo claro estilo marketplace, carrito persistente y checkout seguro
+de **Stripe Checkout Session por servidor** (importe exacto al céntimo).
 
-## Características
+## Stack
 
-- **Verificación de Edad** (Age Gate) persistente en `localStorage`.
-- **Navbar sticky** con contador de carrito.
-- **Hero section** con CTA.
-- **Catálogo dinámico** con filtros por tipo de cepa (Indica, Sativa, Híbrida).
-- **Vista rápida** de producto en modal.
-- **Carrito lateral** (drawer) con cálculo de subtotal, impuestos (8%) y barra de envío gratis.
-- **FAQ** en acordeón.
-- **Footer** con newsletter y avisos legales.
+- Next.js 16 (App Router) + Turbopack
+- React 19
+- TypeScript (strict)
+- Tailwind CSS
+- lucide-react
+- Stripe (`stripe` server-side en API Route)
 
-## Tecnologías
+## Estructura
 
-- HTML5 semántico
-- Tailwind CSS (CDN)
-- Vanilla JavaScript (ES6+)
-- Lucide Icons (CDN)
-- Google Fonts (Inter / Outfit)
+```
+app/
+  layout.tsx          # Layout raíz (tipografías, StoreProvider)
+  page.tsx            # Página de inicio (composición de secciones)
+  globals.css
+  api/checkout/route.ts   # Crea la Checkout Session de Stripe (server)
+components/
+  StoreProvider.tsx   # Provider cliente (recibe children)
+  ShopExperience.tsx  # Estado del drawer → Navbar + CartDrawer
+  Navbar.tsx          # Cabecera sticky con botón de carrito
+  Hero.tsx
+  Catalog.tsx         # Filtros + grilla de producto
+  ProductCard.tsx     # Tarjeta interactiva con botón "Agregar"
+  CartDrawer.tsx      # Carrito lateral + resumen + checkout
+  FaqSection.tsx
+  Newsletter.tsx
+  Footer.tsx
+lib/
+  data.ts             # Productos, metadatos visuales y FAQ
+  store.tsx           # Contexto/estado global del carrito (localStorage)
+```
+
+## Variables de entorno
+
+Crea un archivo `.env.local` en la raíz con tu clave **secreta** de Stripe.
+**Nunca** la expongas en el frontend; solo se usa en la API Route:
+
+```
+STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxx
+```
 
 ## Cómo ejecutar
 
-1. Guarda los archivos `index.html`, `app.js` y `README.md` en el mismo directorio.
-2. Abre `index.html` en tu navegador (doble clic).
-3. El modal de edad aparecerá al cargar; al confirmar, se guardará en `localStorage`.
+```bash
+npm install
+npm run dev      # desarrollo en http://localhost:3000
+npm run build    # compilación + chequeo de tipos
+npm run start    # sirve la build
+npm run typecheck
+```
 
-## Seguridad
+## Despliegue en Vercel
 
-- Los inputs del formulario de newsletter se sanitizan para prevenir XSS.
-- El estado del carrito se guarda en `localStorage` como JSON.
-- No se incluyen pasarelas de pago reales; el código está preparado para integrarse con un backend headless posteriormente.
+1. Sube el repositorio a Git e impórtalo en Vercel (framework: Next.js).
+2. En **Settings → Environment Variables**, añade `STRIPE_SECRET_KEY` (live) a los
+   entornos Production y Preview.
+3. Despliega. El framework detecta Next.js automáticamente desde la raíz;
+   la carpeta `legacy/` se ignora para el despliegue.
 
-## Notas legales
+## Seguridad comercial
 
-Este sitio es solo para mayores de 21 años. No vendemos a menores de edad. Verifica siempre la legislación local.
+- El frontend **no** conoce ni muestra tu clave secreta.
+- El importe se valida y cobra en el servidor en la API Route.
+- Solo se muestran nombres delicados del producto en la UI (catálogo grilla);
+  la pasarela recibe el descriptor neutral "Compra PremiumVapes".
+
+## Nota legal
+
+Sitio solo para mayores de 21 años. Verifica siempre la legislación local.
