@@ -1,18 +1,19 @@
-import ShopExperience from "@/components/ShopExperience";
+import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Catalog from "@/components/Catalog";
+import PrivacySection from "@/components/PrivacySection";
 import FaqSection from "@/components/FaqSection";
 import Footer from "@/components/Footer";
 
 export default function HomePage() {
   return (
     <main id="top">
-      <ShopExperience>
-        <Hero />
-        <Catalog />
-        <FaqSection />
-        <Footer />
-      </ShopExperience>
+      <Navbar />
+      <Hero />
+      <Catalog />
+      <PrivacySection />
+      <FaqSection />
+      <Footer />
     </main>
   );
 }

@@ -1,59 +1,81 @@
-import Newsletter from "@/components/Newsletter";
+import { LINES } from "@/lib/data";
+import { DELIVERY_ETA } from "@/lib/checkout-util";
 
 export default function Footer() {
   return (
-    <footer
-      id="contacto"
-      className="scroll-mt-24 border-t border-gray-200 bg-white py-12"
-    >
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 md:grid-cols-3 lg:px-8">
-        <div>
-          <h4 className="font-display text-base font-bold text-gray-900">
-            PremiumVapes
-          </h4>
-          <p className="mt-3 max-w-xs text-sm text-gray-500">
-            Productos de alta calidad para uso adulto responsable.
+    <footer id="contacto" className="scroll-mt-24 border-t border-white/8">
+      <div className="container-page py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gold-400/40">
+                <span className="font-display text-[15px] font-bold leading-none text-gold-gradient">
+                  V
+                </span>
+              </span>
+              <span className="font-display text-[17px] font-bold uppercase tracking-[0.14em] text-ink-50">
+                Vibe<span className="text-gold-300">505</span>
+              </span>
+            </div>
+            <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-ink-400">
+              Extractos premium con entrega nacional y pedido anónimo. Para uso
+              adulto responsable.
+            </p>
+            <span className="mt-6 inline-flex items-center rounded-full border border-white/12 px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-wide2 text-ink-400">
+              Solo mayores de 18
+            </span>
+          </div>
+
+          <div>
+            <h3 className="font-display text-[11px] font-bold uppercase tracking-wide3 text-ink-500">
+              Líneas
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {LINES.map((l) => (
+                <li key={l.id}>
+                  <a
+                    href="#catalogo"
+                    className="text-[13.5px] text-ink-300 transition-colors hover:text-gold-300"
+                  >
+                    {l.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-display text-[11px] font-bold uppercase tracking-wide3 text-ink-500">
+              Información
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {[
+                { label: "Cómo funciona el anonimato", href: "#privacidad" },
+                { label: "Preguntas frecuentes", href: "#faq" },
+                { label: "Envío y cobertura", href: "#faq" },
+                { label: "Términos y condiciones", href: "#" },
+              ].map((it) => (
+                <li key={it.label}>
+                  <a
+                    href={it.href}
+                    className="text-[13.5px] text-ink-300 transition-colors hover:text-gold-300"
+                  >
+                    {it.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-16 flex flex-col gap-3 border-t border-white/8 pt-7 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11.5px] text-ink-600">
+            &copy; {new Date().getFullYear()} Vibe 505 · Envío nacional en {DELIVERY_ETA}
+          </p>
+          <p className="text-[11.5px] text-ink-600">
+            Venta prohibida a menores de edad. Consumo responsable.
           </p>
         </div>
-
-        <div>
-          <h4 className="font-display text-base font-bold text-gray-900">
-            Enlaces
-          </h4>
-          <ul className="mt-3 space-y-2 text-sm text-gray-500">
-            <li>
-              <a href="#catalogo" className="transition hover:text-emerald-600">
-                Catálogo
-              </a>
-            </li>
-            <li>
-              <a href="#faq" className="transition hover:text-emerald-600">
-                FAQ
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition hover:text-emerald-600">
-                Política de Privacidad
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition hover:text-emerald-600">
-                Términos y Condiciones
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <Newsletter />
-      </div>
-
-      <div className="mt-10 border-t border-gray-200 pt-6 text-center">
-        <p className="text-xs text-gray-400">
-          Solo para mayores de 21 años. No vendemos a menores de edad.
-        </p>
-        <p className="mt-1 text-xs text-gray-300">
-          © {new Date().getFullYear()} PremiumVapes.
-        </p>
       </div>
     </footer>
   );

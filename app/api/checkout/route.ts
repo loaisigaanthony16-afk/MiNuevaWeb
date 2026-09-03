@@ -42,7 +42,7 @@ export async function POST(request: Request) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Compra PremiumVapes",
+              name: "Compra Vibe 505",
             },
             unit_amount: unitAmountInCents,
           },
