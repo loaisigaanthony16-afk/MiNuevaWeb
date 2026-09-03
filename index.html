@@ -2,13 +2,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- ===== Seguridad y privacidad ===== -->
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self'">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#022c22">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Premium – E‑commerce de Vapes de Marihuana</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Vape Premium – Experiencia de Vaporización</title>
+    <!-- ===== Dependencias de recursos externos ===== -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts: Inter / Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,7 +26,7 @@
         /* Tipografía base */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020617;
+            background-color: #04231a;
             color: #e2e8f0;
         }
         .font-outfit {
@@ -32,7 +37,7 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #0a3226;
         }
         ::-webkit-scrollbar-thumb {
             background: #10b981;
@@ -52,11 +57,11 @@
         }
     </style>
 </head>
-<body class="bg-[#020617] text-slate-200 antialiased">
+<body class="bg-[#04231a] text-slate-200 antialiased">
 
     <!-- ===== AGE GATE MODAL ===== -->
     <div id="ageGate" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-        <div class="bg-[#0f172a] border border-emerald-500/30 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+        <div class="bg-[#0a3226] border border-emerald-500/30 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
             <div class="flex justify-center mb-4">
                 <i data-lucide="shield-alert" class="w-12 h-12 text-emerald-400"></i>
             </div>
@@ -71,7 +76,7 @@
     </div>
 
     <!-- ===== NAVBAR ===== -->
-    <header class="sticky top-0 z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800">
+    <header class="sticky top-0 z-50 bg-[#0a3226]/80 backdrop-blur-md border-b border-slate-800">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <div class="flex items-center gap-2">
                 <i data-lucide="leaf" class="w-6 h-6 text-emerald-400"></i>
@@ -124,15 +129,13 @@
                     <button data-filter="hibrida" class="filter-btn bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Híbrida</button>
                 </div>
             </div>
-            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Los productos se inyectarán dinámicamente desde app.js -->
-            </div>
+                                    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </section>
 
     <!-- ===== QUICK VIEW MODAL ===== -->
     <div id="quickViewModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
-        <div class="bg-[#0f172a] border border-slate-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl">
+        <div class="bg-[#0a3226] border border-slate-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl">
             <div class="flex justify-between items-start mb-4">
                 <h3 id="quickViewTitle" class="text-xl font-bold"></h3>
                 <button id="closeQuickView" class="text-slate-400 hover:text-white transition-colors">
@@ -146,21 +149,21 @@
     <!-- ===== CART DRAWER ===== -->
     <div id="cartDrawer" class="fixed inset-0 z-[80] hidden">
         <div class="absolute inset-0 bg-black/60" id="cartOverlay"></div>
-        <aside class="absolute right-0 top-0 h-full w-full max-w-md bg-[#0f172a] border-l border-slate-800 shadow-2xl flex flex-col">
+        <aside class="absolute right-0 top-0 h-full w-full max-w-md bg-[#0a3226] border-l border-slate-800 shadow-2xl flex flex-col">
             <div class="flex items-center justify-between p-4 border-b border-slate-800">
                 <h3 class="font-outfit text-lg font-bold">Tu Carrito</h3>
                 <button id="closeCart" class="text-slate-400 hover:text-white transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            <div id="cartItems" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
+                        <div id="cartItems" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
             <div class="p-4 border-t border-slate-800 space-y-3">
                 <div class="flex justify-between text-sm">
                     <span>Subtotal</span>
                     <span id="cartSubtotal">$0.00</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span>Impuestos (8%)</span>
+                    <span>Cargos</span>
                     <span id="cartTax">$0.00</span>
                 </div>
                 <div class="flex justify-between text-sm">
@@ -170,24 +173,26 @@
                 <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
                     <div id="shippingBar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div>
                 </div>
-                <p id="shippingMessage" class="text-xs text-slate-400">Añade $50.00 para envío gratis</p>
+                <p id="shippingMessage" class="text-xs text-slate-400">Te faltan $50.00 para envío gratis.</p>
+                <div class="flex justify-between items-center border-t border-slate-700 pt-3">
+                    <span class="font-semibold">Total</span>
+                    <span id="cartTotal" class="font-bold text-lg text-emerald-300">$0.00</span>
+                </div>
                 <button id="checkoutBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold py-3 rounded-lg transition-all">Proceder al Pago</button>
             </div>
         </aside>
     </div>
 
     <!-- ===== FAQ ===== -->
-    <section id="faq" class="py-16 bg-[#0f172a]">
+    <section id="faq" class="py-16 bg-[#0a3226]">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="font-outfit text-3xl font-bold text-center mb-8">Preguntas Frecuentes</h2>
-            <div id="faqAccordion" class="space-y-4">
-                <!-- FAQ items se generan dinámicamente -->
-            </div>
+                                    <div id="faqAccordion" class="space-y-4"></div>
         </div>
     </section>
 
     <!-- ===== FOOTER ===== -->
-    <footer id="contacto" class="bg-[#020617] border-t border-slate-800 py-12">
+    <footer id="contacto" class="bg-[#04231a] border-t border-slate-800 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
                 <h4 class="font-outfit text-lg font-bold mb-4">VapePremium</h4>
@@ -217,7 +222,6 @@
         </div>
     </footer>
 
-    <!-- Cargar módulo JS -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
