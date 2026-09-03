@@ -74,7 +74,7 @@ export default function ProductCard({
       tabIndex={0}
       aria-label={`Ver ${product.name}`}
       style={{ transitionDelay: `${delay}ms` }}
-      className="reveal card-gold group flex h-full cursor-pointer flex-col
+      className="reveal card-gold card-press group flex h-full cursor-pointer flex-col
                  hover:-translate-y-1.5 hover:border-white/16 hover:shadow-lift"
     >
       {/* Imagen */}
@@ -92,7 +92,7 @@ export default function ProductCard({
           loading="lazy"
           draggable={false}
           onLoad={() => setLoaded(true)}
-          className={`relative h-full w-full object-contain p-4 transition-transform duration-[900ms] ease-smooth group-hover:scale-[1.06] ${
+          className={`card-media relative h-full w-full object-contain p-4 transition-transform duration-[900ms] ease-smooth group-hover:scale-[1.06] ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
         />

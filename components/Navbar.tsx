@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Search, ShoppingBag, X } from "lucide-react";
+import Wordmark from "@/components/Wordmark";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
@@ -59,15 +60,12 @@ export default function Navbar() {
     >
       <div className="container-page flex h-[76px] items-center gap-3 sm:gap-5">
         {/* Marca */}
-        <a href="#top" className="group flex shrink-0 items-center gap-2.5">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-gold-400/40 bg-ink-850 transition-transform duration-500 ease-smooth group-hover:-rotate-6">
-            <span className="font-display text-[15px] font-bold leading-none text-gold-gradient">
-              V
-            </span>
-          </span>
-          <span className="hidden font-display text-[17px] font-bold uppercase tracking-[0.14em] text-ink-50 sm:block">
-            Vibe<span className="text-gold-300">505</span>
-          </span>
+        <a
+          href="#top"
+          aria-label="Vibe 505"
+          className="shrink-0 transition-opacity duration-300 hover:opacity-80"
+        >
+          <Wordmark />
         </a>
 
         {/* Buscador */}

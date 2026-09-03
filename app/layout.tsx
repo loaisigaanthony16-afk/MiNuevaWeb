@@ -3,7 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { UIContextProvider } from "@/components/ui-context";
-import AgeGateModal from "@/components/AgeGateModal";
+import AgeGate from "@/components/AgeGate";
 import AddressModal from "@/components/AddressModal";
 import QuickView from "@/components/QuickView";
 import CartDrawer from "@/components/CartDrawer";
@@ -38,7 +38,7 @@ export default function RootLayout({
             <CartDrawer />
             <QuickView />
             <AddressModal />
-            <AgeGateModal />
+            <AgeGate />
           </UIContextProvider>
         </StoreProvider>
       </body>

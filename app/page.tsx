@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Catalog from "@/components/Catalog";
 import PrivacySection from "@/components/PrivacySection";
-import FaqSection from "@/components/FaqSection";
+import Assistant from "@/components/Assistant";
 import Footer from "@/components/Footer";
 
 export default function HomePage() {
@@ -12,7 +12,7 @@ export default function HomePage() {
       <Hero />
       <Catalog />
       <PrivacySection />
-      <FaqSection />
+      <Assistant />
       <Footer />
     </main>
   );

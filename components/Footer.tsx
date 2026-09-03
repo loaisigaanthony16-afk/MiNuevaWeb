@@ -1,3 +1,4 @@
+import Wordmark from "@/components/Wordmark";
 import { LINES } from "@/lib/data";
 import { DELIVERY_ETA } from "@/lib/checkout-util";
 
@@ -7,16 +8,7 @@ export default function Footer() {
       <div className="container-page py-16">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gold-400/40">
-                <span className="font-display text-[15px] font-bold leading-none text-gold-gradient">
-                  V
-                </span>
-              </span>
-              <span className="font-display text-[17px] font-bold uppercase tracking-[0.14em] text-ink-50">
-                Vibe<span className="text-gold-300">505</span>
-              </span>
-            </div>
+            <Wordmark />
             <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-ink-400">
               Extractos premium con entrega nacional y pedido anónimo. Para uso
               adulto responsable.

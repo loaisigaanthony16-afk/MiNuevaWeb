@@ -63,14 +63,14 @@ export const FORMATS: CatalogFormat[] = [
     name: "All-in-one",
     kicker: "Desechable, bien hecho",
     description:
-      "Cerámica sin poste, batería recargable y aceite premium. Todo lo que necesitás y nada de lo que no. Listo para usar y construido para durar hasta la última calada.",
+      "Cerámica sin poste y batería recargable. Listo para usar, hasta la última calada.",
   },
   {
     id: "cart",
     name: "Cartuchos 510",
     kicker: "Rosca universal",
     description:
-      "Compatibles con cualquier batería de rosca 510. Vidrio y cerámica en toda la ruta de vapor, sin plástico ni metales de relleno.",
+      "Vidrio y cerámica en toda la ruta de vapor. Compatibles con cualquier batería 510.",
   },
 ];
 
@@ -80,28 +80,28 @@ export const LINES: ProductLine[] = [
     name: "Melted Diamonds",
     tagline: "Espectro completo",
     description:
-      "Elaborado con equipo de última generación a partir de flor congelada en fresco, preservando el espectro completo de cannabinoides y terpenos para una calada suave y con mucho sabor.",
+      "De flor congelada en fresco. Conserva el espectro completo: calada suave, mucho sabor.",
   },
   {
     id: "live",
     name: "Live Resin",
     tagline: "Terpenos vivos",
     description:
-      "Extracción en fresco que captura el perfil aromático de la planta viva. Aceite denso, sabor fiel a la cepa y efecto redondo.",
+      "Capturado de la planta viva. Aceite denso y sabor fiel a la cepa.",
   },
   {
     id: "rosin",
     name: "Hash Rosin",
     tagline: "Sin solventes",
     description:
-      "Prensado solo con calor y presión, sin solventes de ningún tipo. Nuestra línea más limpia y la más buscada por paladares exigentes.",
+      "Solo calor y presión, cero solventes. Nuestra línea más limpia.",
   },
   {
     id: "distillate",
     name: "Distillate",
     tagline: "Potencia depurada",
     description:
-      "Destilado premium formulado para una experiencia elevada y consistente. Los terpenos derivados de cannabis redondean el aroma y el sabor.",
+      "Destilado depurado y consistente, redondeado con terpenos de cannabis.",
   },
 ];
 
@@ -237,26 +237,26 @@ export function countByLine(format: FormatId): { line: ProductLine; total: numbe
 export const FAQ = [
   {
     q: "¿Cómo funciona el pedido anónimo?",
-    a: "No creás cuenta ni dejás tu nombre real. Tus datos de entrega se guardan solo en tu dispositivo y se convierten en un código de pedido cifrado. Ese código es lo único que compartís con nosotros para despachar.",
+    a: "No creás cuenta ni dejás tu nombre real. Tus datos quedan en tu dispositivo y se cifran dentro de un código. Ese código es lo único que compartís.",
   },
   {
     q: "Si es anónimo, ¿cómo saben a dónde enviar?",
-    a: "Tu código lleva adentro la dirección y el contacto que vos elegiste dar, cifrados. Al confirmarlo lo leemos únicamente para coordinar esa entrega y no queda asociado a ningún perfil ni historial.",
+    a: "El código lleva adentro la dirección que vos diste. Lo abrimos solo para despachar ese envío y no queda ligado a ningún perfil.",
   },
   {
     q: "¿Hacen envíos a todo el país?",
-    a: "Sí, cubrimos todo el territorio nacional de Nicaragua con una sola tarifa. El envío es gratis a partir de $60.",
+    a: "Sí, todo el territorio nacional con una sola tarifa. Gratis desde $60 y entrega en 24 a 48 horas.",
   },
   {
     q: "¿Qué métodos de pago aceptan?",
-    a: "Tarjeta por pasarela segura, transferencia bancaria o efectivo contra entrega. En el estado de cuenta aparece un nombre neutral.",
+    a: "Tarjeta, transferencia o efectivo contra entrega. En el estado de cuenta aparece un nombre neutral.",
   },
   {
     q: "¿El empaque es discreto?",
-    a: "Siempre. Empaque neutro, opaco y sellado, sin marcas ni referencias al contenido por fuera.",
+    a: "Siempre: neutro, opaco y sellado, sin marcas por fuera.",
   },
   {
     q: "¿Cuál es la edad mínima?",
-    a: "Debés ser mayor de 18 años. No vendemos a menores de edad bajo ninguna circunstancia.",
+    a: "18 años. No vendemos a menores bajo ninguna circunstancia.",
   },
 ];
