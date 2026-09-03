@@ -362,9 +362,25 @@ html.reveal-ready .reveal.is-in {
 }
 
 
+/* Titular: cada línea sube desde detrás de su propia máscara. */
+.line-reveal {
+  overflow: hidden;
+}
+.line-reveal > * ,
+.line-reveal {
+  animation: lineUp 1s var(--ease) both;
+}
+@keyframes lineUp {
+  from { opacity: 0; transform: translateY(0.5em); }
+  to { opacity: 1; transform: none; }
+}
+
 /* ============================================================
    PORTAL DE EDAD
    ============================================================ */
+html[data-age="ok"] .gate {
+  display: none;
+}
 .gate {
   position: fixed;
   inset: 0;

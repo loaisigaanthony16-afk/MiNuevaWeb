@@ -11,9 +11,11 @@ import type { DeliveryInfo } from "@/lib/delivery";
 // Tipo de cambio de referencia USD → NIO.
 export const EXCHANGE_RATE = 36.8;
 
-// Envío nacional: una sola tarifa para todo Nicaragua.
-export const NATIONAL_SHIPPING = 4.0;
-export const FREE_SHIPPING_AT = 60;
+// Envío nacional: tarifa única de C$200 a cualquier punto del país.
+// Se cobra en córdobas, así que el monto en dólares se deriva de la tasa.
+export const NATIONAL_SHIPPING_NIO = 200;
+export const NATIONAL_SHIPPING = NATIONAL_SHIPPING_NIO / EXCHANGE_RATE;
+export const FREE_SHIPPING_AT = 120;
 export const DELIVERY_ETA = "24 a 48 horas";
 
 // ---- Formateadores bimoneda ----
@@ -49,14 +51,8 @@ export function shippingFor(subtotal: number): number {
 }
 
 // ---- Tipos de pedido ----
-export type PaymentChannel = "card" | "bank" | "cash";
-export type BankMethod = "BAC" | "Banpro" | "LAFISE";
-
-export const PAYMENT_LABEL: Record<PaymentChannel, string> = {
-  card: "Tarjeta",
-  bank: "Transferencia",
-  cash: "Efectivo",
-};
+// Único medio de pago aceptado.
+export type PaymentChannel = "card";
 
 export interface LineItemOutgoing {
   product_id: number;
@@ -83,7 +79,6 @@ export interface OrderPayload {
   };
   payment: {
     channel: PaymentChannel;
-    bank?: BankMethod;
   };
   totals: {
     subtotal_usd: number;
@@ -96,8 +91,6 @@ export interface OrderPayload {
 export interface OrderDraft {
   items: { id: number; name: string; qty: number; price: number }[];
   delivery: DeliveryInfo;
-  payment: PaymentChannel;
-  bank?: BankMethod;
   subtotalUsd: number;
   shippingUsd: number;
   totalUsd: number;
@@ -126,10 +119,7 @@ export function buildOrderPayload(draft: OrderDraft): OrderPayload {
       address: draft.delivery.address,
       notes: draft.delivery.notes,
     },
-    payment: {
-      channel: draft.payment,
-      ...(draft.payment === "bank" && draft.bank ? { bank: draft.bank } : {}),
-    },
+    payment: { channel: "card" },
     totals: {
       subtotal_usd: draft.subtotalUsd,
       shipping_usd: draft.shippingUsd,

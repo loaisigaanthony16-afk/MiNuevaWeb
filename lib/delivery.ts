@@ -2,9 +2,9 @@
 // Datos de entrega del cliente.
 //
 // Modelo de privacidad: no hay cuenta ni servidor de perfiles. Lo que el
-// cliente escribe vive solo en su navegador (localStorage) y viaja dentro
-// del código de pedido cifrado. Nosotros leemos esos datos únicamente
-// cuando el cliente nos entrega su código, y solo para ese despacho.
+// cliente escribe vive solo en su navegador (localStorage) y se envía,
+// cifrado, únicamente al crear la sesión de pago. Lo leemos solo para
+// despachar ese envío.
 // =====================================================================
 
 export interface DeliveryInfo {

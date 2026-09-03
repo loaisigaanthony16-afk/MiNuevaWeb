@@ -15,15 +15,11 @@ import {
 import ProductCard from "@/components/ProductCard";
 import { useUi } from "@/components/ui-context";
 import { useReveal } from "@/hooks/useReveal";
+import { useT } from "@/components/locale-context";
 
 type StrainFilter = "all" | Strain;
 
-const STRAINS: { key: StrainFilter; label: string }[] = [
-  { key: "all", label: "Todas" },
-  { key: "sativa", label: "Sativa" },
-  { key: "indica", label: "Indica" },
-  { key: "hybrid", label: "Híbrida" },
-];
+const STRAINS: StrainFilter[] = ["all", "sativa", "indica", "hybrid"];
 
 const LINE_ACCENT: Record<LineId, string> = {
   melted: "text-melted",
@@ -33,6 +29,7 @@ const LINE_ACCENT: Record<LineId, string> = {
 };
 
 export default function Catalog() {
+  const t = useT();
   const { search, setSearch } = useUi();
   const [format, setFormat] = useState<FormatId>("aio");
   const [strain, setStrain] = useState<StrainFilter>("all");
@@ -111,7 +108,7 @@ export default function Catalog() {
               onClick={() => setLine("all")}
               className={`filter-pill ${line === "all" ? "filter-pill-active" : ""}`}
             >
-              Todas las líneas
+              {t("cat.filterLines")}
             </button>
             {LINES.map((l) => (
               <button
@@ -128,11 +125,11 @@ export default function Catalog() {
           <div className="flex gap-2">
             {STRAINS.map((s) => (
               <button
-                key={s.key}
-                onClick={() => setStrain(s.key)}
-                className={`filter-pill ${strain === s.key ? "filter-pill-active" : ""}`}
+                key={s}
+                onClick={() => setStrain(s)}
+                className={`filter-pill ${strain === s ? "filter-pill-active" : ""}`}
               >
-                {s.label}
+                {s === "all" ? t("cat.strainAll") : STRAIN_LABEL[s]}
               </button>
             ))}
           </div>
@@ -143,19 +140,21 @@ export default function Catalog() {
         {searching && (
           <div className="reveal flex flex-wrap items-baseline justify-between gap-3 pt-12">
             <h2 className="display-lg text-ink-50">
-              {matches.length} resultado{matches.length === 1 ? "" : "s"}
+              {matches.length}{" "}
+              {matches.length === 1 ? t("cat.results") : t("cat.resultsPlural")}
             </h2>
             <button
               onClick={() => setSearch("")}
               className="text-[12.5px] font-semibold uppercase tracking-wide2 text-gold-300 hover:text-gold-200"
             >
-              Limpiar búsqueda
+              {t("cat.clear")}
             </button>
           </div>
         )}
 
         {matches.length === 0 ? (
           <Empty
+            t={t}
             reset={() => {
               setSearch("");
               setStrain("all");
@@ -194,21 +193,26 @@ export default function Catalog() {
   );
 }
 
-function Empty({ reset }: { reset: () => void }) {
+function Empty({
+  reset,
+  t,
+}: {
+  reset: () => void;
+  t: (k: "cat.emptyTitle" | "cat.emptyBody" | "cat.reset") => string;
+}) {
   return (
     <div className="flex min-h-[46vh] flex-col items-center justify-center text-center">
       <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10">
         <SearchX className="h-7 w-7 text-ink-500" />
       </span>
       <h3 className="mt-7 font-display text-[20px] font-bold uppercase tracking-[0.06em] text-ink-50">
-        Sin coincidencias
+        {t("cat.emptyTitle")}
       </h3>
       <p className="mt-3 max-w-sm text-[14.5px] text-ink-400">
-        Probá con otra cepa, otro sabor o quitá los filtros para ver todo el
-        catálogo.
+{t("cat.emptyBody")}
       </p>
       <button onClick={reset} className="btn-ghost mt-8">
-        Reiniciar filtros
+        {t("cat.reset")}
       </button>
     </div>
   );

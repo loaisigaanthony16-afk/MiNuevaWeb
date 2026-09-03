@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import { FAQ } from "@/lib/data";
+import { useLocale } from "@/components/locale-context";
 import { useReveal } from "@/hooks/useReveal";
+
 
 interface Turn {
   from: "bot" | "user";
   text: string;
 }
-
-const GREETING = "Hola. Preguntá lo que necesites saber antes de comprar.";
 
 /**
  * Asistente de la tienda.
@@ -20,7 +20,8 @@ const GREETING = "Hola. Preguntá lo que necesites saber antes de comprar.";
  * Lo que se escribe a mano no se responde acá; queda anotado para el pedido.
  */
 export default function Assistant() {
-  const [turns, setTurns] = useState<Turn[]>([{ from: "bot", text: GREETING }]);
+  const { locale, t } = useLocale();
+  const [turns, setTurns] = useState<Turn[]>([]);
   const [asked, setAsked] = useState<number[]>([]);
   const [typing, setTyping] = useState(false);
   const [draft, setDraft] = useState("");
@@ -34,6 +35,15 @@ export default function Assistant() {
     const list = timers.current;
     return () => list.forEach(clearTimeout);
   }, []);
+
+  // Al cambiar de idioma la conversación empieza de nuevo en ese idioma.
+  useEffect(() => {
+    setTurns([{ from: "bot", text: t("chat.greeting") }]);
+    setAsked([]);
+    setPartial(null);
+    setTyping(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   // Mantiene la conversación a la vista.
   useEffect(() => {
@@ -67,9 +77,11 @@ export default function Assistant() {
   function ask(index: number) {
     if (typing || partial !== null) return;
     const item = FAQ[index];
+    const q = locale === "en" ? item.qEn : item.q;
+    const a = locale === "en" ? item.aEn : item.a;
     setAsked((prev) => [...prev, index]);
-    setTurns((prev) => [...prev, { from: "user", text: item.q }]);
-    reply(item.a);
+    setTurns((prev) => [...prev, { from: "user", text: q }]);
+    reply(a);
   }
 
   function sendDraft(e: React.FormEvent) {
@@ -78,9 +90,7 @@ export default function Assistant() {
     if (!text || typing || partial !== null) return;
     setDraft("");
     setTurns((prev) => [...prev, { from: "user", text }]);
-    reply(
-      "Esa no la tengo escrita. Dejala anotada y te la respondemos al confirmar tu pedido, por el canal privado de tu código."
-    );
+    reply(t("chat.fallback"));
   }
 
   const pending = FAQ.map((_, i) => i).filter((i) => !asked.includes(i));
@@ -92,11 +102,11 @@ export default function Assistant() {
         <div className="reveal lg:sticky lg:top-28 lg:self-start">
           <p className="kicker">
             <span className="h-px w-8 bg-gold-400/60" />
-            Consultas
+            {t("chat.kicker")}
           </p>
-          <h2 className="display-lg mt-5 text-ink-50">Preguntá.</h2>
+          <h2 className="display-lg mt-5 text-ink-50">{t("chat.title")}</h2>
           <p className="mt-5 max-w-xs text-[14.5px] leading-relaxed text-ink-400">
-            Respuestas al instante sobre privacidad, envío y pago.
+            {t("chat.body")}
           </p>
         </div>
 
@@ -107,10 +117,10 @@ export default function Assistant() {
               <Sparkles className="h-3.5 w-3.5 text-gold-300" />
             </span>
             <div>
-              <p className="text-[13px] font-semibold text-ink-50">Asistente Vibe</p>
+              <p className="text-[13px] font-semibold text-ink-50">{t("chat.name")}</p>
               <p className="flex items-center gap-1.5 text-[11px] text-ink-500">
                 <span className="h-1.5 w-1.5 rounded-full bg-hybrid" />
-                En línea
+                {t("chat.online")}
               </p>
             </div>
           </div>
@@ -153,7 +163,7 @@ export default function Assistant() {
                   disabled={busy}
                   className="rounded-full border border-white/12 px-3.5 py-2 text-left text-[12.5px] text-ink-300 transition-all duration-300 ease-smooth hover:border-gold-400/50 hover:text-ink-50 disabled:opacity-40"
                 >
-                  {FAQ[i].q}
+                  {locale === "en" ? FAQ[i].qEn : FAQ[i].q}
                 </button>
               ))}
             </div>
@@ -167,14 +177,14 @@ export default function Assistant() {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Escribí tu consulta…"
-              aria-label="Escribí tu consulta"
+              placeholder={t("chat.placeholder")}
+              aria-label={t("chat.placeholder")}
               className="field h-11 flex-1 rounded-full text-[14px]"
             />
             <button
               type="submit"
               disabled={busy || !draft.trim()}
-              aria-label="Enviar"
+              aria-label={t("chat.send")}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 transition-all duration-300 ease-smooth hover:bg-gold-300 active:scale-90 disabled:opacity-30"
             >
               <Send className="h-4 w-4" />

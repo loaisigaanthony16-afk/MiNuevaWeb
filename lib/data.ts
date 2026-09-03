@@ -234,29 +234,48 @@ export function countByLine(format: FormatId): { line: ProductLine; total: numbe
   })).filter((entry) => entry.total > 0);
 }
 
-export const FAQ = [
+export interface FaqItem {
+  q: string;
+  a: string;
+  qEn: string;
+  aEn: string;
+}
+
+export const FAQ: FaqItem[] = [
   {
     q: "¿Cómo funciona el pedido anónimo?",
-    a: "No creás cuenta ni dejás tu nombre real. Tus datos quedan en tu dispositivo y se cifran dentro de un código. Ese código es lo único que compartís.",
+    a: "No creás cuenta ni dejás tu nombre real. Tus datos quedan en tu dispositivo y solo se envían, cifrados, al momento de pagar.",
+    qEn: "How does anonymous ordering work?",
+    aEn: "No account, no real name. Your details stay on your device and are sent, encrypted, only at payment.",
   },
   {
     q: "Si es anónimo, ¿cómo saben a dónde enviar?",
-    a: "El código lleva adentro la dirección que vos diste. Lo abrimos solo para despachar ese envío y no queda ligado a ningún perfil.",
+    a: "La dirección viaja cifrada junto al pago y la leemos solo para despachar ese envío. No queda ligada a ningún perfil ni historial.",
+    qEn: "If it's anonymous, how do you know where to ship?",
+    aEn: "The address travels encrypted with the payment and we read it only to dispatch that order. It is never tied to a profile or history.",
   },
   {
     q: "¿Hacen envíos a todo el país?",
-    a: "Sí, todo el territorio nacional con una sola tarifa. Gratis desde $60 y entrega en 24 a 48 horas.",
+    a: "Sí, a cualquier punto del país por C$200. Gratis desde $120, y llega en 24 a 48 horas.",
+    qEn: "Do you ship nationwide?",
+    aEn: "Yes, anywhere in the country for C$200. Free over $120, and it arrives in 24 to 48 hours.",
   },
   {
     q: "¿Qué métodos de pago aceptan?",
-    a: "Tarjeta, transferencia o efectivo contra entrega. En el estado de cuenta aparece un nombre neutral.",
+    a: "Solo tarjeta, por pasarela segura. No aceptamos transferencia ni efectivo. En el estado de cuenta aparece un nombre neutral.",
+    qEn: "Which payment methods do you accept?",
+    aEn: "Card only, through a secure gateway. We do not take bank transfers or cash. Your statement shows a neutral name.",
   },
   {
     q: "¿El empaque es discreto?",
     a: "Siempre: neutro, opaco y sellado, sin marcas por fuera.",
+    qEn: "Is the packaging discreet?",
+    aEn: "Always: plain, opaque and sealed, with no markings outside.",
   },
   {
     q: "¿Cuál es la edad mínima?",
     a: "18 años. No vendemos a menores bajo ninguna circunstancia.",
+    qEn: "What is the minimum age?",
+    aEn: "18. We do not sell to minors under any circumstance.",
   },
 ];

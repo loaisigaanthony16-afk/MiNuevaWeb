@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { UIContextProvider } from "@/components/ui-context";
+import { LocaleProvider } from "@/components/locale-context";
 import AgeGate from "@/components/AgeGate";
 import AddressModal from "@/components/AddressModal";
 import QuickView from "@/components/QuickView";
@@ -30,17 +31,29 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={`${inter.variable} ${outfit.variable}`}>
+      <head>
+        {/* Antes del primer pintado: si ya confirmó la edad, el portal ni
+            parpadea. Si no, el portal es lo primero que aparece. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('pv18s')==='1'||document.cookie.indexOf('pv18s=1')>-1){document.documentElement.dataset.age='ok'}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen font-sans">
-        <StoreProvider>
-          <UIContextProvider>
-            {children}
-            {/* Capas globales */}
-            <CartDrawer />
-            <QuickView />
-            <AddressModal />
-            <AgeGate />
-          </UIContextProvider>
-        </StoreProvider>
+        <LocaleProvider>
+          <StoreProvider>
+            <UIContextProvider>
+              {children}
+              {/* Capas globales */}
+              <CartDrawer />
+              <QuickView />
+              <AddressModal />
+              <AgeGate />
+            </UIContextProvider>
+          </StoreProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

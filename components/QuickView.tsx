@@ -6,6 +6,7 @@ import { getLine, STRAIN_LABEL, STRAIN_EFFECT, getFormat } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { formatNIO, formatUSD, DELIVERY_ETA } from "@/lib/checkout-util";
+import { useT } from "@/components/locale-context";
 
 const STRAIN_BG: Record<string, string> = {
   sativa: "bg-sativa text-ink-900",
@@ -21,6 +22,7 @@ const LINE_BG: Record<string, string> = {
 };
 
 export default function QuickView() {
+  const t = useT();
   const { quickProduct: p, closeQuick } = useUi();
   const { add } = useStore();
   const [shot, setShot] = useState(0);
@@ -104,16 +106,19 @@ export default function QuickView() {
             </h2>
 
             <p className="mt-3 text-[15px] leading-relaxed text-ink-300">
-              {STRAIN_EFFECT[p.strain]}. Perfil de sabor: {p.flavor.toLowerCase()}.
+              {STRAIN_EFFECT[p.strain]}. {t("quick.flavor")}:{" "}
+              {p.flavor.toLowerCase()}.
             </p>
 
             {/* Ficha */}
             <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-white/8 bg-white/8">
               {[
-                ...(p.weight ? [["Gramaje", p.weight] as [string, string]] : []),
-                ["Formato", getFormat(p.format).name],
-                ["Línea", getLine(p.line).name],
-                ["Cepa", STRAIN_LABEL[p.strain]],
+                ...(p.weight
+                  ? [[t("quick.weight"), p.weight] as [string, string]]
+                  : []),
+                [t("quick.format"), getFormat(p.format).name],
+                [t("quick.line"), getLine(p.line).name],
+                [t("quick.strain"), STRAIN_LABEL[p.strain]],
               ].map(([k, v]) => (
                 <div key={k} className="bg-ink-850 px-4 py-3.5">
                   <dt className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-500">
@@ -135,7 +140,7 @@ export default function QuickView() {
                   {formatUSD(p.price)}
                 </p>
                 <p className="mt-1.5 text-[12px] tabular-nums text-ink-500">
-                  {formatNIO(p.price)} · envío {DELIVERY_ETA}
+                  {formatNIO(p.price)} · {t("quick.shippingIn")} {DELIVERY_ETA}
                 </p>
               </div>
               <button
@@ -143,7 +148,7 @@ export default function QuickView() {
                 className={`btn ${added ? "bg-hybrid text-white" : "btn-gold"}`}
               >
                 {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                {added ? "Añadido" : "Añadir"}
+                {added ? t("quick.added") : t("cat.add")}
               </button>
             </div>
           </div>

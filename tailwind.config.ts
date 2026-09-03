@@ -86,6 +86,10 @@ const config: Config = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-50%)" },
         },
+        marqueeBack: {
+          from: { transform: "translateX(-50%)" },
+          to: { transform: "translateX(0)" },
+        },
         drift: {
           "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
           "50%": { transform: "translate3d(0,-18px,0) scale(1.06)" },
@@ -102,6 +106,7 @@ const config: Config = {
       animation: {
         rise: "rise 0.7s cubic-bezier(0.22,1,0.36,1) both",
         marquee: "marquee 38s linear infinite",
+        marqueeBack: "marqueeBack 44s linear infinite",
         drift: "drift 14s ease-in-out infinite",
         sheen: "sheen 1.1s cubic-bezier(0.22,1,0.36,1)",
         slideIn: "slideIn 0.42s cubic-bezier(0.22,1,0.36,1) both",

@@ -3,16 +3,22 @@
 import { ArrowDown } from "lucide-react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import CoverageMap from "@/components/CoverageMap";
+import { ReviewSummary } from "@/components/Reviews";
+import { useT } from "@/components/locale-context";
 import { countByLine, LINES } from "@/lib/data";
-import { DELIVERY_ETA, FREE_SHIPPING_AT } from "@/lib/checkout-util";
+import {
+  DELIVERY_ETA,
+  FREE_SHIPPING_AT,
+  NATIONAL_SHIPPING_NIO,
+} from "@/lib/checkout-util";
 
 const MARQUEE = [
-  "Envío nacional",
-  "Pedido anónimo",
-  "Empaque neutro",
-  "Producto original",
-  "Pago flexible",
-];
+  "tick.shipping",
+  "tick.anon",
+  "tick.packaging",
+  "tick.original",
+  "tick.card",
+] as const;
 
 const LINE_DOT: Record<string, string> = {
   melted: "bg-melted",
@@ -22,6 +28,7 @@ const LINE_DOT: Record<string, string> = {
 };
 
 export default function Hero() {
+  const t = useT();
   const aio = countByLine("aio");
   const cart = countByLine("cart");
   const totals = LINES.map((line) => {
@@ -41,22 +48,32 @@ export default function Hero() {
         <div className="container-page relative z-10 pb-24 pt-24 sm:pb-32 sm:pt-32">
           <p className="kicker animate-rise">
             <span className="h-px w-8 bg-gold-400/60" />
-            Extractos premium · Nicaragua
+            {t("hero.kicker")}
           </p>
 
-          <h1 className="display-xl mt-8 animate-rise [animation-delay:80ms]">
-            <span className="block text-ink-50">Vapor</span>
-            <span className="block text-gold-gradient">sin rastro.</span>
+          <h1 className="display-xl mt-8">
+            <span className="line-reveal block text-ink-50">{t("hero.line1")}</span>
+            <span className="line-reveal block text-gold-gradient [animation-delay:180ms]">
+              {t("hero.line2")}
+            </span>
           </h1>
 
-          <div className="mt-12 flex flex-wrap items-center gap-3 animate-rise [animation-delay:160ms]">
+          <p className="lede mt-8 animate-rise [animation-delay:320ms]">
+            {t("hero.lede")}
+          </p>
+
+          <div className="mt-11 flex flex-wrap items-center gap-3 animate-rise [animation-delay:400ms]">
             <a href="#catalogo" className="btn-primary group">
-              Ver catálogo
+              {t("hero.cta")}
               <ArrowDown className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-y-1" />
             </a>
             <a href="#privacidad" className="btn-ghost">
-              Cómo funciona
+              {t("hero.how")}
             </a>
+          </div>
+
+          <div className="mt-10 animate-rise [animation-delay:480ms]">
+            <ReviewSummary />
           </div>
         </div>
       </section>
@@ -76,7 +93,7 @@ export default function Hero() {
                     {line.name}
                   </span>
                   <span className="mt-0.5 block text-[11px] tabular-nums text-ink-500">
-                    {String(total).padStart(2, "0")} referencias
+                    {String(total).padStart(2, "0")} {t("hero.refs")}
                   </span>
                 </span>
               </a>
@@ -95,15 +112,18 @@ export default function Hero() {
           <div>
             <p className="kicker">
               <span className="h-px w-8 bg-gold-400/60" />
-              Todo el territorio nacional
+              {t("cover.kicker")}
             </p>
 
             <dl className="mt-8 divide-y divide-white/8 border-y border-white/8">
               {[
-                ["Entrega", DELIVERY_ETA],
-                ["Envío gratis", `Desde $${FREE_SHIPPING_AT}`],
-                ["Empaque", "Neutro y sellado"],
-                ["Pago", "Tarjeta, banco o efectivo"],
+                [t("cover.delivery"), DELIVERY_ETA],
+                [
+                  t("cover.shipping"),
+                  `C$${NATIONAL_SHIPPING_NIO} · ${t("cart.freeFrom")} $${FREE_SHIPPING_AT}`,
+                ],
+                [t("cover.packaging"), t("cover.packagingValue")],
+                [t("cover.payment"), t("cover.paymentValue")],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-baseline justify-between gap-6 py-4">
                   <dt className="text-[11px] font-semibold uppercase tracking-wide2 text-ink-500">
@@ -122,13 +142,13 @@ export default function Hero() {
       {/* --- Marquesina --- */}
       <div className="relative overflow-hidden border-b border-white/8 py-3.5">
         <div className="flex w-max animate-marquee gap-12 pr-12">
-          {[...MARQUEE, ...MARQUEE, ...MARQUEE].map((t, i) => (
+          {[...MARQUEE, ...MARQUEE, ...MARQUEE].map((key, i) => (
             <span
               key={i}
               className="flex items-center gap-3 whitespace-nowrap text-[11.5px] font-semibold uppercase tracking-wide2 text-ink-400"
             >
               <span className="h-1 w-1 rounded-full bg-gold-400" />
-              {t}
+              {t(key)}
             </span>
           ))}
         </div>

@@ -6,6 +6,7 @@ import { getLine, STRAIN_LABEL, type Product } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useStore } from "@/lib/store";
 import { formatNIO } from "@/lib/checkout-util";
+import { useT } from "@/components/locale-context";
 
 const STRAIN_BG: Record<Product["strain"], string> = {
   sativa: "bg-sativa text-ink-900",
@@ -35,6 +36,7 @@ export default function ProductCard({
   product: Product;
   delay?: number;
 }) {
+  const t = useT();
   const { openQuick } = useUi();
   const { add } = useStore();
   const [added, setAdded] = useState(false);
@@ -136,7 +138,7 @@ export default function ProductCard({
           <button
             key={bounceKey}
             onClick={handleAdd}
-            aria-label={`Añadir ${product.name} a la bolsa`}
+            aria-label={`${t("cat.add")} ${product.name}`}
             className={`add-bounce flex h-10 w-10 shrink-0 items-center justify-center rounded-full
                         transition-all duration-300 ease-smooth active:scale-90 ${
                           added

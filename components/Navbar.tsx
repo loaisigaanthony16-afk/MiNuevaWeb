@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { MapPin, Search, ShoppingBag, X } from "lucide-react";
 import Wordmark from "@/components/Wordmark";
 import { useStore } from "@/lib/store";
+import { useLocale } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
 
 export default function Navbar() {
   const { count } = useStore();
+  const { locale, setLocale, t } = useLocale();
   const { openDrawer, openAddress, delivery, search, setSearch } = useUi();
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -81,14 +83,14 @@ export default function Navbar() {
               setSearch(e.target.value);
               if (e.target.value) goSearch();
             }}
-            placeholder="Buscar cepa, sabor o línea…"
-            aria-label="Buscar productos"
+            placeholder={t("nav.search")}
+            aria-label={t("nav.searchLabel")}
             className="field h-11 rounded-full pl-11 pr-10 text-[14px]"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              aria-label="Limpiar búsqueda"
+              aria-label={t("nav.clear")}
               className="absolute inset-y-0 right-3 flex items-center text-ink-400 transition hover:text-ink-50"
             >
               <X className="h-4 w-4" />
@@ -106,10 +108,10 @@ export default function Navbar() {
           />
           <span className="flex flex-col">
             <span className="text-[9.5px] font-semibold uppercase leading-tight tracking-wide2 text-ink-400">
-              Enviar a
+              {t("nav.shipTo")}
             </span>
             <span className="max-w-[150px] truncate text-[13px] font-semibold leading-tight text-ink-50">
-              {hasAddress ? delivery!.region : "Elegir dirección"}
+              {hasAddress ? delivery!.region : t("nav.chooseAddress")}
             </span>
           </span>
         </button>
@@ -117,7 +119,7 @@ export default function Navbar() {
         {/* Dirección compacta (móvil) */}
         <button
           onClick={openAddress}
-          aria-label="Dirección de entrega"
+          aria-label={t("nav.address")}
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ease-smooth hover:bg-white/5 lg:hidden ${
             hasAddress
               ? "border-gold-400/45 text-gold-300"
@@ -127,10 +129,26 @@ export default function Navbar() {
           <MapPin className="h-[18px] w-[18px]" />
         </button>
 
+        {/* Idioma */}
+        <button
+          onClick={() => setLocale(locale === "es" ? "en" : "es")}
+          aria-label={t("nav.lang")}
+          title={t("nav.lang")}
+          className="hidden h-11 shrink-0 items-center gap-1 rounded-full border border-white/10 px-3 text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-300 ease-smooth hover:border-white/30 hover:bg-white/5 sm:flex"
+        >
+          <span className={locale === "es" ? "text-gold-300" : "text-ink-500"}>
+            ES
+          </span>
+          <span className="text-ink-600">/</span>
+          <span className={locale === "en" ? "text-gold-300" : "text-ink-500"}>
+            EN
+          </span>
+        </button>
+
         {/* Bolsa */}
         <button
           onClick={openDrawer}
-          aria-label={`Abrir bolsa, ${count} artículos`}
+          aria-label={`${t("nav.bag")} (${count})`}
           className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 transition-all duration-300 ease-smooth hover:border-gold-400/50 hover:bg-white/5 ${
             jiggle ? "cart-jiggle" : ""
           }`}

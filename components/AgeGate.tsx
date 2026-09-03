@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import Wordmark from "@/components/Wordmark";
+import { useT } from "@/components/locale-context";
 
 const AGE_KEY = "pv18s";
 
@@ -13,7 +14,9 @@ const AGE_KEY = "pv18s";
  * coincidan, y bloquea el scroll del fondo mientras está abierto.
  */
 export default function AgeGate() {
-  const [resolved, setResolved] = useState(false);
+  // Por defecto el portal está puesto: es lo primero que se ve. Solo se
+  // retira si al montar comprobamos que esta persona ya confirmó.
+  const t = useT();
   const [allowed, setAllowed] = useState(false);
   const [denied, setDenied] = useState(false);
 
@@ -26,11 +29,10 @@ export default function AgeGate() {
     } catch {
       /* noop */
     }
-    setAllowed(ok);
-    setResolved(true);
+    if (ok) setAllowed(true);
   }, []);
 
-  const blocking = resolved && !allowed;
+  const blocking = !allowed;
 
   useEffect(() => {
     if (!blocking) return;
@@ -66,46 +68,45 @@ export default function AgeGate() {
         <div className="gate-line mx-auto mt-9 w-40" />
 
         <p className="mt-9 text-[11px] font-semibold uppercase tracking-wide3 text-gold-300">
-          Solo para adultos
+          {t("gate.kicker")}
         </p>
 
         <h1 className="mt-5 font-display text-[clamp(1.9rem,5vw,2.9rem)] font-medium uppercase leading-[1.05] tracking-tightest text-ink-50">
-          ¿Sos mayor de 18 años?
+          {t("gate.title")}
         </h1>
 
         <p className="mx-auto mt-5 max-w-sm text-[14.5px] leading-relaxed text-ink-400">
-          Este sitio vende productos de uso adulto. Al entrar confirmás que
-          tenés la edad legal en Nicaragua.
+{t("gate.body")}
         </p>
 
         {denied ? (
           <div className="mx-auto mt-10 max-w-sm rounded-card border border-white/10 bg-white/[0.03] p-6">
             <p className="text-[14.5px] leading-relaxed text-ink-300">
-              Gracias por tu honestidad. No podés continuar.
+              {t("gate.denied")}
             </p>
             <button
               onClick={() => setDenied(false)}
               className="mt-4 text-[12px] font-semibold uppercase tracking-wide2 text-ink-500 transition hover:text-ink-200"
             >
-              Volver
+              {t("gate.back")}
             </button>
           </div>
         ) : (
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <button onClick={confirm} className="btn-gold w-full sm:w-auto">
-              Sí, tengo 18 o más
+              {t("gate.yes")}
             </button>
             <button
               onClick={() => setDenied(true)}
               className="btn-ghost w-full sm:w-auto"
             >
-              No
+              {t("gate.no")}
             </button>
           </div>
         )}
 
         <p className="mt-10 text-[11.5px] leading-relaxed text-ink-600">
-          Consumo responsable. Prohibida la venta a menores de edad.
+          {t("gate.legal")}
         </p>
       </div>
     </div>

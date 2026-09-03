@@ -11,8 +11,10 @@ import {
   type DeliveryInfo,
 } from "@/lib/delivery";
 import { DELIVERY_ETA } from "@/lib/checkout-util";
+import { useT } from "@/components/locale-context";
 
 export default function AddressModal() {
+  const t = useT();
   const { addressOpen, closeAddress, delivery, setDelivery } = useUi();
   const [form, setForm] = useState<DeliveryInfo>(EMPTY_DELIVERY);
   const [errors, setErrors] = useState<Partial<Record<keyof DeliveryInfo, string>>>({});
@@ -57,7 +59,7 @@ export default function AddressModal() {
       onClick={closeAddress}
       role="dialog"
       aria-modal="true"
-      aria-label="Dirección de entrega"
+      aria-label={t("nav.address")}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -66,9 +68,9 @@ export default function AddressModal() {
         {/* Cabecera */}
         <div className="flex items-start justify-between gap-4 border-b border-white/8 p-6">
           <div>
-            <p className="kicker">Entrega</p>
+            <p className="kicker">{t("addr.kicker")}</p>
             <h2 className="mt-3 font-display text-[24px] font-bold uppercase leading-tight tracking-tightest text-ink-50">
-              ¿A dónde lo enviamos?
+              {t("addr.title")}
             </h2>
           </div>
           <button
@@ -85,10 +87,7 @@ export default function AddressModal() {
           <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-400">
             <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-300" />
             <span>
-              Esto <span className="text-ink-100">no crea una cuenta</span>. Lo
-              que escribas se guarda solo en este dispositivo y viaja cifrado
-              dentro de tu código de pedido. Lo leemos únicamente para despachar
-              ese envío.
+              {t("addr.privacy")}
             </span>
           </p>
         </div>
@@ -98,13 +97,13 @@ export default function AddressModal() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="alias">
-                Nombre para recibir
+                {t("addr.alias")}
               </label>
               <input
                 id="alias"
                 value={form.alias}
                 onChange={(e) => update("alias", e.target.value)}
-                placeholder="Puede ser un apodo"
+                placeholder={t("addr.aliasHint")}
                 className={`field ${errors.alias ? "field-error" : ""}`}
               />
               {errors.alias && <Err msg={errors.alias} />}
@@ -112,7 +111,7 @@ export default function AddressModal() {
 
             <div>
               <label className="label" htmlFor="phone">
-                Teléfono de contacto
+                {t("addr.phone")}
               </label>
               <input
                 id="phone"
@@ -128,7 +127,7 @@ export default function AddressModal() {
 
           <div className="mt-5">
             <label className="label" htmlFor="region">
-              Departamento o región
+              {t("addr.region")}
             </label>
             <select
               id="region"
@@ -136,7 +135,7 @@ export default function AddressModal() {
               onChange={(e) => update("region", e.target.value)}
               className={`field ${errors.region ? "field-error" : ""}`}
             >
-              <option value="">Elegí una opción</option>
+              <option value="">{t("addr.regionHint")}</option>
               {REGIONS.map((r) => (
                 <option key={r} value={r} className="bg-ink-850">
                   {r}
@@ -148,14 +147,14 @@ export default function AddressModal() {
 
           <div className="mt-5">
             <label className="label" htmlFor="address">
-              Dirección exacta
+              {t("addr.address")}
             </label>
             <textarea
               id="address"
               rows={3}
               value={form.address}
               onChange={(e) => update("address", e.target.value)}
-              placeholder="Barrio, calle, número de casa y color del portón"
+              placeholder={t("addr.addressHint")}
               className={`field h-auto resize-none py-3 ${errors.address ? "field-error" : ""}`}
             />
             {errors.address && <Err msg={errors.address} />}
@@ -163,36 +162,37 @@ export default function AddressModal() {
 
           <div className="mt-5">
             <label className="label" htmlFor="notes">
-              Referencias u horario <span className="normal-case text-ink-500">(opcional)</span>
+              {t("addr.notes")}{" "}
+              <span className="normal-case text-ink-500">{t("addr.optional")}</span>
             </label>
             <input
                 id="notes"
               value={form.notes}
               onChange={(e) => update("notes", e.target.value)}
-              placeholder="Frente al parque, entregar después de las 5pm"
+              placeholder={t("addr.notesHint")}
               className="field"
             />
           </div>
 
           <p className="mt-5 text-[12px] text-ink-500">
-            Cobertura nacional · Entrega en {DELIVERY_ETA}.
+            {t("addr.coverage")} {DELIVERY_ETA}.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <button type="submit" className="btn-gold flex-1">
               {saved ? (
                 <>
-                  <Check className="h-4 w-4" /> Guardado
+                  <Check className="h-4 w-4" /> {t("addr.saved")}
                 </>
               ) : (
-                "Guardar dirección"
+                t("addr.save")
               )}
             </button>
             {delivery && delivery.address && (
               <button
                 type="button"
                 onClick={handleClear}
-                aria-label="Borrar mis datos"
+                aria-label={t("addr.delete")}
                 className="flex h-[50px] w-[50px] items-center justify-center rounded-full border border-white/12 text-ink-400 transition hover:border-red-500/50 hover:text-red-400"
               >
                 <Trash2 className="h-4 w-4" />
