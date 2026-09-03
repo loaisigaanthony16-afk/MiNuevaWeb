@@ -48,8 +48,6 @@ export const LINE_PALETTE: Record<LineId, Palette> = {
   },
 };
 
-const BG = "#0B0B0C";
-
 /** Cartucho 510: cuerpo esbelto, ventana de aceite y rosca inferior. */
 function cartridgeShape(p: Palette): string {
   return `
@@ -104,37 +102,17 @@ export function productArt(
     `<radialGradient id="halo" cx="${cx}%" cy="${cy}%" r="62%">`,
     `<stop offset="0%" stop-color="${p.glow}" stop-opacity="0.30"/>`,
     `<stop offset="55%" stop-color="${p.glow}" stop-opacity="0.07"/>`,
-    `<stop offset="100%" stop-color="${BG}" stop-opacity="0"/>`,
+    `<stop offset="100%" stop-color="${p.glow}" stop-opacity="0"/>`,
     `</radialGradient>`,
     `<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">`,
     `<stop offset="0%" stop-color="${p.glow}" stop-opacity="0.16"/>`,
     `<stop offset="100%" stop-color="${p.glow}" stop-opacity="0"/>`,
     `</linearGradient>`,
     `</defs>`,
-    `<rect width="600" height="560" fill="${BG}"/>`,
-    `<rect width="600" height="560" fill="url(#halo)"/>`,
     `<ellipse cx="300" cy="516" rx="132" ry="16" fill="url(#floor)"/>`,
     shape,
     `</svg>`,
   ].join("");
 
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-/** Arte ancho para las cabeceras de cada línea. */
-export function lineArt(line: LineId): string {
-  const p = LINE_PALETTE[line];
-  const svg = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">`,
-    `<defs>`,
-    `<radialGradient id="g" cx="28%" cy="30%" r="70%">`,
-    `<stop offset="0%" stop-color="${p.glow}" stop-opacity="0.34"/>`,
-    `<stop offset="100%" stop-color="${BG}" stop-opacity="0"/>`,
-    `</radialGradient>`,
-    `</defs>`,
-    `<rect width="1200" height="420" fill="${BG}"/>`,
-    `<rect width="1200" height="420" fill="url(#g)"/>`,
-    `</svg>`,
-  ].join("");
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

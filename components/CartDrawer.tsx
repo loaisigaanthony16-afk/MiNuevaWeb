@@ -214,7 +214,7 @@ export default function CartDrawer() {
                       <img
                         src={p.img}
                         alt={p.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain p-1"
                       />
                     </div>
 

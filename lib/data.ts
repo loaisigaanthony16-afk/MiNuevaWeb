@@ -1,7 +1,9 @@
 // =====================================================================
 // Catálogo Vibe 505.
-// Dos formatos (cartucho 510 y all-in-one) por cuatro líneas de extracto.
-// Envío nacional en Nicaragua, pedido anónimo.
+//
+// Los all-in-one usan fotografía real de producto y sus datos salen del
+// empaque: línea, cepa, gramaje y los dos descriptores de sabor impresos.
+// Los cartuchos 510 aún no tienen fotografía y usan arte generado.
 // =====================================================================
 
 import { productArt, type FormatId, type LineId } from "@/lib/catalog-art";
@@ -29,12 +31,14 @@ export interface Product {
   line: LineId;
   format: FormatId;
   strain: Strain;
-  thc: number;
   price: number;
   flavor: string;
-  effect: string;
+  /** Gramaje impreso en el empaque. Solo donde lo conocemos. */
+  weight?: string;
   img: string;
   imgs: string[];
+  /** true cuando la imagen es fotografía real de producto. */
+  photo: boolean;
 }
 
 // Etiqueta neutral que ve la pasarela de pago.
@@ -44,6 +48,13 @@ export const STRAIN_LABEL: Record<Strain, string> = {
   sativa: "Sativa",
   indica: "Indica",
   hybrid: "Híbrida",
+};
+
+/** Efecto según cepa, tal como lo describe el empaque. */
+export const STRAIN_EFFECT: Record<Strain, string> = {
+  sativa: "Chispa y lucidez",
+  indica: "Difuso y relajado",
+  hybrid: "Equilibrio eufórico",
 };
 
 export const FORMATS: CatalogFormat[] = [
@@ -102,87 +113,120 @@ export function getFormat(id: FormatId): CatalogFormat {
   return FORMATS.find((f) => f.id === id) ?? FORMATS[0];
 }
 
-// --- Definición compacta del catálogo -------------------------------
-type Row = [
+// --- All-in-one: producto real ---------------------------------------
+// [nombre, slug de la foto, línea, cepa, gramaje, sabor del empaque]
+type PhotoRow = [
   name: string,
+  slug: string,
   line: LineId,
-  format: FormatId,
   strain: Strain,
-  thc: number,
-  price: number,
-  flavor: string,
-  effect: string
+  weight: string,
+  flavor: string
 ];
 
-const ROWS: Row[] = [
-  // ---- ALL-IN-ONE · Melted Diamonds ----
-  ["Durban Delight", "melted", "aio", "sativa", 88, 42, "Cítrico y anís", "Energía limpia y sostenida"],
-  ["Grape Gas", "melted", "aio", "indica", 90, 42, "Uva morada y combustible", "Relajación densa de noche"],
-  ["Lemon Cherry Gelato", "melted", "aio", "sativa", 87, 42, "Limón, cereza y crema", "Ánimo arriba y sociable"],
-  ["Mango Madness", "melted", "aio", "hybrid", 86, 42, "Mango maduro", "Equilibrio alegre"],
-  ["Orange Tangie", "melted", "aio", "hybrid", 85, 42, "Naranja tangerina", "Claridad con cuerpo suelto"],
+const AIO_ROWS: PhotoRow[] = [
+  // Melted Diamonds · 1000 mg
+  ["Grape Gas", "grape-gas", "melted", "indica", "1000 mg", "Jugoso y terroso"],
+  ["Lemon Cherry Gelato", "lemon-cherry-gelato", "melted", "sativa", "1000 mg", "Dulce y cítrico"],
+  ["Mango Madness", "mango-madness", "melted", "hybrid", "1000 mg", "Frutal y jugoso"],
+  ["Orange Tangie", "orange-tangie", "melted", "hybrid", "1000 mg", "Dulce y ácido"],
 
-  // ---- ALL-IN-ONE · Live Resin ----
-  ["Golden Papaya", "live", "aio", "hybrid", 84, 38, "Papaya y miel", "Calma luminosa"],
-  ["Grape Dosi", "live", "aio", "hybrid", 85, 38, "Uva y galleta", "Cuerpo pesado, mente clara"],
-  ["Juice Man", "live", "aio", "sativa", 83, 38, "Jugo tropical", "Chispa creativa"],
-  ["Lemon Kush Mintz", "live", "aio", "indica", 86, 38, "Limón y menta", "Descanso profundo"],
-  ["OG Kush", "live", "aio", "indica", 87, 38, "Pino y tierra", "El clásico de siempre"],
+  // Live Resin · 1000 mg
+  ["Golden Papaya", "golden-papaya", "live", "hybrid", "1000 mg", "Suave y cremoso"],
+  ["Grape Dosi", "grape-dosi", "live", "hybrid", "1000 mg", "Frutal y dulce"],
+  ["Juice Man", "juice-man", "live", "sativa", "1000 mg", "Jugoso y frutal"],
+  ["Lemon Kush Mintz", "lemon-kush-mintz", "live", "indica", "1000 mg", "Cítrico y helado"],
+  ["OG Kush", "og-kush", "live", "indica", "1000 mg", "Terroso y profundo"],
 
-  // ---- ALL-IN-ONE · Hash Rosin ----
-  ["Donnie Burger", "rosin", "aio", "hybrid", 82, 48, "Especias y gas", "Potente y envolvente"],
-  ["Fatso", "rosin", "aio", "indica", 84, 48, "Nuez tostada", "Sedante de fin de día"],
-  ["Garlic Jelly", "rosin", "aio", "indica", 83, 48, "Salado y dulce", "Cuerpo pesado, mente en paz"],
-  ["Mimosa", "rosin", "aio", "sativa", 81, 48, "Cítrico burbujeante", "Arranque brillante"],
-  ["Tropicana Cherry", "rosin", "aio", "sativa", 82, 48, "Cereza y naranja", "Euforia luminosa"],
+  // Hash Rosin · 500 mg
+  ["Donnie Burger", "donnie-burger", "rosin", "hybrid", "500 mg", "Terroso y salado"],
+  ["Fatso", "fatso", "rosin", "indica", "500 mg", "Suave y terroso"],
+  ["Garlic Jelly", "garlic-jelly", "rosin", "indica", "500 mg", "Punzante y dulce"],
+  ["Mimosa", "mimosa", "rosin", "sativa", "500 mg", "Refrescante y cítrico"],
+  ["Tropicana Cherry", "tropicana-cherry", "rosin", "sativa", "500 mg", "Frutal y ácido"],
 
-  // ---- ALL-IN-ONE · Distillate ----
-  ["Blue Slushie", "distillate", "aio", "hybrid", 92, 32, "Frutos azules helados", "Equilibrio refrescante"],
-  ["Blueberry Cookies", "distillate", "aio", "indica", 93, 32, "Arándano y galleta", "Relajación dulce"],
-  ["Bubblegum Burst", "distillate", "aio", "indica", 92, 32, "Chicle de fresa", "Calma juguetona"],
-  ["Frozen Pomegranate", "distillate", "aio", "sativa", 91, 32, "Granada helada", "Energía nítida"],
-  ["Galactic Diesel", "distillate", "aio", "indica", 94, 32, "Diesel y pino", "Aterrizaje profundo"],
-
-  // ---- CARTUCHOS 510 · Melted Diamonds ----
-  ["Lemonade Rose", "melted", "cart", "sativa", 88, 35, "Limonada floral", "Ligereza y foco"],
-  ["Moroccan Peach Rings", "melted", "cart", "hybrid", 87, 35, "Durazno en almíbar", "Dulce y equilibrada"],
-  ["Purple Breath", "melted", "cart", "indica", 89, 35, "Uva y lavanda", "Respiro profundo"],
-  ["Toro Milk Runtz", "melted", "cart", "indica", 90, 35, "Leche y caramelo", "Manta pesada"],
-  ["White Raspberry", "melted", "cart", "hybrid", 86, 35, "Frambuesa y crema", "Suave de principio a fin"],
-
-  // ---- CARTUCHOS 510 · Distillate ----
-  ["Bahama Berry", "distillate", "cart", "sativa", 91, 26, "Bayas tropicales", "Chispa de mediodía"],
-  ["Banana Cream Cake", "distillate", "cart", "indica", 92, 26, "Banano y bizcocho", "Postre de noche"],
-  ["Cherry Grapefruit", "distillate", "cart", "sativa", 90, 26, "Cereza y toronja", "Ácida y despierta"],
-  ["God Father OG", "distillate", "cart", "indica", 94, 28, "Uva y tierra húmeda", "La más contundente"],
-  ["Green Crack", "distillate", "cart", "sativa", 91, 26, "Mango verde", "Motor de la mañana"],
-  ["Pineapple Paradise", "distillate", "cart", "hybrid", 90, 26, "Piña asada", "Vacaciones portátiles"],
-  ["Purple Passion Punch", "distillate", "cart", "indica", 92, 26, "Frutos morados", "Descenso suave"],
-  ["Strawberry Kiwi Krush", "distillate", "cart", "hybrid", 90, 26, "Fresa y kiwi", "Fresca y pareja"],
+  // Distillate · 1000 mg
+  ["Blue Slushie", "blue-slushie", "distillate", "hybrid", "1000 mg", "Frutal y helado"],
+  ["Blueberry Cookies", "blueberry-cookies", "distillate", "indica", "1000 mg", "Jugoso y tostado"],
+  ["Bubblegum Burst", "bubblegum-burst", "distillate", "indica", "1000 mg", "Frutal y jugoso"],
+  ["Frozen Pomegranate", "frozen-pomegranate", "distillate", "sativa", "1000 mg", "Ácido y helado"],
+  ["Galactic Diesel", "galactic-diesel", "distillate", "indica", "1000 mg", "Punzante e intenso"],
+  ["Magic Melon Og", "magic-melon-og", "distillate", "hybrid", "1000 mg", "Floral y dulce"],
+  ["Pineapple Express", "pineapple-express", "distillate", "sativa", "1000 mg", "Maduro y cítrico"],
 ];
 
-export const products: Product[] = ROWS.map((r, i) => {
-  const [name, line, format, strain, thc, price, flavor, effect] = r;
-  return {
-    id: i + 1,
+// Precio por línea (USD).
+const LINE_PRICE: Record<LineId, number> = {
+  melted: 42,
+  live: 38,
+  rosin: 48,
+  distillate: 32,
+};
+
+// --- Cartuchos 510: aún sin fotografía --------------------------------
+type CartRow = [name: string, line: LineId, strain: Strain, flavor: string];
+
+const CART_ROWS: CartRow[] = [
+  ["Lemonade Rose", "melted", "sativa", "Limonada floral"],
+  ["Moroccan Peach Rings", "melted", "hybrid", "Durazno en almíbar"],
+  ["Purple Breath", "melted", "indica", "Uva y lavanda"],
+  ["Toro Milk Runtz", "melted", "indica", "Leche y caramelo"],
+  ["White Raspberry", "melted", "hybrid", "Frambuesa y crema"],
+  ["Bahama Berry", "distillate", "sativa", "Bayas tropicales"],
+  ["Banana Cream Cake", "distillate", "indica", "Banano y bizcocho"],
+  ["Cherry Grapefruit", "distillate", "sativa", "Cereza y toronja"],
+  ["God Father OG", "distillate", "indica", "Uva y tierra húmeda"],
+  ["Green Crack", "distillate", "sativa", "Mango verde"],
+  ["Pineapple Paradise", "distillate", "hybrid", "Piña asada"],
+  ["Purple Passion Punch", "distillate", "indica", "Frutos morados"],
+  ["Strawberry Kiwi Krush", "distillate", "hybrid", "Fresa y kiwi"],
+];
+
+const CART_PRICE: Record<LineId, number> = {
+  melted: 35,
+  live: 32,
+  rosin: 40,
+  distillate: 26,
+};
+
+let nextId = 1;
+
+const aioProducts: Product[] = AIO_ROWS.map(
+  ([name, slug, line, strain, weight, flavor]) => ({
+    id: nextId++,
     name,
     line,
-    format,
+    format: "aio" as FormatId,
     strain,
-    thc,
-    price,
+    price: LINE_PRICE[line],
     flavor,
-    effect,
-    img: productArt(line, format, 0),
-    imgs: [productArt(line, format, 0), productArt(line, format, 1)],
-  };
-});
+    weight,
+    img: `/productos/${slug}.webp`,
+    imgs: [`/productos/${slug}.webp`],
+    photo: true,
+  })
+);
+
+const cartProducts: Product[] = CART_ROWS.map(([name, line, strain, flavor]) => ({
+  id: nextId++,
+  name,
+  line,
+  format: "cart" as FormatId,
+  strain,
+  price: CART_PRICE[line],
+  flavor,
+  img: productArt(line, "cart", 0),
+  imgs: [productArt(line, "cart", 0), productArt(line, "cart", 1)],
+  photo: false,
+}));
+
+export const products: Product[] = [...aioProducts, ...cartProducts];
 
 export function getProduct(id: number): Product | undefined {
   return products.find((p) => p.id === id);
 }
 
-/** Cuenta de productos por línea dentro de un formato (para el índice). */
+/** Cuenta de productos por línea dentro de un formato. */
 export function countByLine(format: FormatId): { line: ProductLine; total: number }[] {
   return LINES.map((line) => ({
     line,

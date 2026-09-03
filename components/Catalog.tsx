@@ -46,7 +46,7 @@ export default function Catalog() {
       if (strain !== "all" && p.strain !== strain) return false;
       if (line !== "all" && p.line !== line) return false;
       if (q) {
-        const hay = `${p.name} ${p.flavor} ${p.effect} ${p.line} ${STRAIN_LABEL[p.strain]}`.toLowerCase();
+        const hay = `${p.name} ${p.flavor} ${p.line} ${STRAIN_LABEL[p.strain]} ${p.weight ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;

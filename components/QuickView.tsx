@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
-import { getLine, STRAIN_LABEL, getFormat } from "@/lib/data";
+import { getLine, STRAIN_LABEL, STRAIN_EFFECT, getFormat } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { formatNIO, formatUSD, DELIVERY_ETA } from "@/lib/checkout-util";
@@ -68,7 +68,7 @@ export default function QuickView() {
               <img
                 src={p.imgs[shot] ?? p.img}
                 alt={p.name}
-                className="aspect-square w-full object-cover"
+                className="aspect-square w-full object-contain p-6"
               />
             </div>
             {p.imgs.length > 1 && (
@@ -104,13 +104,13 @@ export default function QuickView() {
             </h2>
 
             <p className="mt-3 text-[15px] leading-relaxed text-ink-300">
-              {p.effect}. Perfil de sabor: {p.flavor.toLowerCase()}.
+              {STRAIN_EFFECT[p.strain]}. Perfil de sabor: {p.flavor.toLowerCase()}.
             </p>
 
             {/* Ficha */}
             <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-white/8 bg-white/8">
               {[
-                ["THC", `${p.thc}%`],
+                ...(p.weight ? [["Gramaje", p.weight] as [string, string]] : []),
                 ["Formato", getFormat(p.format).name],
                 ["Línea", getLine(p.line).name],
                 ["Cepa", STRAIN_LABEL[p.strain]],

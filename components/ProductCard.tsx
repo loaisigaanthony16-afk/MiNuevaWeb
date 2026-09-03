@@ -13,6 +13,14 @@ const STRAIN_BG: Record<Product["strain"], string> = {
   hybrid: "bg-hybrid text-white",
 };
 
+// Halo detrás del producto, del color de su línea.
+const LINE_GLOW: Record<Product["line"], string> = {
+  melted: "from-melted/16",
+  live: "from-live/12",
+  rosin: "from-rosin/16",
+  distillate: "from-distillate/16",
+};
+
 const LINE_BG: Record<Product["line"], string> = {
   melted: "bg-melted text-ink-900",
   live: "bg-live text-ink-900",
@@ -71,6 +79,10 @@ export default function ProductCard({
     >
       {/* Imagen */}
       <div className="relative aspect-[5/5.2] overflow-hidden">
+        <span
+          className={`absolute inset-0 bg-gradient-to-b ${LINE_GLOW[product.line]} via-transparent to-transparent`}
+          aria-hidden
+        />
         {!loaded && <span className="skeleton absolute inset-0" aria-hidden />}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -80,16 +92,18 @@ export default function ProductCard({
           loading="lazy"
           draggable={false}
           onLoad={() => setLoaded(true)}
-          className={`h-full w-full object-cover transition-transform duration-[900ms] ease-smooth group-hover:scale-[1.07] ${
+          className={`relative h-full w-full object-contain p-4 transition-transform duration-[900ms] ease-smooth group-hover:scale-[1.06] ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
         />
         <span className="sheen" aria-hidden />
 
-        {/* THC */}
-        <span className="absolute right-3 top-3 rounded-full border border-white/12 bg-ink-900/70 px-2.5 py-1 text-[10.5px] font-bold tabular-nums tracking-[0.06em] text-ink-100 backdrop-blur">
-          {product.thc}%
-        </span>
+        {/* Gramaje impreso en el empaque */}
+        {product.weight && (
+          <span className="absolute right-3 top-3 rounded-full border border-white/12 bg-ink-900/70 px-2.5 py-1 text-[10.5px] font-bold tabular-nums tracking-[0.06em] text-ink-100 backdrop-blur">
+            {product.weight}
+          </span>
+        )}
       </div>
 
       {/* Info */}
