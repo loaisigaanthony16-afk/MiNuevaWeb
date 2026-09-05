@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, PackageCheck, X } from "lucide-react";
+import { Check, Copy, Lock, MessageCircle, PackageCheck, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { getProduct } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import { shippingModeFor } from "@/lib/shipping";
 import Wordmark from "@/components/Wordmark";
+import { buildWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
 
 type Status = "success" | "canceled" | null;
 
@@ -31,6 +32,7 @@ export default function OrderStatus() {
   const [status, setStatus] = useState<Status>(null);
   const [ref, setRef] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
+  const [waLink, setWaLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const settled = useRef(false);
 
@@ -55,13 +57,27 @@ export default function OrderStatus() {
     if (!hydrated || !deliveryLoaded) return;
     settled.current = true;
 
-    const lines = items
+    const detailed = items
       .map((it) => {
         const p = getProduct(it.id);
-        return p ? `${it.qty}x ${p.name}` : null;
+        return p ? { qty: it.qty, name: p.name } : null;
       })
-      .filter(Boolean)
-      .join(", ");
+      .filter((l): l is { qty: number; name: string } => l !== null);
+
+    const lines = detailed.map((l) => `${l.qty}x ${l.name}`).join(", ");
+
+    // El mensaje se arma acá, en el dispositivo: es la vía por la que el
+    // comercio recibe la dirección sin que pase por ningún servidor nuestro.
+    setWaLink(
+      whatsappLink(
+        buildWhatsappMessage({
+          orderId: ref,
+          lines: detailed,
+          delivery,
+          totalUsd: items.reduce((acc, it) => acc + it.price * it.qty, 0),
+        })
+      )
+    );
 
     setSummary(
       [
@@ -147,6 +163,24 @@ export default function OrderStatus() {
               </p>
               <p className="mt-2 font-display text-[22px] font-bold tracking-tight text-gold-gradient">
                 {ref}
+              </p>
+            </div>
+          )}
+
+          {ok && waLink && (
+            <div className="mt-6">
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn w-full bg-[#25D366] text-ink-900 hover:bg-[#1fbe5a]"
+              >
+                <MessageCircle className="h-4 w-4" />
+                {t("order.whatsapp")}
+              </a>
+              <p className="mt-3 flex items-start gap-2 text-left text-[12px] leading-relaxed text-ink-500">
+                <Lock className="mt-0.5 h-3 w-3 shrink-0 text-hybrid" />
+                {t("order.whatsappBody")}
               </p>
             </div>
           )}

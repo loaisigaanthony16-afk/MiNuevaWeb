@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, ShieldCheck } from "lucide-react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import CoverageMap from "@/components/CoverageMap";
 import { ReviewSummary } from "@/components/Reviews";
@@ -58,7 +58,8 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="lede mt-8 animate-rise [animation-delay:320ms]">
+          <p className="lede-mono mt-8 animate-rise [animation-delay:320ms]">
+            <ShieldCheck className="mr-2 inline-block h-[15px] w-[15px] -translate-y-px text-gold-300" />
             {t("hero.lede")}
           </p>
 

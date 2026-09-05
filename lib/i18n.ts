@@ -36,7 +36,8 @@ const es = {
   "hero.kicker": "Extractos premium · Nicaragua",
   "hero.line1": "Pedí sin nombre.",
   "hero.line2": "Recibí sin marcas.",
-  "hero.lede": "Sin cuenta, sin perfil y en empaque neutro. Pago con tarjeta.",
+  "hero.lede":
+    "Conexión cifrada de extremo a extremo. Compra anónima y empaque neutro.",
   "hero.cta": "Ver catálogo",
   "hero.how": "Cómo funciona",
   "hero.refs": "referencias",
@@ -230,6 +231,9 @@ const es = {
   "order.step2": "Sale por",
   "order.step2Generic": "Sale hacia la dirección que nos diste.",
   "order.step3": "Te contactamos al número que dejaste para coordinar la entrega.",
+  "order.whatsapp": "Coordinar entrega por WhatsApp",
+  "order.whatsappBody":
+    "Tu información viaja cifrada de forma segura. Nos comunicaremos exclusivamente por este medio para coordinar los detalles de entrega de forma discreta.",
   "order.summary": "Resumen para coordinar tu entrega",
   "order.summaryBody":
     "Tu dirección nunca salió de este dispositivo. Copiá este bloque y enviálo por tu canal privado para que podamos despachar.",
@@ -277,7 +281,8 @@ const en: Partial<Record<Key, string>> = {
   "hero.kicker": "Premium extracts · Nicaragua",
   "hero.line1": "Order with no name.",
   "hero.line2": "Get it with no labels.",
-  "hero.lede": "No account, no profile, plain packaging. Card payment.",
+  "hero.lede":
+    "End-to-end encrypted connection. Anonymous purchase and plain packaging.",
   "hero.cta": "View catalog",
   "hero.how": "How it works",
   "hero.refs": "products",
@@ -454,6 +459,9 @@ const en: Partial<Record<Key, string>> = {
   "order.step2": "It ships via",
   "order.step2Generic": "It ships to the address you gave us.",
   "order.step3": "We contact the number you left to arrange delivery.",
+  "order.whatsapp": "Arrange delivery on WhatsApp",
+  "order.whatsappBody":
+    "Your information travels securely encrypted. We will contact you only through this channel to arrange delivery details discreetly.",
   "order.summary": "Summary to arrange your delivery",
   "order.summaryBody":
     "Your address never left this device. Copy this block and send it through your private channel so we can dispatch.",

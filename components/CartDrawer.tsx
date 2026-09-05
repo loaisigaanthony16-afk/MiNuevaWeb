@@ -103,7 +103,7 @@ export default function CartDrawer() {
 
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-[440px] animate-slideIn flex-col border-l border-white/10 bg-ink-900 shadow-pop">
         {/* Cabecera */}
-        <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/8 px-5 py-4">
           <h2 className="font-display text-[16px] font-bold uppercase tracking-[0.14em] text-ink-50">
             {t("cart.title")}
             {count > 0 && <span className="ml-2 text-ink-500">{count}</span>}
@@ -128,7 +128,7 @@ export default function CartDrawer() {
         </div>
 
         {items.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-8 py-8 text-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10">
               <ShoppingBag className="h-6 w-6 text-ink-500" />
             </span>
@@ -150,7 +150,7 @@ export default function CartDrawer() {
         ) : (
           <>
             {/* Progreso a envío gratis */}
-            <div className="border-b border-white/8 px-5 py-3.5">
+            <div className="shrink-0 border-b border-white/8 px-5 py-3.5">
               <div className="flex items-center justify-between text-[11.5px] font-semibold uppercase tracking-wide2">
                 <span className="flex items-center gap-1.5 text-ink-400">
                   <Truck className="h-3.5 w-3.5" />
@@ -171,7 +171,10 @@ export default function CartDrawer() {
             </div>
 
             {/* Artículos */}
-            <div className="no-scrollbar flex-1 overflow-y-auto">
+            {/* `min-h-0` es imprescindible: sin él, el min-height:auto del
+                hijo flex impide que la lista se encoja y el pie termina
+                tapando los productos en pantallas de escritorio. */}
+            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
               {items.map((item) => {
                 const p = getProduct(item.id);
                 if (!p) return null;
@@ -240,7 +243,7 @@ export default function CartDrawer() {
             </div>
 
             {/* Pie */}
-            <div className="border-t border-white/8 p-5">
+            <div className="max-h-[55%] shrink-0 overflow-y-auto border-t border-white/8 p-5">
               <button
                 onClick={openAddress}
                 className={`flex w-full items-start gap-3 rounded-[10px] border p-3.5 text-left transition-all duration-300 ease-smooth ${

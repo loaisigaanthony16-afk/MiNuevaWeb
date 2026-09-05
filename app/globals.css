@@ -170,6 +170,18 @@
     @apply border-transparent bg-ink-50 text-ink-900 hover:text-ink-900;
   }
 
+  /* Bajada del hero en monoespaciada: refuerza la idea de conexión
+     cifrada y contrasta con el titular display. */
+  .lede-mono {
+    @apply text-ink-300;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Liberation Mono", monospace;
+    font-size: clamp(0.8rem, 1.05vw, 0.9rem);
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+    max-width: 46ch;
+  }
+
   /* Bajada del hero: una sola idea, medida corta. */
   .lede {
     @apply text-ink-300;
