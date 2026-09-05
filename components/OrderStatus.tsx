@@ -9,7 +9,7 @@ import { useT } from "@/components/locale-context";
 import { shippingModeFor } from "@/lib/shipping";
 import Wordmark from "@/components/Wordmark";
 import { buildWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
-import { clearPendingOrder, savePendingOrder } from "@/lib/pending-order";
+import { clearPendingOrder, confirmPendingOrder } from "@/lib/pending-order";
 
 type Status = "success" | "canceled" | null;
 
@@ -79,9 +79,9 @@ export default function OrderStatus() {
     });
     setWaLink(whatsappLink(message));
 
-    // Respaldo: si cierra la pestaña sin enviarlo, el aviso reaparece en la
-    // próxima visita. El pedido ya está pagado y sin dirección no se despacha.
-    savePendingOrder(ref ?? "", message);
+    // El aviso ya se guardó al salir hacia la pasarela; volver por el
+    // success_url confirma que el cobro se completó.
+    confirmPendingOrder(ref ?? "", message);
 
     setSummary(
       [

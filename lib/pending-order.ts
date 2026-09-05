@@ -1,13 +1,16 @@
 // =====================================================================
-// Pedido pagado pendiente de coordinar.
+// Pedido pendiente de coordinar por WhatsApp.
 //
-// Como la dirección nunca sale del dispositivo, si alguien cierra la
-// pestaña sin abrir WhatsApp el pedido queda pagado y sin datos de envío.
-// Esto guarda el aviso en el navegador para poder reclamarlo cuando la
-// persona vuelva a entrar.
+// Como la dirección nunca sale del dispositivo, si alguien no nos manda sus
+// datos el pedido queda sin despachar. Este módulo guarda el aviso en el
+// navegador para poder reclamarlo cuando la persona vuelva a entrar.
 //
-// El mensaje se guarda ya armado: después del pago la bolsa se vacía, así
-// que más adelante no habría forma de reconstruir la lista de artículos.
+// CLAVE: el aviso se guarda ANTES de salir hacia la pasarela, no al volver.
+// Si esperáramos al retorno y la pasarela no redirigiera —o el cliente
+// cerrara la pestaña en la página de pago— no quedaría rastro de nada.
+//
+// El mensaje se guarda ya armado porque después del pago la bolsa se vacía
+// y más tarde no habría forma de reconstruir la lista de artículos.
 // =====================================================================
 
 export const PENDING_KEY = "pending_whatsapp_order";
@@ -15,9 +18,17 @@ export const PENDING_KEY = "pending_whatsapp_order";
 /** Evento propio para que el banner reaccione sin recargar la página. */
 export const PENDING_EVENT = "vibe:pending-changed";
 
+/**
+ * En qué punto del pago quedó.
+ * - `iniciado`: se fue a la pasarela; no sabemos si llegó a pagar.
+ * - `pagado`: volvió por el success_url, así que el cobro se completó.
+ */
+export type PendingStage = "iniciado" | "pagado";
+
 export interface PendingOrder {
-  /** Marca explícita, tal como se pidió. */
+  /** Marca explícita del pendiente. */
   pending_whatsapp_order: true;
+  stage: PendingStage;
   /** Referencia del pedido, la que ve el cliente. */
   ref: string;
   /** Mensaje de WhatsApp ya construido. */
@@ -33,10 +44,15 @@ function announce(): void {
   }
 }
 
-export function savePendingOrder(ref: string, message: string): void {
+export function savePendingOrder(
+  ref: string,
+  message: string,
+  stage: PendingStage
+): void {
   try {
     const payload: PendingOrder = {
       pending_whatsapp_order: true,
+      stage,
       ref,
       message,
       createdAt: new Date().toISOString(),
@@ -48,15 +64,33 @@ export function savePendingOrder(ref: string, message: string): void {
   }
 }
 
+/**
+ * Sube el pendiente a "pagado" conservando el mensaje ya guardado.
+ * Se usa al volver por el success_url.
+ */
+export function confirmPendingOrder(ref: string, message?: string): void {
+  const current = loadPendingOrder();
+  savePendingOrder(
+    ref || current?.ref || "",
+    message ?? current?.message ?? "",
+    "pagado"
+  );
+}
+
 export function loadPendingOrder(): PendingOrder | null {
   try {
     const raw = window.localStorage.getItem(PENDING_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PendingOrder>;
-    if (!parsed?.pending_whatsapp_order || !parsed.ref || !parsed.message) {
-      return null;
-    }
-    return parsed as PendingOrder;
+    if (!parsed?.pending_whatsapp_order || !parsed.message) return null;
+    return {
+      pending_whatsapp_order: true,
+      // Los avisos guardados antes de existir `stage` se tratan como pagados.
+      stage: parsed.stage === "iniciado" ? "iniciado" : "pagado",
+      ref: parsed.ref ?? "",
+      message: parsed.message,
+      createdAt: parsed.createdAt ?? new Date().toISOString(),
+    };
   } catch {
     return null;
   }

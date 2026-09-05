@@ -27,6 +27,8 @@ import {
 import { ReviewMini, ReviewSummary } from "@/components/Reviews";
 import { REVIEWS } from "@/lib/reviews";
 import { useT } from "@/components/locale-context";
+import { savePendingOrder } from "@/lib/pending-order";
+import { buildWhatsappMessage } from "@/lib/whatsapp";
 
 export default function CartDrawer() {
   const t = useT();
@@ -79,9 +81,27 @@ export default function CartDrawer() {
       });
       const data = (await res.json()) as {
         invoiceUrl?: string;
+        orderId?: string;
         error?: string;
       };
       if (res.ok && data.invoiceUrl) {
+        // El respaldo se guarda ANTES de salir del sitio. Si la pasarela no
+        // devuelve al cliente, el aviso ya está esperándolo acá: sin esto,
+        // un pedido pagado podría quedarse sin datos de entrega.
+        savePendingOrder(
+          data.orderId ?? "",
+          buildWhatsappMessage({
+            orderId: data.orderId ?? null,
+            lines: items.map((it) => ({
+              qty: it.qty,
+              name: getProduct(it.id)?.name ?? "",
+            })),
+            delivery,
+            totalUsd: total,
+          }),
+          "iniciado"
+        );
+
         window.location.href = data.invoiceUrl;
         return;
       }

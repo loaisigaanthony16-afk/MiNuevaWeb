@@ -239,6 +239,10 @@ const es = {
   "pending.title": "Tienes un pedido pagado pendiente de coordinar",
   "pending.body":
     "Enviá tus datos de entrega por WhatsApp para que podamos despacharlo.",
+  "pending.titleStarted": "¿Completaste tu pago?",
+  "pending.bodyStarted":
+    "Si ya pagaste, enviános tus datos de entrega por WhatsApp para que podamos despacharlo.",
+  "pending.discard": "No llegué a pagar, descartar",
   "pending.cta": "Enviar ahora",
   "order.whatsapp": "Coordinar entrega por WhatsApp",
   "order.whatsappBody":
@@ -475,6 +479,10 @@ const en: Partial<Record<Key, string>> = {
     "Don't close this window yet. If you close it without sending, we'll remind you when you return.",
   "pending.title": "You have a paid order pending",
   "pending.body": "Send your delivery details on WhatsApp so we can dispatch it.",
+  "pending.titleStarted": "Did you complete your payment?",
+  "pending.bodyStarted":
+    "If you already paid, send us your delivery details on WhatsApp so we can dispatch it.",
+  "pending.discard": "I didn't pay, dismiss",
   "pending.cta": "Send now",
   "order.whatsapp": "Arrange delivery on WhatsApp",
   "order.whatsappBody":
