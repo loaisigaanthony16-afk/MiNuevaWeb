@@ -17,6 +17,7 @@ import { getLine, getProduct } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
+import { shippingModeFor } from "@/lib/shipping";
 import {
   DELIVERY_ETA,
   FREE_SHIPPING_AT,
@@ -260,6 +261,10 @@ export default function CartDrawer() {
                       </span>
                       <span className="mt-0.5 block truncate text-[12px] text-ink-500">
                         {delivery!.address}
+                      </span>
+                      <span className="mt-1.5 block text-[11.5px] text-gold-300">
+                        {t(shippingModeFor(delivery!.region).nameKey)} ·{" "}
+                        {t(shippingModeFor(delivery!.region).etaKey)}
                       </span>
                     </>
                   ) : (

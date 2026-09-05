@@ -30,7 +30,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${outfit.variable}`}>
+    <html
+      lang="es"
+      className={`${inter.variable} ${outfit.variable}`}
+      // El script previo al pintado marca data-age en <html>; React no debe
+      // tratar ese atributo como una discrepancia de hidratación.
+      suppressHydrationWarning
+    >
       <head>
         {/* Antes del primer pintado: si ya confirmó la edad, el portal ni
             parpadea. Si no, el portal es lo primero que aparece. */}

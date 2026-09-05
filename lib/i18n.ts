@@ -153,6 +153,56 @@ const es = {
   "chat.fallback":
     "Esa no la tengo escrita. Dejala anotada y te la respondemos al confirmar tu pedido.",
 
+
+  // --- Envío ---
+  "ship.kicker": "Envío",
+  "ship.title": "Cómo llega tu pedido.",
+  "ship.body":
+    "Misma tarifa en todo el país. Lo que cambia es quién lo lleva, según tu departamento.",
+  "ship.rate": "Tarifa única",
+  "ship.rateNote": "a cualquier departamento",
+  "ship.freeTitle": "Envío gratis",
+  "ship.freeNote": "en pedidos desde",
+  "ship.packTitle": "Empaque",
+  "ship.packNote": "neutro, opaco y sellado",
+
+  "ship.directName": "Entrega directa",
+  "ship.directEta": "24 horas",
+  "ship.directCarrier": "Mensajero propio",
+  "ship.directAnon":
+    "Nuestro mensajero solo lleva tu código. No pide documento ni registra tu nombre.",
+  "ship.parcelName": "Encomienda",
+  "ship.parcelEta": "48 a 72 horas",
+  "ship.parcelCarrier": "Paquetería nacional",
+  "ship.parcelAnon":
+    "La guía va a nombre del apodo que elegiste y no declara el contenido. Se entrega en tu dirección.",
+  "ship.idWarning":
+    "Algunas paqueterías piden un documento al recibir. Si te pasa, avisanos y coordinamos otra forma.",
+
+  "ship.step1": "Elegís y pagás con tarjeta",
+  "ship.step2": "Preparamos en empaque neutro",
+  "ship.step3": "Sale con tu código, sin tu nombre",
+  "ship.step4": "Recibís en tu dirección",
+
+  "ship.modeFor": "Para",
+  "ship.yourMode": "Tu entrega",
+  "ship.carrier": "Lleva",
+  "ship.eta": "Llega en",
+  "ship.cost": "Costo",
+  "ship.regionsDirect": "Departamentos con entrega directa",
+  "ship.regionsRest": "Resto del país",
+  "ship.chooseRegion": "Elegí tu departamento para ver el tiempo de entrega.",
+
+  // --- Confianza ---
+  "trust.ssl": "Pago cifrado",
+  "trust.sslNote": "Pasarela segura, no vemos tu tarjeta",
+  "trust.noData": "Sin cuenta",
+  "trust.noDataNote": "No guardamos perfiles ni historial",
+  "trust.neutral": "Empaque neutro",
+  "trust.neutralNote": "Sin marcas ni referencias afuera",
+  "trust.support": "Respuesta rápida",
+  "trust.supportNote": "Consultá antes de comprar",
+
   // --- Pie ---
   "foot.lines": "Líneas",
   "foot.info": "Información",
@@ -297,6 +347,54 @@ const en: Partial<Record<Key, string>> = {
   "chat.send": "Send",
   "chat.fallback":
     "I don't have that one written down. Leave it here and we'll answer when you confirm your order.",
+
+
+  "ship.kicker": "Shipping",
+  "ship.title": "How your order arrives.",
+  "ship.body":
+    "One rate nationwide. What changes is who carries it, based on your department.",
+  "ship.rate": "Flat rate",
+  "ship.rateNote": "to any department",
+  "ship.freeTitle": "Free shipping",
+  "ship.freeNote": "on orders over",
+  "ship.packTitle": "Packaging",
+  "ship.packNote": "plain, opaque and sealed",
+
+  "ship.directName": "Direct delivery",
+  "ship.directEta": "24 hours",
+  "ship.directCarrier": "Our own courier",
+  "ship.directAnon":
+    "Our courier carries only your code. No ID is asked and no name is recorded.",
+  "ship.parcelName": "Parcel service",
+  "ship.parcelEta": "48 to 72 hours",
+  "ship.parcelCarrier": "National carrier",
+  "ship.parcelAnon":
+    "The waybill uses the nickname you chose and never declares the contents. Delivered to your address.",
+  "ship.idWarning":
+    "Some carriers ask for ID on delivery. If that happens, tell us and we'll arrange another way.",
+
+  "ship.step1": "You choose and pay by card",
+  "ship.step2": "We pack it plain",
+  "ship.step3": "It ships with your code, not your name",
+  "ship.step4": "It arrives at your address",
+
+  "ship.modeFor": "For",
+  "ship.yourMode": "Your delivery",
+  "ship.carrier": "Carried by",
+  "ship.eta": "Arrives in",
+  "ship.cost": "Cost",
+  "ship.regionsDirect": "Departments with direct delivery",
+  "ship.regionsRest": "Rest of the country",
+  "ship.chooseRegion": "Pick your department to see the delivery time.",
+
+  "trust.ssl": "Encrypted payment",
+  "trust.sslNote": "Secure gateway, we never see your card",
+  "trust.noData": "No account",
+  "trust.noDataNote": "We keep no profiles or history",
+  "trust.neutral": "Plain packaging",
+  "trust.neutralNote": "No branding or hints outside",
+  "trust.support": "Fast answers",
+  "trust.supportNote": "Ask before you buy",
 
   "foot.lines": "Lines",
   "foot.info": "Information",

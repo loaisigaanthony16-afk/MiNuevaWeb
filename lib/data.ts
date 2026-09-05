@@ -256,15 +256,21 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: "¿Hacen envíos a todo el país?",
-    a: "Sí, a cualquier punto del país por C$200. Gratis desde $120, y llega en 24 a 48 horas.",
+    a: "Sí, a cualquier punto del país por C$200, gratis desde $120. En los departamentos donde entregamos nosotros llega en 24 horas; al resto va por encomienda y tarda de 48 a 72.",
     qEn: "Do you ship nationwide?",
-    aEn: "Yes, anywhere in the country for C$200. Free over $120, and it arrives in 24 to 48 hours.",
+    aEn: "Yes, anywhere in the country for C$200, free over $120. Where we deliver ourselves it arrives in 24 hours; elsewhere it goes by parcel service and takes 48 to 72.",
   },
   {
     q: "¿Qué métodos de pago aceptan?",
     a: "Solo tarjeta, por pasarela segura. No aceptamos transferencia ni efectivo. En el estado de cuenta aparece un nombre neutral.",
     qEn: "Which payment methods do you accept?",
     aEn: "Card only, through a secure gateway. We do not take bank transfers or cash. Your statement shows a neutral name.",
+  },
+  {
+    q: "¿Sigue siendo anónimo si vivo en otro departamento?",
+    a: "Sí. Va por encomienda a nombre del apodo que elegiste y la guía no declara el contenido. Algunas paqueterías piden documento al recibir: si te pasa, avisanos y coordinamos otra forma.",
+    qEn: "Is it still anonymous if I live in another department?",
+    aEn: "Yes. It ships by parcel service under the nickname you chose and the waybill never declares the contents. Some carriers ask for ID on delivery: if that happens, tell us and we'll arrange another way.",
   },
   {
     q: "¿El empaque es discreto?",

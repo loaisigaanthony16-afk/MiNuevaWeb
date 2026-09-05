@@ -16,7 +16,9 @@ export const EXCHANGE_RATE = 36.8;
 export const NATIONAL_SHIPPING_NIO = 200;
 export const NATIONAL_SHIPPING = NATIONAL_SHIPPING_NIO / EXCHANGE_RATE;
 export const FREE_SHIPPING_AT = 120;
-export const DELIVERY_ETA = "24 a 48 horas";
+// Rango que cubre ambos modos de entrega. El tiempo exacto depende del
+// departamento y lo calcula lib/shipping.ts.
+export const DELIVERY_ETA = "24 a 72 horas";
 
 // ---- Formateadores bimoneda ----
 const usdFmt = new Intl.NumberFormat("en-US", {
