@@ -104,6 +104,7 @@ export async function POST(request: Request) {
 
     // Referencia del pedido, sin cuentas ni perfiles.
     const orderId = `VIBE-${Date.now().toString(36).toUpperCase()}`;
+    const cardEnabled = process.env.NOWPAYMENTS_ENABLE_CARD === "true";
     const base = siteOrigin(request);
 
     // Descripción neutra: ni PII ni nombres de producto. La pasarela solo
@@ -127,8 +128,16 @@ export async function POST(request: Request) {
         ipn_callback_url: `${base}/api/nowpayments-webhook`,
         success_url: `${base}/?success=true&ref=${orderId}`,
         cancel_url: `${base}/?canceled=true`,
-        // Habilita el pago directo con tarjeta en la pasarela.
-        buy_with_credit_card: true,
+        // Pago directo con tarjeta.
+        //
+        // ⚠️ NOWPayments responde "buy_with_credit_card is not allowed" y
+        // rechaza la factura entera si la cuenta no tiene habilitado el pago
+        // con tarjeta. Por eso va detrás de una variable de entorno: con la
+        // cuenta sin habilitar, mandarlo rompe TODOS los cobros.
+        //
+        // Activalo con NOWPAYMENTS_ENABLE_CARD=true cuando NOWPayments te
+        // confirme que tu cuenta ya acepta tarjeta.
+        ...(cardEnabled ? { buy_with_credit_card: true } : {}),
       }),
     });
 
