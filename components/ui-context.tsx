@@ -27,6 +27,11 @@ interface UiStore {
   openQuick: (id: number) => void;
   closeQuick: () => void;
 
+  // Checkout
+  checkoutOpen: boolean;
+  openCheckout: () => void;
+  closeCheckout: () => void;
+
   // Dirección de entrega
   addressOpen: boolean;
   openAddress: () => void;
@@ -50,6 +55,7 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickProduct, setQuickProduct] = useState<Product | null>(null);
   const [addressOpen, setAddressOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [delivery, setDeliveryState] = useState<DeliveryInfo | null>(null);
   const [search, setSearch] = useState("");
   const [ageVerified, setAgeVerified] = useState(false);
@@ -60,7 +66,8 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Bloquea el scroll de fondo mientras hay una capa abierta.
-  const anyOverlay = drawerOpen || addressOpen || quickProduct !== null;
+  const anyOverlay =
+    drawerOpen || addressOpen || checkoutOpen || quickProduct !== null;
   useEffect(() => {
     if (!anyOverlay) return;
     const prev = document.body.style.overflow;
@@ -76,12 +83,13 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (quickProduct) setQuickProduct(null);
+      else if (checkoutOpen) setCheckoutOpen(false);
       else if (addressOpen) setAddressOpen(false);
       else if (drawerOpen) setDrawerOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [anyOverlay, quickProduct, addressOpen, drawerOpen]);
+  }, [anyOverlay, quickProduct, checkoutOpen, addressOpen, drawerOpen]);
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
@@ -91,6 +99,11 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     if (p) setQuickProduct(p);
   }, []);
   const openAddress = useCallback(() => setAddressOpen(true), []);
+  const openCheckout = useCallback(() => {
+    setDrawerOpen(false);
+    setCheckoutOpen(true);
+  }, []);
+  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
   const closeAddress = useCallback(() => setAddressOpen(false), []);
 
   const setDelivery = useCallback((info: DeliveryInfo) => {
@@ -116,6 +129,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       quickProduct,
       openQuick,
       closeQuick,
+      checkoutOpen,
+      openCheckout,
+      closeCheckout,
       addressOpen,
       openAddress,
       closeAddress,
@@ -133,6 +149,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       quickProduct,
       openQuick,
       closeQuick,
+      checkoutOpen,
+      openCheckout,
+      closeCheckout,
       addressOpen,
       openAddress,
       closeAddress,

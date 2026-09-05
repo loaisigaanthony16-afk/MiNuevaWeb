@@ -5,6 +5,8 @@ import { StoreProvider } from "@/lib/store";
 import { UIContextProvider } from "@/components/ui-context";
 import { LocaleProvider } from "@/components/locale-context";
 import AgeGate from "@/components/AgeGate";
+import OrderStatus from "@/components/OrderStatus";
+import CheckoutModal from "@/components/CheckoutModal";
 import AddressModal from "@/components/AddressModal";
 import QuickView from "@/components/QuickView";
 import CartDrawer from "@/components/CartDrawer";
@@ -56,7 +58,9 @@ export default function RootLayout({
               <CartDrawer />
               <QuickView />
               <AddressModal />
+              <CheckoutModal />
               <AgeGate />
+              <OrderStatus />
             </UIContextProvider>
           </StoreProvider>
         </LocaleProvider>

@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import {
   CreditCard,
-  Loader2,
   Lock,
   MapPin,
   Minus,
@@ -30,7 +29,8 @@ import { useT } from "@/components/locale-context";
 
 export default function CartDrawer() {
   const t = useT();
-  const { drawerOpen, closeDrawer, openAddress, delivery } = useUi();
+  const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } =
+    useUi();
   const {
     items,
     subtotal,
@@ -44,8 +44,7 @@ export default function CartDrawer() {
     clear,
   } = useStore();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // Una reseña distinta por apertura, para que no sea siempre la misma.
   const reviewSeed = useMemo(
@@ -58,37 +57,13 @@ export default function CartDrawer() {
 
   const ready = isDeliveryComplete(delivery);
 
-  async function pay() {
-    if (!ready || !delivery) {
+  // El cobro ocurre dentro del sitio, en el modal de Stripe Elements.
+  function goToCheckout() {
+    if (!ready) {
       openAddress();
       return;
     }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          totalAmount: total,
-          shippingAmount: shipping,
-          items: items.map((it) => ({
-            id: it.id,
-            name: getProduct(it.id)?.name ?? "",
-            qty: it.qty,
-            price: it.price,
-          })),
-          delivery,
-        }),
-      });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (data.url) window.location.href = data.url;
-      else setError(data.error ?? "No se pudo iniciar el pago.");
-    } catch {
-      setError("Error de conexión con la pasarela.");
-    } finally {
-      setLoading(false);
-    }
+    openCheckout();
   }
 
   return (
@@ -311,15 +286,10 @@ export default function CartDrawer() {
               )}
 
               <button
-                onClick={pay}
-                disabled={loading}
-                className="btn-primary mt-4 w-full disabled:opacity-50"
+                onClick={goToCheckout}
+                className="btn-primary mt-4 w-full"
               >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Lock className="h-4 w-4" />
-                )}
+                <Lock className="h-4 w-4" />
                 {ready ? t("cart.pay") : t("cart.needAddress")}
               </button>
 

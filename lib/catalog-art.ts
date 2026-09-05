@@ -48,23 +48,43 @@ export const LINE_PALETTE: Record<LineId, Palette> = {
   },
 };
 
-/** Cartucho 510: cuerpo esbelto, ventana de aceite y rosca inferior. */
+/**
+ * Cartucho 510.
+ *
+ * Boquilla de cerámica, cuerpo de vidrio con el aceite visible, base de
+ * acero y rosca. Se dibuja a la misma escala y encuadre que las fotos de
+ * producto, para que ambos convivan sin que se note el salto.
+ */
 function cartridgeShape(p: Palette): string {
   return `
-  <g transform="translate(300 60)">
-    <rect x="-26" y="18" width="52" height="26" rx="9" fill="${p.metal}"/>
-    <rect x="-20" y="0" width="40" height="26" rx="12" fill="${p.body}"/>
-    <rect x="-44" y="44" width="88" height="330" rx="16" fill="${p.bodyDark}"/>
-    <rect x="-40" y="48" width="80" height="322" rx="13" fill="${p.body}"/>
-    <rect x="-27" y="66" width="54" height="286" rx="9" fill="${p.oil}" opacity="0.92"/>
-    <rect x="-27" y="66" width="18" height="286" rx="9" fill="#FFFFFF" opacity="0.16"/>
-    <rect x="-34" y="374" width="68" height="46" rx="8" fill="${p.metal}"/>
-    <g opacity="0.55" fill="${p.bodyDark}">
-      <rect x="-34" y="384" width="68" height="4"/>
-      <rect x="-34" y="394" width="68" height="4"/>
-      <rect x="-34" y="404" width="68" height="4"/>
+  <g transform="translate(300 44)">
+    <!-- Boquilla -->
+    <path d="M-17 0 h34 a7 7 0 0 1 7 7 v34 a7 7 0 0 1 -7 7 h-34 a7 7 0 0 1 -7 -7 v-34 a7 7 0 0 1 7 -7 z" fill="${p.body}"/>
+    <rect x="-24" y="34" width="48" height="9" rx="4" fill="${p.metal}"/>
+
+    <!-- Cuerpo de vidrio -->
+    <rect x="-38" y="43" width="76" height="300" rx="10" fill="${p.bodyDark}" opacity="0.5"/>
+    <rect x="-35" y="46" width="70" height="294" rx="8" fill="${p.body}" opacity="0.28"/>
+
+    <!-- Aceite -->
+    <rect x="-25" y="60" width="50" height="268" rx="6" fill="${p.oil}" opacity="0.95"/>
+    <rect x="-25" y="60" width="15" height="268" rx="6" fill="#FFFFFF" opacity="0.18"/>
+    <rect x="12" y="60" width="8" height="268" rx="4" fill="#000000" opacity="0.12"/>
+
+    <!-- Núcleo de cerámica -->
+    <rect x="-6" y="300" width="12" height="40" rx="4" fill="${p.metal}" opacity="0.7"/>
+
+    <!-- Base de acero -->
+    <path d="M-34 343 h68 v34 a10 10 0 0 1 -10 10 h-48 a10 10 0 0 1 -10 -10 z" fill="${p.metal}"/>
+    <g opacity="0.35" fill="${p.bodyDark}">
+      <rect x="-34" y="352" width="68" height="3"/>
+      <rect x="-34" y="361" width="68" height="3"/>
+      <rect x="-34" y="370" width="68" height="3"/>
     </g>
-    <rect x="-18" y="420" width="36" height="14" rx="4" fill="${p.bodyDark}"/>
+
+    <!-- Rosca 510 -->
+    <rect x="-15" y="387" width="30" height="16" rx="3" fill="${p.bodyDark}" opacity="0.85"/>
+    <rect x="-9" y="403" width="18" height="6" rx="3" fill="${p.metal}" opacity="0.6"/>
   </g>`;
 }
 

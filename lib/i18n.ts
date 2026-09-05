@@ -203,6 +203,36 @@ const es = {
   "trust.support": "Respuesta rápida",
   "trust.supportNote": "Consultá antes de comprar",
 
+  // --- Pago ---
+  "pay.kicker": "Pago seguro",
+  "pay.title": "Finalizar compra",
+  "pay.close": "Cerrar",
+  "pay.preparing": "Preparando el pago…",
+  "pay.pay": "Pagar",
+  "pay.processing": "Procesando…",
+  "pay.secure":
+    "Procesado por Stripe. Tus datos de tarjeta viajan cifrados y nunca pasan por nuestros servidores.",
+  "pay.notConfigured":
+    "La pasarela todavía no está configurada. Falta la clave publicable de Stripe.",
+  "pay.errorStart": "No se pudo iniciar el pago.",
+  "pay.errorNetwork": "Error de conexión con la pasarela.",
+  "pay.errorCard": "No se pudo confirmar el pago. Revisá los datos de tu tarjeta.",
+
+  // --- Cierre del pedido ---
+  "order.okTitle": "Pago confirmado",
+  "order.okBody":
+    "Listo. Ya estamos preparando tu pedido y sale hoy mismo en empaque neutro.",
+  "order.noTitle": "Pago cancelado",
+  "order.noBody":
+    "No se cobró nada. Tu bolsa quedó intacta por si querés retomar.",
+  "order.ref": "Tu referencia",
+  "order.step1": "Empacamos sin marcas ni referencias al contenido.",
+  "order.step2": "Sale por",
+  "order.step2Generic": "Sale hacia la dirección que nos diste.",
+  "order.step3": "Te contactamos al número que dejaste para coordinar la entrega.",
+  "order.done": "Entendido",
+  "order.retry": "Volver a la tienda",
+
   // --- Pie ---
   "foot.lines": "Líneas",
   "foot.info": "Información",
@@ -395,6 +425,33 @@ const en: Partial<Record<Key, string>> = {
   "trust.neutralNote": "No branding or hints outside",
   "trust.support": "Fast answers",
   "trust.supportNote": "Ask before you buy",
+
+  "pay.kicker": "Secure payment",
+  "pay.title": "Complete purchase",
+  "pay.close": "Close",
+  "pay.preparing": "Preparing payment…",
+  "pay.pay": "Pay",
+  "pay.processing": "Processing…",
+  "pay.secure":
+    "Processed by Stripe. Your card details are encrypted and never touch our servers.",
+  "pay.notConfigured":
+    "The gateway is not configured yet. The Stripe publishable key is missing.",
+  "pay.errorStart": "Could not start the payment.",
+  "pay.errorNetwork": "Connection error with the gateway.",
+  "pay.errorCard": "The payment could not be confirmed. Check your card details.",
+
+  "order.okTitle": "Payment confirmed",
+  "order.okBody":
+    "Done. We're preparing your order and it ships today in plain packaging.",
+  "order.noTitle": "Payment canceled",
+  "order.noBody": "Nothing was charged. Your bag is untouched if you want to resume.",
+  "order.ref": "Your reference",
+  "order.step1": "We pack it with no branding or hints about the contents.",
+  "order.step2": "It ships via",
+  "order.step2Generic": "It ships to the address you gave us.",
+  "order.step3": "We contact the number you left to arrange delivery.",
+  "order.done": "Got it",
+  "order.retry": "Back to the shop",
 
   "foot.lines": "Lines",
   "foot.info": "Information",
