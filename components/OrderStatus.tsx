@@ -9,6 +9,7 @@ import { useT } from "@/components/locale-context";
 import { shippingModeFor } from "@/lib/shipping";
 import Wordmark from "@/components/Wordmark";
 import { buildWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
+import { clearPendingOrder, savePendingOrder } from "@/lib/pending-order";
 
 type Status = "success" | "canceled" | null;
 
@@ -33,6 +34,8 @@ export default function OrderStatus() {
   const [ref, setRef] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [waLink, setWaLink] = useState<string | null>(null);
+  // El pedido no se considera coordinado hasta que se abre el chat.
+  const [sent, setSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const settled = useRef(false);
 
@@ -68,16 +71,17 @@ export default function OrderStatus() {
 
     // El mensaje se arma acá, en el dispositivo: es la vía por la que el
     // comercio recibe la dirección sin que pase por ningún servidor nuestro.
-    setWaLink(
-      whatsappLink(
-        buildWhatsappMessage({
-          orderId: ref,
-          lines: detailed,
-          delivery,
-          totalUsd: items.reduce((acc, it) => acc + it.price * it.qty, 0),
-        })
-      )
-    );
+    const message = buildWhatsappMessage({
+      orderId: ref,
+      lines: detailed,
+      delivery,
+      totalUsd: items.reduce((acc, it) => acc + it.price * it.qty, 0),
+    });
+    setWaLink(whatsappLink(message));
+
+    // Respaldo: si cierra la pestaña sin enviarlo, el aviso reaparece en la
+    // próxima visita. El pedido ya está pagado y sin dirección no se despacha.
+    savePendingOrder(ref ?? "", message);
 
     setSummary(
       [
@@ -109,6 +113,12 @@ export default function OrderStatus() {
 
   const mode = delivery?.region ? shippingModeFor(delivery.region) : null;
   const ok = status === "success";
+
+  /** Al abrir el chat el pedido ya está coordinado: se retira el aviso. */
+  function markSent() {
+    clearPendingOrder();
+    setSent(true);
+  }
 
   function copySummary() {
     if (!summary) return;
@@ -169,10 +179,17 @@ export default function OrderStatus() {
 
           {ok && waLink && (
             <div className="mt-6">
+              {/* Paso obligatorio: sin esto el pedido queda pagado y sin
+                  dirección, así que la pantalla no ofrece salida antes. */}
+              <p className="mb-3 rounded-[10px] border border-gold-400/35 bg-gold-400/[0.06] px-4 py-3 text-[12.5px] font-semibold leading-relaxed text-gold-100">
+                {t("order.required")}
+              </p>
+
               <a
                 href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={markSent}
                 className="btn w-full bg-[#25D366] text-ink-900 hover:bg-[#1fbe5a]"
               >
                 <MessageCircle className="h-4 w-4" />
@@ -226,19 +243,36 @@ export default function OrderStatus() {
             </ol>
           )}
 
-          <button
-            onClick={() => setStatus(null)}
-            className={`${ok ? "btn-gold" : "btn-primary"} mt-8 w-full`}
-          >
-            {ok ? (
-              <>
-                <PackageCheck className="h-4 w-4" />
-                {t("order.done")}
-              </>
-            ) : (
-              t("order.retry")
-            )}
-          </button>
+          {/* La salida aparece únicamente después de abrir el chat: así
+              nadie descarta la pantalla dejando el pedido sin coordinar. */}
+          {(!ok || sent) && (
+            <button
+              onClick={() => setStatus(null)}
+              className={`${ok ? "btn-gold" : "btn-primary"} mt-8 w-full`}
+            >
+              {ok ? (
+                <>
+                  <PackageCheck className="h-4 w-4" />
+                  {t("order.done")}
+                </>
+              ) : (
+                t("order.retry")
+              )}
+            </button>
+          )}
+
+          {ok && sent && (
+            <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-hybrid">
+              <Check className="h-3.5 w-3.5" />
+              {t("order.sent")}
+            </p>
+          )}
+
+          {ok && !sent && (
+            <p className="mt-6 text-[11.5px] leading-relaxed text-ink-600">
+              {t("order.keepOpen")}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -231,6 +231,15 @@ const es = {
   "order.step2": "Sale por",
   "order.step2Generic": "Sale hacia la dirección que nos diste.",
   "order.step3": "Te contactamos al número que dejaste para coordinar la entrega.",
+  "order.required":
+    "Último paso obligatorio: enviános tus datos por WhatsApp. Sin esto no podemos despachar tu pedido.",
+  "order.sent": "Datos enviados. Ya podés cerrar.",
+  "order.keepOpen":
+    "No cierres esta ventana todavía. Si la cerrás sin enviar, te lo recordaremos al volver.",
+  "pending.title": "Tienes un pedido pagado pendiente de coordinar",
+  "pending.body":
+    "Enviá tus datos de entrega por WhatsApp para que podamos despacharlo.",
+  "pending.cta": "Enviar ahora",
   "order.whatsapp": "Coordinar entrega por WhatsApp",
   "order.whatsappBody":
     "Tu información viaja cifrada de forma segura. Nos comunicaremos exclusivamente por este medio para coordinar los detalles de entrega de forma discreta.",
@@ -459,6 +468,14 @@ const en: Partial<Record<Key, string>> = {
   "order.step2": "It ships via",
   "order.step2Generic": "It ships to the address you gave us.",
   "order.step3": "We contact the number you left to arrange delivery.",
+  "order.required":
+    "Required last step: send us your details on WhatsApp. Without this we cannot dispatch your order.",
+  "order.sent": "Details sent. You can close now.",
+  "order.keepOpen":
+    "Don't close this window yet. If you close it without sending, we'll remind you when you return.",
+  "pending.title": "You have a paid order pending",
+  "pending.body": "Send your delivery details on WhatsApp so we can dispatch it.",
+  "pending.cta": "Send now",
   "order.whatsapp": "Arrange delivery on WhatsApp",
   "order.whatsappBody":
     "Your information travels securely encrypted. We will contact you only through this channel to arrange delivery details discreetly.",
