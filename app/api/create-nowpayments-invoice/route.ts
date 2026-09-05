@@ -104,6 +104,10 @@ export async function POST(request: Request) {
 
     // Referencia del pedido, sin cuentas ni perfiles.
     const orderId = `VIBE-${Date.now().toString(36).toUpperCase()}`;
+    // Pago directo con tarjeta. NOWPayments responde
+    // "buy_with_credit_card is not allowed" mientras la cuenta no lo tenga
+    // habilitado; por eso el intento va detrás de esta variable y, si falla,
+    // se cae con elegancia a la factura estándar.
     const cardEnabled = process.env.NOWPAYMENTS_ENABLE_CARD === "true";
     const base = siteOrigin(request);
 
@@ -114,39 +118,53 @@ export async function POST(request: Request) {
       units === 1 ? "artículo" : "artículos"
     }`;
 
-    const res = await fetch(NOWPAYMENTS_API, {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        price_amount: order.totalUsd,
-        price_currency: "usd",
-        order_id: orderId,
-        order_description: description,
-        ipn_callback_url: `${base}/api/nowpayments-webhook`,
-        success_url: `${base}/?success=true&ref=${orderId}`,
-        cancel_url: `${base}/?canceled=true`,
-        // Pago directo con tarjeta.
-        //
-        // ⚠️ NOWPayments responde "buy_with_credit_card is not allowed" y
-        // rechaza la factura entera si la cuenta no tiene habilitado el pago
-        // con tarjeta. Por eso va detrás de una variable de entorno: con la
-        // cuenta sin habilitar, mandarlo rompe TODOS los cobros.
-        //
-        // Activalo con NOWPAYMENTS_ENABLE_CARD=true cuando NOWPayments te
-        // confirme que tu cuenta ya acepta tarjeta.
-        ...(cardEnabled ? { buy_with_credit_card: true } : {}),
-      }),
-    });
-
-    const data = (await res.json()) as {
-      invoice_url?: string;
-      id?: string | number;
-      message?: string;
-      status?: unknown;
+    const invoicePayload = {
+      price_amount: order.totalUsd,
+      price_currency: "usd",
+      order_id: orderId,
+      order_description: description,
+      ipn_callback_url: `${base}/api/nowpayments-webhook`,
+      success_url: `${base}/?success=true&ref=${orderId}`,
+      cancel_url: `${base}/?canceled=true`,
     };
+
+    /** Una llamada a la API de facturas. */
+    async function createInvoice(withCard: boolean) {
+      const res = await fetch(NOWPAYMENTS_API, {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey as string,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          withCard
+            ? { ...invoicePayload, buy_with_credit_card: true }
+            : invoicePayload
+        ),
+      });
+      const data = (await res.json()) as {
+        invoice_url?: string;
+        id?: string | number;
+        message?: string;
+      };
+      return { res, data };
+    }
+
+    // Primer intento: con tarjeta si está pedido por configuración.
+    let { res, data } = await createInvoice(cardEnabled);
+
+    // Si NOWPayments rechaza el pedido con tarjeta (la cuenta todavía no la
+    // tiene habilitada), no se bloquea la venta: se reintenta con la factura
+    // estándar. Vender en cripto es mejor que no vender.
+    if (cardEnabled && (!res.ok || !data.invoice_url)) {
+      console.warn(
+        "NOWPayments rechazó el pago con tarjeta:",
+        res.status,
+        typeof data.message === "string" ? data.message : "sin detalle",
+        "— se reintenta con la factura estándar"
+      );
+      ({ res, data } = await createInvoice(false));
+    }
 
     if (!res.ok || !data.invoice_url) {
       // Solo el código y el mensaje: nunca la respuesta completa ni cabeceras,
