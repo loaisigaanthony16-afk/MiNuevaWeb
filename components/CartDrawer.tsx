@@ -27,7 +27,6 @@ import {
 import { ReviewMini, ReviewSummary } from "@/components/Reviews";
 import { REVIEWS } from "@/lib/reviews";
 import { useT } from "@/components/locale-context";
-import TestModeButton from "@/components/TestModeButton";
 
 export default function CartDrawer() {
   const t = useT();
@@ -146,7 +145,6 @@ export default function CartDrawer() {
             <div className="mt-10 w-full">
               <ReviewSummary className="mb-3" />
               <ReviewMini offset={reviewSeed} />
-              <TestModeButton />
             </div>
           </div>
         ) : (
@@ -334,7 +332,6 @@ export default function CartDrawer() {
                     : t("cart.pay")}
               </button>
 
-              <TestModeButton />
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[11px] text-ink-500">

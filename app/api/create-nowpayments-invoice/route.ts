@@ -58,22 +58,37 @@ function corsHeaders(request: Request): Record<string, string> {
   };
 }
 
+const isLocalUrl = (url: string) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:|$|\/)/.test(url);
+
 /**
  * Base pública del sitio, para las URLs de retorno y del IPN.
- * Fuera de local siempre se fuerza HTTPS: el IPN y el retorno no deben
- * viajar en claro aunque la configuración diga otra cosa.
+ *
+ * De aquí sale el `success_url` al que la pasarela devuelve al cliente, así
+ * que si se equivoca el cliente paga y nunca vuelve. Por eso:
+ *
+ * - Se prefiere el host real de la petición sobre NEXT_PUBLIC_SITE_URL
+ *   cuando esa variable apunta a localhost. Una copia del .env de
+ *   desarrollo en producción dejaría a todos los compradores colgados.
+ * - Fuera de local se fuerza HTTPS: ni el retorno ni el IPN deben viajar
+ *   en claro aunque la configuración diga otra cosa.
  */
 function siteOrigin(request: Request): string {
-  const raw =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    request.headers.get("origin") ??
-    (request.headers.get("host")
-      ? `https://${request.headers.get("host")}`
-      : "http://localhost:3000");
+  const host = request.headers.get("host");
+  const fromRequest =
+    request.headers.get("origin") ?? (host ? `https://${host}` : null);
 
-  const url = raw.replace(/\/$/, "");
-  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(url);
-  if (isLocal) return url;
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+
+  // Una base local solo vale si la petición también es local.
+  const configuredIsUsable =
+    configured &&
+    (!isLocalUrl(configured) || !fromRequest || isLocalUrl(fromRequest));
+
+  const url = (configuredIsUsable ? configured : fromRequest) ??
+    "http://localhost:3000";
+
+  if (isLocalUrl(url)) return url;
   return url.replace(/^http:\/\//, "https://");
 }
 
