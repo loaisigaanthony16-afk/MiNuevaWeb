@@ -27,16 +27,13 @@ interface UiStore {
   openQuick: (id: number) => void;
   closeQuick: () => void;
 
-  // Checkout
-  checkoutOpen: boolean;
-  openCheckout: () => void;
-  closeCheckout: () => void;
-
   // Dirección de entrega
   addressOpen: boolean;
   openAddress: () => void;
   closeAddress: () => void;
   delivery: DeliveryInfo | null;
+  /** true cuando ya se leyó la dirección guardada en el navegador. */
+  deliveryLoaded: boolean;
   setDelivery: (info: DeliveryInfo) => void;
 
   // Búsqueda
@@ -55,19 +52,19 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickProduct, setQuickProduct] = useState<Product | null>(null);
   const [addressOpen, setAddressOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [delivery, setDeliveryState] = useState<DeliveryInfo | null>(null);
+  const [deliveryLoaded, setDeliveryLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [ageVerified, setAgeVerified] = useState(false);
 
   // Rehidratación tras el montaje (nunca durante el render).
   useEffect(() => {
     setDeliveryState(loadDelivery());
+    setDeliveryLoaded(true);
   }, []);
 
   // Bloquea el scroll de fondo mientras hay una capa abierta.
-  const anyOverlay =
-    drawerOpen || addressOpen || checkoutOpen || quickProduct !== null;
+  const anyOverlay = drawerOpen || addressOpen || quickProduct !== null;
   useEffect(() => {
     if (!anyOverlay) return;
     const prev = document.body.style.overflow;
@@ -83,13 +80,12 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (quickProduct) setQuickProduct(null);
-      else if (checkoutOpen) setCheckoutOpen(false);
       else if (addressOpen) setAddressOpen(false);
       else if (drawerOpen) setDrawerOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [anyOverlay, quickProduct, checkoutOpen, addressOpen, drawerOpen]);
+  }, [anyOverlay, quickProduct, addressOpen, drawerOpen]);
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
@@ -99,11 +95,6 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     if (p) setQuickProduct(p);
   }, []);
   const openAddress = useCallback(() => setAddressOpen(true), []);
-  const openCheckout = useCallback(() => {
-    setDrawerOpen(false);
-    setCheckoutOpen(true);
-  }, []);
-  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
   const closeAddress = useCallback(() => setAddressOpen(false), []);
 
   const setDelivery = useCallback((info: DeliveryInfo) => {
@@ -129,13 +120,11 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       quickProduct,
       openQuick,
       closeQuick,
-      checkoutOpen,
-      openCheckout,
-      closeCheckout,
       addressOpen,
       openAddress,
       closeAddress,
       delivery,
+      deliveryLoaded,
       setDelivery,
       search,
       setSearch,
@@ -149,13 +138,11 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       quickProduct,
       openQuick,
       closeQuick,
-      checkoutOpen,
-      openCheckout,
-      closeCheckout,
       addressOpen,
       openAddress,
       closeAddress,
       delivery,
+      deliveryLoaded,
       setDelivery,
       search,
       ageVerified,

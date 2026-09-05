@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, PackageCheck, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Copy, PackageCheck, X } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { getProduct } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import { shippingModeFor } from "@/lib/shipping";
@@ -13,35 +14,71 @@ type Status = "success" | "canceled" | null;
 /**
  * Cierre del pedido.
  *
- * Stripe devuelve a `/?success=true` o `/?canceled=true`. Sin esto la
- * persona caía en la portada sin saber si su pago pasó y con la bolsa aún
- * llena. Al confirmar, vaciamos la bolsa y limpiamos la URL.
+ * La pasarela devuelve a `/?success=true&ref=…` o `/?canceled=true`. Sin
+ * esto la persona caía en la portada sin saber si su pago pasó y con la
+ * bolsa aún llena.
+ *
+ * El resumen de entrega se arma acá, en el dispositivo, con lo que ya
+ * estaba guardado en el navegador: la dirección nunca pasó por el servidor
+ * ni por la pasarela, así que esta es la vía por la que el comercio la
+ * recibe.
  */
 export default function OrderStatus() {
   const t = useT();
-  const { clear } = useStore();
-  const { delivery } = useUi();
+  const { items, clear, hydrated } = useStore();
+  const { delivery, deliveryLoaded } = useUi();
+
   const [status, setStatus] = useState<Status>(null);
   const [ref, setRef] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const settled = useRef(false);
 
+  // 1) Al montar: leer el resultado de la URL y dejarla limpia.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ok = params.get("success") === "true";
     const no = params.get("canceled") === "true";
     if (!ok && !no) return;
 
-    if (ok) {
-      // El pago se completó: la bolsa ya no debe seguir llena.
-      clear();
-      const session = params.get("ref");
-      if (session) setRef(session.slice(-8).toUpperCase());
-    }
+    if (ok) setRef(params.get("ref"));
     setStatus(ok ? "success" : "canceled");
 
-    // La URL vuelve a quedar limpia para que recargar no repita el aviso.
+    // Recargar no debe repetir el aviso.
     window.history.replaceState({}, "", window.location.pathname);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 2) Ya rehidratado el navegador: armar el resumen y vaciar la bolsa.
+  //    Antes de esto, `items` y `delivery` todavía están vacíos.
+  useEffect(() => {
+    if (status !== "success" || settled.current) return;
+    if (!hydrated || !deliveryLoaded) return;
+    settled.current = true;
+
+    const lines = items
+      .map((it) => {
+        const p = getProduct(it.id);
+        return p ? `${it.qty}x ${p.name}` : null;
+      })
+      .filter(Boolean)
+      .join(", ");
+
+    setSummary(
+      [
+        ref ? `Pedido: ${ref}` : "",
+        lines ? `Artículos: ${lines}` : "",
+        delivery ? `Recibe: ${delivery.alias}` : "",
+        delivery ? `Tel: ${delivery.phone}` : "",
+        delivery ? `Zona: ${delivery.region}` : "",
+        delivery ? `Dirección: ${delivery.address}` : "",
+        delivery?.notes ? `Referencias: ${delivery.notes}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n")
+    );
+
+    clear();
+  }, [status, hydrated, deliveryLoaded, items, delivery, ref, clear]);
 
   useEffect(() => {
     if (!status) return;
@@ -57,9 +94,20 @@ export default function OrderStatus() {
   const mode = delivery?.region ? shippingModeFor(delivery.region) : null;
   const ok = status === "success";
 
+  function copySummary() {
+    if (!summary) return;
+    try {
+      void navigator.clipboard?.writeText(summary);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* noop */
+    }
+  }
+
   return (
     <div
-      className="fixed inset-0 z-[120] grid place-items-center bg-ink-950/95 backdrop-blur-md fade-overlay"
+      className="fixed inset-0 z-[120] grid place-items-center overflow-y-auto bg-ink-950/95 py-10 backdrop-blur-md fade-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={ok ? t("order.okTitle") : t("order.noTitle")}
@@ -97,9 +145,31 @@ export default function OrderStatus() {
               <p className="text-[10px] font-semibold uppercase tracking-wide3 text-ink-500">
                 {t("order.ref")}
               </p>
-              <p className="mt-2 font-display text-[24px] font-bold tabular-nums tracking-tight text-gold-gradient">
+              <p className="mt-2 font-display text-[22px] font-bold tracking-tight text-gold-gradient">
                 {ref}
               </p>
+            </div>
+          )}
+
+          {ok && summary && (
+            <div className="mt-4 rounded-card border border-white/10 bg-white/[0.02] p-4 text-left">
+              <p className="text-[10px] font-semibold uppercase tracking-wide3 text-ink-500">
+                {t("order.summary")}
+              </p>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-400">
+                {t("order.summaryBody")}
+              </p>
+              <pre className="mt-3 max-h-36 overflow-y-auto whitespace-pre-wrap break-words rounded-[8px] bg-ink-950 p-3 font-mono text-[11px] leading-relaxed text-ink-300">
+                {summary}
+              </pre>
+              <button onClick={copySummary} className="btn-ghost mt-3 w-full">
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                {copied ? t("order.copied") : t("order.copy")}
+              </button>
             </div>
           )}
 

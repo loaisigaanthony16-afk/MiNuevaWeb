@@ -211,9 +211,9 @@ const es = {
   "pay.pay": "Pagar",
   "pay.processing": "Procesando…",
   "pay.secure":
-    "Procesado por Stripe. Tus datos de tarjeta viajan cifrados y nunca pasan por nuestros servidores.",
+    "Procesado por NOWPayments. Tus datos de pago viajan cifrados y nunca pasan por nuestros servidores.",
   "pay.notConfigured":
-    "La pasarela todavía no está configurada. Falta la clave publicable de Stripe.",
+    "La pasarela todavía no está configurada.",
   "pay.errorStart": "No se pudo iniciar el pago.",
   "pay.errorNetwork": "Error de conexión con la pasarela.",
   "pay.errorCard": "No se pudo confirmar el pago. Revisá los datos de tu tarjeta.",
@@ -230,6 +230,11 @@ const es = {
   "order.step2": "Sale por",
   "order.step2Generic": "Sale hacia la dirección que nos diste.",
   "order.step3": "Te contactamos al número que dejaste para coordinar la entrega.",
+  "order.summary": "Resumen para coordinar tu entrega",
+  "order.summaryBody":
+    "Tu dirección nunca salió de este dispositivo. Copiá este bloque y enviálo por tu canal privado para que podamos despachar.",
+  "order.copy": "Copiar resumen",
+  "order.copied": "Copiado",
   "order.done": "Entendido",
   "order.retry": "Volver a la tienda",
 
@@ -433,9 +438,8 @@ const en: Partial<Record<Key, string>> = {
   "pay.pay": "Pay",
   "pay.processing": "Processing…",
   "pay.secure":
-    "Processed by Stripe. Your card details are encrypted and never touch our servers.",
-  "pay.notConfigured":
-    "The gateway is not configured yet. The Stripe publishable key is missing.",
+    "Processed by NOWPayments. Your payment details are encrypted and never touch our servers.",
+  "pay.notConfigured": "The gateway is not configured yet.",
   "pay.errorStart": "Could not start the payment.",
   "pay.errorNetwork": "Connection error with the gateway.",
   "pay.errorCard": "The payment could not be confirmed. Check your card details.",
@@ -450,6 +454,11 @@ const en: Partial<Record<Key, string>> = {
   "order.step2": "It ships via",
   "order.step2Generic": "It ships to the address you gave us.",
   "order.step3": "We contact the number you left to arrange delivery.",
+  "order.summary": "Summary to arrange your delivery",
+  "order.summaryBody":
+    "Your address never left this device. Copy this block and send it through your private channel so we can dispatch.",
+  "order.copy": "Copy summary",
+  "order.copied": "Copied",
   "order.done": "Got it",
   "order.retry": "Back to the shop",
 

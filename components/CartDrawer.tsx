@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   CreditCard,
+  Loader2,
   Lock,
   MapPin,
   Minus,
@@ -29,8 +30,7 @@ import { useT } from "@/components/locale-context";
 
 export default function CartDrawer() {
   const t = useT();
-  const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } =
-    useUi();
+  const { drawerOpen, closeDrawer, openAddress, delivery } = useUi();
   const {
     items,
     subtotal,
@@ -44,7 +44,8 @@ export default function CartDrawer() {
     clear,
   } = useStore();
 
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Una reseña distinta por apertura, para que no sea siempre la misma.
   const reviewSeed = useMemo(
@@ -57,13 +58,39 @@ export default function CartDrawer() {
 
   const ready = isDeliveryComplete(delivery);
 
-  // El cobro ocurre dentro del sitio, en el modal de Stripe Elements.
-  function goToCheckout() {
-    if (!ready) {
+  // Pide la factura al servidor y manda a la pasarela de NOWPayments.
+  async function goToCheckout() {
+    if (!ready || !delivery) {
       openAddress();
       return;
     }
-    openCheckout();
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/create-nowpayments-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // Solo id y cantidad. Ni el precio ni la dirección salen del
+          // navegador: el precio lo pone el servidor y la dirección se
+          // queda en este dispositivo.
+          items: items.map((it) => ({ id: it.id, qty: it.qty })),
+        }),
+      });
+      const data = (await res.json()) as {
+        invoiceUrl?: string;
+        error?: string;
+      };
+      if (res.ok && data.invoiceUrl) {
+        window.location.href = data.invoiceUrl;
+        return;
+      }
+      setError(data.error ?? t("pay.errorStart"));
+    } catch {
+      setError(t("pay.errorNetwork"));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -287,10 +314,19 @@ export default function CartDrawer() {
 
               <button
                 onClick={goToCheckout}
-                className="btn-primary mt-4 w-full"
+                disabled={loading}
+                className="btn-primary mt-4 w-full disabled:opacity-50"
               >
-                <Lock className="h-4 w-4" />
-                {ready ? t("cart.pay") : t("cart.needAddress")}
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
+                {!ready
+                  ? t("cart.needAddress")
+                  : loading
+                    ? t("pay.processing")
+                    : t("cart.pay")}
               </button>
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

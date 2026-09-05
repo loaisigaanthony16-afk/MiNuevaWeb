@@ -28,7 +28,7 @@ export interface PricedOrder {
   subtotalUsd: number;
   shippingUsd: number;
   totalUsd: number;
-  /** Total en centavos, que es lo que Stripe cobra. */
+  /** Total en la unidad mínima de la moneda (centavos). */
   amountInCents: number;
 }
 
@@ -96,7 +96,7 @@ export function priceOrder(input: unknown): PricedOrder {
   };
 }
 
-/** Resumen corto del pedido, para la metadata de Stripe. */
+/** Resumen corto del pedido, para la descripción de la factura. */
 export function summarize(order: PricedOrder): string {
   return order.lines.map((l) => `${l.qty}x ${l.name}`).join(", ");
 }

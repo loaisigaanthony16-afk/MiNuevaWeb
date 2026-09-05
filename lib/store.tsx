@@ -19,6 +19,8 @@ export interface CartItem {
 }
 
 interface Store {
+  /** true cuando ya se leyó la bolsa guardada en el navegador. */
+  hydrated: boolean;
   count: number;
   items: CartItem[];
   subtotal: number;
@@ -52,12 +54,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // y rehidratamos desde localStorage una vez montados.
   const [items, setItems] = useState<CartItem[]>([]);
   const hydrated = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     if (hydrated.current) return;
     hydrated.current = true;
     const stored = loadCart();
     if (stored.length) setItems(stored);
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -110,6 +114,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const missingForFree = Math.max(0, FREE_SHIPPING_AT - subtotal);
 
     return {
+      hydrated: isHydrated,
       count,
       items,
       subtotal,
@@ -123,7 +128,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       remove: (id: number) => setItems((prev) => prev.filter((it) => it.id !== id)),
       clear: () => setItems([]),
     };
-  }, [items]);
+  }, [items, isHydrated]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
