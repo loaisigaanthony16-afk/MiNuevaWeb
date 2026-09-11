@@ -7,7 +7,6 @@ import {
   LINES,
   STRAIN_LABEL,
   products,
-  type FormatId,
   type LineId,
   type Product,
   type Strain,
@@ -30,10 +29,15 @@ const LINE_ACCENT: Record<LineId, string> = {
 
 export default function Catalog() {
   const t = useT();
-  const { search, setSearch } = useUi();
-  const [format, setFormat] = useState<FormatId>("aio");
+  const {
+    search,
+    setSearch,
+    catalogFormat: format,
+    setCatalogFormat: setFormat,
+    catalogLine: line,
+    setCatalogLine: setLine,
+  } = useUi();
   const [strain, setStrain] = useState<StrainFilter>("all");
-  const [line, setLine] = useState<"all" | LineId>("all");
 
   const q = useDeferredValue(search.trim().toLowerCase());
   const searching = q.length > 0;
@@ -66,7 +70,7 @@ export default function Catalog() {
   const activeFormat = FORMATS.find((f) => f.id === format) ?? FORMATS[0];
 
   return (
-    <section id="catalogo" className="scroll-mt-[76px] pb-24">
+    <section id="catalogo" className="scroll-mt-[var(--nav-min)] pb-24">
       {/* Cabecera del formato */}
       {!searching && (
         <div className="container-page pt-20">
@@ -81,7 +85,7 @@ export default function Catalog() {
       )}
 
       {/* Controles */}
-      <div className="sticky top-[76px] z-30 mt-10 border-y border-white/8 glass">
+      <div className="sticky top-[var(--nav-h)] z-30 transition-[top] duration-500 ease-smooth mt-10 border-y border-white/8 glass">
         <div className="container-page flex flex-wrap items-center gap-x-6 gap-y-3 py-3.5">
           {/* Formato */}
           {!searching && (

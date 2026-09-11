@@ -1,28 +1,157 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MapPin, Search, ShoppingBag, X } from "lucide-react";
 import Wordmark from "@/components/Wordmark";
 import { useStore } from "@/lib/store";
 import { useLocale } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
+import { scrollToSection } from "@/lib/scroll";
+import type { FormatId } from "@/lib/data";
+import type { Key } from "@/lib/i18n";
+
+interface MenuItem {
+  key: Key;
+  /** Sección a la que lleva. */
+  target: string;
+  /** Si lleva al catálogo, con qué formato. */
+  format?: FormatId;
+}
+
+const MENU: MenuItem[] = [
+  { key: "menu.home", target: "top" },
+  { key: "menu.collections", target: "colecciones" },
+  { key: "menu.aio", target: "catalogo", format: "aio" },
+  { key: "menu.cart", target: "catalogo", format: "cart" },
+  { key: "menu.shipping", target: "envios" },
+  { key: "menu.reviews", target: "resenas" },
+  { key: "menu.faq", target: "faq" },
+];
+
+// Orden en que aparecen en la página, para saber dónde está la persona.
+const SPY = ["colecciones", "catalogo", "envios", "resenas", "faq"];
+
+// Alto fijo de la fila de categorías. Es fijo a propósito: la fila flota
+// sobre el contenido y un espaciador con este mismo alto la compensa, así
+// plegarla nunca empuja la página.
+const MENU_ROW_H = 46;
+
+// useLayoutEffect avisa en el servidor; ahí no hay nada que medir.
+const useIsoLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export default function Navbar() {
   const { count } = useStore();
   const { locale, setLocale, t } = useLocale();
-  const { openDrawer, openAddress, delivery, search, setSearch } = useUi();
+  const {
+    openDrawer,
+    openAddress,
+    delivery,
+    search,
+    setSearch,
+    browse,
+    catalogFormat,
+  } = useUi();
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // La fila de categorías se pliega al bajar y vuelve al subir.
+  const [rowHidden, setRowHidden] = useState(false);
+  const [section, setSection] = useState<string>("top");
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [ink, setInk] = useState<{ x: number; w: number } | null>(null);
   const prevCount = useRef(count);
   const inputRef = useRef<HTMLInputElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Scroll: sombra de la barra, pliegue de la fila y sección actual.
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const y = window.scrollY;
+      setScrolled(y > 12);
+
+      if (y < 180) setRowHidden(false);
+      else if (y > lastY + 6) setRowHidden(true);
+      else if (y < lastY - 6) setRowHidden(false);
+      lastY = y;
+
+      // La sección activa es la última cuyo inicio ya pasó bajo la barra.
+      const line = (headerRef.current?.offsetHeight ?? 76) + 80;
+      let current = "top";
+      for (const id of SPY) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= line) current = id;
+      }
+      setSection(current);
+    }
+
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  // Publica las alturas de la barra para el resto de la página: el
+  // catálogo fija sus filtros justo debajo y los saltos las descuentan.
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const root = document.documentElement.style;
+    const min = header.offsetHeight;
+    root.setProperty("--nav-min", `${min}px`);
+    root.setProperty("--nav-full", `${min + MENU_ROW_H}px`);
+    root.setProperty("--nav-h", `${rowHidden ? min : min + MENU_ROW_H}px`);
+  }, [rowHidden]);
+
+  const activeIndex = (() => {
+    if (section === "catalogo") return catalogFormat === "cart" ? 3 : 2;
+    const i = MENU.findIndex((m) => m.target === section && !m.format);
+    return i === -1 ? 0 : i;
+  })();
+
+  // Coloca el indicador bajo la opción señalada (o la activa).
+  const placeInk = useCallback(() => {
+    const el = itemRefs.current[hovered ?? activeIndex];
+    if (!el) return;
+    setInk({ x: el.offsetLeft, w: el.offsetWidth });
+  }, [hovered, activeIndex]);
+
+  useIsoLayoutEffect(() => {
+    placeInk();
+  }, [placeInk, locale]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", placeInk);
+    return () => window.removeEventListener("resize", placeInk);
+  }, [placeInk]);
+
+  // En móvil la fila se desliza: la opción activa siempre queda a la vista.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    const el = itemRefs.current[activeIndex];
+    if (!scroller || !el) return;
+    const left = el.offsetLeft;
+    const right = left + el.offsetWidth;
+    if (left < scroller.scrollLeft || right > scroller.scrollLeft + scroller.clientWidth) {
+      scroller.scrollTo({ left: Math.max(0, left - 24), behavior: "smooth" });
+    }
+  }, [activeIndex]);
+
+  function go(item: MenuItem) {
+    if (item.format) browse({ format: item.format, line: "all" });
+    else scrollToSection(item.target);
+  }
 
   // La bolsa reacciona cuando sube el contador.
   useEffect(() => {
@@ -51,13 +180,15 @@ export default function Navbar() {
   const hasAddress = isDeliveryComplete(delivery);
 
   function goSearch() {
-    document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" });
+    scrollToSection("catalogo");
   }
 
   return (
+    <>
     <header
-      className={`sticky top-0 z-40 w-full transition-all duration-500 ease-smooth ${
-        scrolled ? "glass border-b border-white/8" : "border-b border-transparent"
+      ref={headerRef}
+      className={`sticky top-0 z-40 w-full border-b transition-colors duration-500 ease-smooth ${
+        scrolled ? "glass border-white/8" : "border-white/[0.05] bg-ink-900/40"
       }`}
     >
       <div className="container-page flex h-[76px] items-center gap-3 sm:gap-5">
@@ -161,6 +292,55 @@ export default function Navbar() {
           )}
         </button>
       </div>
+
+      {/* Fila de categorías */}
+      <nav
+        aria-label={t("menu.label")}
+        className={`nav-row border-b border-white/[0.06] ${
+          scrolled ? "glass" : "bg-ink-900/40 backdrop-blur-md"
+        }`}
+        style={{ height: MENU_ROW_H }}
+        data-hidden={rowHidden}
+        aria-hidden={rowHidden || undefined}
+      >
+        <div ref={scrollerRef} className="container-page h-full overflow-x-auto no-scrollbar">
+          <ul
+            className="relative mx-auto flex h-full w-max items-center gap-1 lg:gap-3"
+              onMouseLeave={() => setHovered(null)}
+            >
+              {MENU.map((item, i) => (
+                <li key={item.key}>
+                  <button
+                    ref={(el) => {
+                      itemRefs.current[i] = el;
+                    }}
+                    onClick={() => go(item)}
+                    tabIndex={rowHidden ? -1 : undefined}
+                    onMouseEnter={() => setHovered(i)}
+                    aria-current={i === activeIndex ? "true" : undefined}
+                    className={`relative whitespace-nowrap px-3 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.14em] transition-colors duration-300 ${
+                      i === activeIndex ? "text-ink-50" : "text-ink-400 hover:text-ink-100"
+                    }`}
+                  >
+                    {t(item.key)}
+                  </button>
+                </li>
+              ))}
+
+              {/* Indicador que se desliza entre opciones */}
+              {ink && (
+                <span
+                  aria-hidden
+                  className="menu-ink pointer-events-none absolute bottom-1 left-0 h-[2px] rounded-full bg-gold-400"
+                  style={{ transform: `translateX(${ink.x}px)`, width: ink.w }}
+                />
+              )}
+          </ul>
+        </div>
+      </nav>
     </header>
+    {/* Reserva el lugar de la fila de categorías en lo alto de la página */}
+    <div aria-hidden style={{ height: MENU_ROW_H }} />
+    </>
   );
 }

@@ -97,7 +97,7 @@ export default function Assistant() {
   const busy = typing || partial !== null;
 
   return (
-    <section id="faq" className="scroll-mt-[76px] border-t border-white/8 py-24">
+    <section id="faq" className="scroll-mt-[var(--nav-min)] border-t border-white/8 py-24">
       <div className="container-page grid gap-14 lg:grid-cols-[0.7fr_1.3fr]">
         <div className="reveal lg:sticky lg:top-28 lg:self-start">
           <p className="kicker">

@@ -15,7 +15,7 @@ export default function PrivacySection() {
   useReveal([]);
 
   return (
-    <section id="privacidad" className="scroll-mt-[76px] border-t border-white/8 py-24">
+    <section id="privacidad" className="scroll-mt-[var(--nav-min)] border-t border-white/8 py-24">
       <div className="container-page">
         <div className="reveal max-w-2xl">
           <p className="kicker">

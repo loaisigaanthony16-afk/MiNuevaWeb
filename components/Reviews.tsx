@@ -123,7 +123,7 @@ export default function Reviews() {
   const bottom = REVIEWS.slice(5);
 
   return (
-    <section id="resenas" className="scroll-mt-[76px] overflow-hidden border-t border-white/8 py-24">
+    <section id="resenas" className="scroll-mt-[var(--nav-min)] overflow-hidden border-t border-white/8 py-24">
       <div className="container-page reveal flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="kicker">

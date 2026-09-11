@@ -41,6 +41,53 @@ const es = {
   "hero.cta": "Ver catálogo",
   "hero.how": "Cómo funciona",
   "hero.refs": "referencias",
+  "hero.scroll": "Deslizá",
+
+  // --- Barra de anuncios ---
+  "ann.free": "Envío gratis desde $120",
+  "ann.national": "Envío nacional C$200",
+  "ann.eta": "Entrega en 24 a 72 horas",
+  "ann.neutral": "Empaque neutro y sellado",
+  "ann.whatsapp": "Coordinación discreta por WhatsApp",
+
+  // --- Menú de categorías ---
+  "menu.label": "Secciones",
+  "menu.home": "Inicio",
+  "menu.collections": "Colecciones",
+  "menu.aio": "All-in-one",
+  "menu.cart": "Cartuchos 510",
+  "menu.shipping": "Envíos",
+  "menu.reviews": "Reseñas",
+  "menu.faq": "Preguntas",
+
+  // --- Barra de servicio ---
+  "svc.pay": "Pago",
+  "svc.payStrong": "100% cifrado",
+  "svc.ship": "Envío nacional",
+  "svc.shipStrong": "24 a 72 h",
+  "svc.human": "Atención humana",
+  "svc.humanStrong": "por WhatsApp",
+  "svc.neutral": "Empaque",
+  "svc.neutralStrong": "sin marcas",
+
+  // --- Colecciones ---
+  "col.kicker": "Explorá por categoría",
+  "col.title": "Colecciones principales",
+  "col.body": "Cuatro extractos, dos formatos. Tocá una colección y te llevamos directo.",
+  "col.from": "Desde",
+  "col.refs": "referencias",
+  "col.view": "Ver colección",
+  "col.formats": "Por formato",
+  "col.aioNote": "Recargable y listo para usar",
+  "col.cartNote": "Rosca universal 510",
+  "col.lines": "Nuestras líneas",
+
+  // --- Selección ---
+  "feat.kicker": "Para empezar",
+  "feat.title": "Lo esencial de cada línea.",
+  "feat.body": "Si es tu primera vez, empezá por acá: dos de cada extracto para comparar.",
+  "feat.prev": "Anterior",
+  "feat.next": "Siguiente",
 
   // --- Cobertura ---
   "cover.kicker": "Todo el territorio nacional",
@@ -299,6 +346,48 @@ const en: Partial<Record<Key, string>> = {
   "hero.cta": "View catalog",
   "hero.how": "How it works",
   "hero.refs": "products",
+  "hero.scroll": "Scroll",
+
+  "ann.free": "Free shipping from $120",
+  "ann.national": "Nationwide shipping C$200",
+  "ann.eta": "Delivery in 24 to 72 hours",
+  "ann.neutral": "Plain, sealed packaging",
+  "ann.whatsapp": "Discreet coordination on WhatsApp",
+
+  "menu.label": "Sections",
+  "menu.home": "Home",
+  "menu.collections": "Collections",
+  "menu.aio": "All-in-one",
+  "menu.cart": "510 Carts",
+  "menu.shipping": "Shipping",
+  "menu.reviews": "Reviews",
+  "menu.faq": "Questions",
+
+  "svc.pay": "Payment",
+  "svc.payStrong": "100% encrypted",
+  "svc.ship": "Nationwide",
+  "svc.shipStrong": "24 to 72 h",
+  "svc.human": "Real people",
+  "svc.humanStrong": "on WhatsApp",
+  "svc.neutral": "Packaging",
+  "svc.neutralStrong": "unbranded",
+
+  "col.kicker": "Browse by category",
+  "col.title": "Main collections",
+  "col.body": "Four extracts, two formats. Tap a collection and we take you straight there.",
+  "col.from": "From",
+  "col.refs": "products",
+  "col.view": "View collection",
+  "col.formats": "By format",
+  "col.aioNote": "Rechargeable, ready to use",
+  "col.cartNote": "Universal 510 thread",
+  "col.lines": "Our lines",
+
+  "feat.kicker": "Start here",
+  "feat.title": "The essentials of each line.",
+  "feat.body": "First time? Start here: two from each extract to compare.",
+  "feat.prev": "Previous",
+  "feat.next": "Next",
 
   "cover.kicker": "Nationwide coverage",
   "cover.delivery": "Delivery",

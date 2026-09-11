@@ -9,7 +9,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getProduct, type Product } from "@/lib/data";
+import {
+  getProduct,
+  type FormatId,
+  type LineId,
+  type Product,
+} from "@/lib/data";
+import { scrollToSection } from "@/lib/scroll";
 import {
   loadDelivery,
   saveDelivery,
@@ -40,6 +46,15 @@ interface UiStore {
   search: string;
   setSearch: (v: string) => void;
 
+  // Filtros del catálogo. Viven acá para que el menú y las colecciones
+  // puedan llevar al catálogo ya filtrado.
+  catalogFormat: FormatId;
+  setCatalogFormat: (f: FormatId) => void;
+  catalogLine: "all" | LineId;
+  setCatalogLine: (l: "all" | LineId) => void;
+  /** Aplica el filtro, limpia la búsqueda y baja hasta el catálogo. */
+  browse: (opts: { format?: FormatId; line?: "all" | LineId }) => void;
+
   // Edad
   ageVerified: boolean;
   passAge: () => void;
@@ -55,6 +70,8 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   const [delivery, setDeliveryState] = useState<DeliveryInfo | null>(null);
   const [deliveryLoaded, setDeliveryLoaded] = useState(false);
   const [search, setSearch] = useState("");
+  const [catalogFormat, setCatalogFormat] = useState<FormatId>("aio");
+  const [catalogLine, setCatalogLine] = useState<"all" | LineId>("all");
   const [ageVerified, setAgeVerified] = useState(false);
 
   // Rehidratación tras el montaje (nunca durante el render).
@@ -102,6 +119,17 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     saveDelivery(info);
   }, []);
 
+  const browse = useCallback(
+    ({ format, line }: { format?: FormatId; line?: "all" | LineId }) => {
+      if (format) setCatalogFormat(format);
+      if (line) setCatalogLine(line);
+      setSearch("");
+      // Tras pintar el filtro, para medir la sección ya actualizada.
+      window.requestAnimationFrame(() => scrollToSection("catalogo"));
+    },
+    []
+  );
+
   const passAge = useCallback(() => {
     setAgeVerified(true);
     try {
@@ -128,6 +156,11 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       setDelivery,
       search,
       setSearch,
+      catalogFormat,
+      setCatalogFormat,
+      catalogLine,
+      setCatalogLine,
+      browse,
       ageVerified,
       passAge,
     }),
@@ -145,6 +178,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       deliveryLoaded,
       setDelivery,
       search,
+      catalogFormat,
+      catalogLine,
+      browse,
       ageVerified,
       passAge,
     ]

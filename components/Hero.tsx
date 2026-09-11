@@ -1,159 +1,154 @@
 "use client";
 
+import { useRef } from "react";
 import { ArrowDown, ShieldCheck } from "lucide-react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
-import CoverageMap from "@/components/CoverageMap";
 import { ReviewSummary } from "@/components/Reviews";
 import { useT } from "@/components/locale-context";
-import { countByLine, LINES } from "@/lib/data";
-import {
-  DELIVERY_ETA,
-  FREE_SHIPPING_AT,
-  NATIONAL_SHIPPING_NIO,
-} from "@/lib/checkout-util";
+import { products } from "@/lib/data";
+import { scrollToSection } from "@/lib/scroll";
 
-const MARQUEE = [
-  "tick.shipping",
-  "tick.anon",
-  "tick.packaging",
-  "tick.original",
-  "tick.card",
-] as const;
+// Tres productos reales de líneas distintas para la vitrina.
+const SHOWCASE = ["Lemon Cherry Gelato", "Golden Papaya", "Mimosa"]
+  .map((name) => products.find((p) => p.name === name))
+  .filter((p): p is (typeof products)[number] => Boolean(p));
 
-const LINE_DOT: Record<string, string> = {
-  melted: "bg-melted",
-  live: "bg-live",
-  rosin: "bg-rosin",
-  distillate: "bg-distillate",
-};
+const FROM_PRICE = Math.min(...products.map((p) => p.price));
+
+// Posición, tamaño, giro y profundidad de cada pieza de la vitrina.
+// `depth` define cuánto se mueve con el puntero: lo cercano se mueve más.
+const SLOTS = [
+  { cls: "-left-[4%] top-[30%] h-[48%] z-10", rot: "-12deg", depth: 14, float: "float-b", delay: 350 },
+  { cls: "left-1/2 top-[10%] h-[66%] -translate-x-1/2 z-20", rot: "0deg", depth: 26, float: "float-a", delay: 200 },
+  { cls: "-right-[4%] top-[32%] h-[46%] z-10", rot: "12deg", depth: 18, float: "float-c", delay: 500 },
+];
 
 export default function Hero() {
   const t = useT();
-  const aio = countByLine("aio");
-  const cart = countByLine("cart");
-  const totals = LINES.map((line) => {
-    const a = aio.find((x) => x.line.id === line.id)?.total ?? 0;
-    const c = cart.find((x) => x.line.id === line.id)?.total ?? 0;
-    return { line, total: a + c };
-  });
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Paralaje de la vitrina: solo con mouse, en el teléfono queda la flotación.
+  function onPointerMove(e: React.PointerEvent<HTMLElement>) {
+    if (e.pointerType === "touch") return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    const x = e.clientX / window.innerWidth - 0.5;
+    const y = e.clientY / window.innerHeight - 0.5;
+    stage.style.setProperty("--px", x.toFixed(3));
+    stage.style.setProperty("--py", y.toFixed(3));
+  }
 
   return (
-    <>
-      {/* --- Titular, con el humo cubriendo toda la sección --- */}
-      <section className="relative isolate overflow-hidden">
-        <SmokeBackdrop />
-        <div className="pointer-events-none absolute inset-0 z-[1] aurora" aria-hidden />
-        <div className="pointer-events-none absolute inset-0 z-[1] grid-lines" aria-hidden />
+    <section
+      className="relative isolate overflow-hidden"
+      onPointerMove={onPointerMove}
+    >
+      <SmokeBackdrop />
+      <div className="pointer-events-none absolute inset-0 z-[1] aurora" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 z-[1] grid-lines" aria-hidden />
 
-        <div className="container-page relative z-10 pb-24 pt-24 sm:pb-32 sm:pt-32">
+      <div className="container-page relative z-10 grid items-center gap-6 pb-14 pt-14 sm:pt-20 lg:min-h-[640px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-20">
+        {/* Texto */}
+        <div>
           <p className="kicker animate-rise">
             <span className="h-px w-8 bg-gold-400/60" />
             {t("hero.kicker")}
           </p>
 
-          <h1 className="display-xl mt-8">
+          <h1 className="display-xl mt-7">
             <span className="line-reveal block text-ink-50">{t("hero.line1")}</span>
-            <span className="line-reveal block text-gold-gradient [animation-delay:180ms]">
-              {t("hero.line2")}
+            <span className="line-reveal block [animation-delay:180ms]">
+              <span className="text-shine">{t("hero.line2")}</span>
             </span>
           </h1>
 
-          <p className="lede-mono mt-8 animate-rise [animation-delay:320ms]">
+          <p className="lede-mono mt-7 animate-rise [animation-delay:320ms]">
             <ShieldCheck className="mr-2 inline-block h-[15px] w-[15px] -translate-y-px text-gold-300" />
             {t("hero.lede")}
           </p>
 
-          <div className="mt-11 flex flex-wrap items-center gap-3 animate-rise [animation-delay:400ms]">
-            <a href="#catalogo" className="btn-primary group">
+          <div className="mt-9 flex flex-wrap items-center gap-3 animate-rise [animation-delay:400ms]">
+            <button
+              onClick={() => scrollToSection("colecciones")}
+              className="btn-primary group"
+            >
               {t("hero.cta")}
               <ArrowDown className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-y-1" />
-            </a>
-            <a href="#privacidad" className="btn-ghost">
+            </button>
+            <button onClick={() => scrollToSection("envios")} className="btn-ghost">
               {t("hero.how")}
-            </a>
+            </button>
           </div>
 
-          <div className="mt-10 animate-rise [animation-delay:480ms]">
+          <div className="mt-9 animate-rise [animation-delay:480ms]">
             <ReviewSummary />
           </div>
         </div>
-      </section>
 
-      {/* --- Índice de líneas --- */}
-      <section className="container-page relative z-10 pb-16">
-        <div className="rule mb-6" />
-        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-4">
-          {totals.map(({ line, total }) => (
-            <li key={line.id}>
-              <a href="#catalogo" className="group flex items-start gap-2.5">
-                <span
-                  className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${LINE_DOT[line.id]}`}
-                />
-                <span>
-                  <span className="block font-display text-[12.5px] font-semibold uppercase leading-tight tracking-[0.1em] text-ink-100 transition-colors group-hover:text-gold-300">
-                    {line.name}
-                  </span>
-                  <span className="mt-0.5 block text-[11px] tabular-nums text-ink-500">
-                    {String(total).padStart(2, "0")} {t("hero.refs")}
-                  </span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
+        {/* Vitrina */}
+        <div
+          ref={stageRef}
+          className="relative mx-auto h-[300px] w-full max-w-[520px] sm:h-[400px] lg:h-[520px]"
+          aria-hidden
+        >
+          {/* Anillos que giran detrás */}
+          <span className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold-400/15" />
+          <span className="absolute left-1/2 top-1/2 h-[96%] w-[96%] -translate-x-1/2 -translate-y-1/2 animate-[spin_40s_linear_infinite] rounded-full border border-dashed border-white/[0.07]" />
+          <span className="absolute left-1/2 top-1/2 h-[60%] w-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/10 blur-3xl" />
 
-      {/* --- Cobertura: mapa animado y tres datos, sin párrafos --- */}
-      <section className="border-y border-white/8">
-        <div className="container-page grid items-center gap-12 py-16 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="flex justify-center lg:justify-start">
-            <CoverageMap className="h-[190px] w-auto sm:h-[230px]" />
-          </div>
-
-          <div>
-            <p className="kicker">
-              <span className="h-px w-8 bg-gold-400/60" />
-              {t("cover.kicker")}
-            </p>
-
-            <dl className="mt-8 divide-y divide-white/8 border-y border-white/8">
-              {[
-                [t("cover.delivery"), DELIVERY_ETA],
-                [
-                  t("cover.shipping"),
-                  `C$${NATIONAL_SHIPPING_NIO} · ${t("cart.freeFrom")} $${FREE_SHIPPING_AT}`,
-                ],
-                [t("cover.packaging"), t("cover.packagingValue")],
-                [t("cover.payment"), t("cover.paymentValue")],
-              ].map(([k, v]) => (
-                <div key={k} className="flex items-baseline justify-between gap-6 py-4">
-                  <dt className="text-[11px] font-semibold uppercase tracking-wide2 text-ink-500">
-                    {k}
-                  </dt>
-                  <dd className="font-display text-[14.5px] font-semibold uppercase tracking-[0.06em] text-ink-50">
-                    {v}
-                  </dd>
+          {SHOWCASE.map((p, i) => {
+            const s = SLOTS[i];
+            return (
+              // Cada capa anima una sola cosa: posición, paralaje, entrada
+              // y flotación. Así ninguna transformación pisa a otra.
+              <div key={p.id} className={`absolute ${s.cls}`}>
+                <div
+                  className="h-full"
+                  style={{
+                    transform: `translate3d(calc(var(--px, 0) * ${s.depth}px), calc(var(--py, 0) * ${s.depth}px), 0)`,
+                    transition: "transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                  }}
+                >
+                  <div className="pop-in h-full" style={{ animationDelay: `${s.delay}ms` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.img}
+                      alt=""
+                      draggable={false}
+                      className={`${s.float} h-full w-auto max-w-none drop-shadow-[0_30px_40px_rgba(0,0,0,0.7)]`}
+                      style={{ ["--rot" as string]: s.rot }}
+                    />
+                  </div>
                 </div>
-              ))}
-            </dl>
-          </div>
-        </div>
-      </section>
+              </div>
+            );
+          })}
 
-      {/* --- Marquesina --- */}
-      <div className="relative overflow-hidden border-b border-white/8 py-3.5">
-        <div className="flex w-max animate-marquee gap-12 pr-12">
-          {[...MARQUEE, ...MARQUEE, ...MARQUEE].map((key, i) => (
-            <span
-              key={i}
-              className="flex items-center gap-3 whitespace-nowrap text-[11.5px] font-semibold uppercase tracking-wide2 text-ink-400"
-            >
-              <span className="h-1 w-1 rounded-full bg-gold-400" />
-              {t(key)}
+          {/* Etiqueta de precio flotante */}
+          <div className="absolute bottom-[6%] left-1/2 z-30 -translate-x-1/2">
+            <span className="pop-in block" style={{ animationDelay: "750ms" }}>
+              <span className="glass flex items-center gap-2.5 whitespace-nowrap rounded-full border border-white/12 px-4 py-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-200 shadow-pop">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-hybrid/70" />
+                  <span className="relative h-2 w-2 rounded-full bg-hybrid" />
+                </span>
+                {t("col.from")}{" "}
+                <span className="font-bold text-gold-200">${FROM_PRICE}</span>
+              </span>
             </span>
-          ))}
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Invitación a bajar (solo PC) */}
+      <div className="pointer-events-none absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 lg:flex">
+        <span className="text-[10px] font-semibold uppercase tracking-wide3 text-ink-500">
+          {t("hero.scroll")}
+        </span>
+        <span className="relative h-9 w-px overflow-hidden bg-white/10">
+          <span className="scroll-cue absolute inset-x-0 top-0 h-1/2 bg-gold-400" />
+        </span>
+      </div>
+    </section>
   );
 }

@@ -12,6 +12,7 @@ import {
   NATIONAL_SHIPPING_NIO,
 } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
+import CoverageMap from "@/components/CoverageMap";
 import { useReveal } from "@/hooks/useReveal";
 
 export default function ShippingSection() {
@@ -19,17 +20,23 @@ export default function ShippingSection() {
   useReveal([]);
 
   return (
-    <section id="envios" className="scroll-mt-[76px] border-t border-white/8 py-24">
+    <section id="envios" className="scroll-mt-[var(--nav-min)] border-t border-white/8 py-24">
       <div className="container-page">
-        <div className="reveal max-w-2xl">
-          <p className="kicker">
-            <span className="h-px w-8 bg-gold-400/60" />
-            {t("ship.kicker")}
-          </p>
-          <h2 className="display-lg mt-5 text-ink-50">{t("ship.title")}</h2>
-          <p className="mt-5 text-[15.5px] leading-relaxed text-ink-400">
-            {t("ship.body")}
-          </p>
+        <div className="reveal grid items-center gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="max-w-2xl">
+            <p className="kicker">
+              <span className="h-px w-8 bg-gold-400/60" />
+              {t("ship.kicker")}
+            </p>
+            <h2 className="display-lg mt-5 text-ink-50">{t("ship.title")}</h2>
+            <p className="mt-5 text-[15.5px] leading-relaxed text-ink-400">
+              {t("ship.body")}
+            </p>
+          </div>
+          {/* Mapa animado de cobertura */}
+          <div className="hidden justify-center lg:flex">
+            <CoverageMap className="h-[210px] w-auto" />
+          </div>
         </div>
 
         {/* Tres datos duros, sin párrafos */}
