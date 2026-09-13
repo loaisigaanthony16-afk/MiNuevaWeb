@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { getProduct } from "@/lib/data";
-import { FREE_SHIPPING_AT, shippingFor } from "@/lib/checkout-util";
+import { deliveryFor } from "@/lib/checkout-util";
 
 export interface CartItem {
   id: number;
@@ -26,9 +26,6 @@ interface Store {
   subtotal: number;
   shipping: number;
   total: number;
-  /** Cuánto falta para envío gratis (0 si ya aplica). */
-  missingForFree: number;
-  freeProgress: number; // 0..1
   add: (id: number) => void;
   changeQty: (id: number, delta: number) => void;
   setQty: (id: number, qty: number) => void;
@@ -36,12 +33,19 @@ interface Store {
   clear: () => void;
 }
 
-const STORAGE_KEY = "shopCart";
+// Clave nueva con el catálogo de 2000 mg: las bolsas del catálogo anterior
+// traían productos que ya no existen.
+const STORAGE_KEY = "vibeCart";
 
 function loadCart(): CartItem[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CartItem[]) : [];
+    const parsed = raw ? (JSON.parse(raw) as CartItem[]) : [];
+    // El precio siempre sale del catálogo vigente, nunca de lo guardado.
+    return parsed.flatMap((it) => {
+      const p = getProduct(it.id);
+      return p ? [{ id: p.id, qty: it.qty, price: p.price }] : [];
+    });
   } catch {
     return [];
   }
@@ -109,9 +113,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     const subtotal = items.reduce((acc, it) => acc + it.price * it.qty, 0);
-    const shipping = shippingFor(subtotal);
+    const shipping = deliveryFor(subtotal);
     const count = items.reduce((acc, it) => acc + it.qty, 0);
-    const missingForFree = Math.max(0, FREE_SHIPPING_AT - subtotal);
 
     return {
       hydrated: isHydrated,
@@ -120,8 +123,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       subtotal,
       shipping,
       total: subtotal + shipping,
-      missingForFree,
-      freeProgress: Math.min(1, subtotal / FREE_SHIPPING_AT),
       add,
       changeQty,
       setQty,

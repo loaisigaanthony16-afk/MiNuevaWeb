@@ -19,9 +19,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vibe 505 · Extractos premium con entrega nacional",
+  title: "Vibe 505 · Vapes 2000 mg con entrega en Estelí",
   description:
-    "Cartuchos 510 y all-in-one en cuatro líneas de extracto. Pedido anónimo sin cuenta, empaque neutro y envío a todo Nicaragua.",
+    "Muha Meds y Packwoods de 2000 mg. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
 };
 
 export const viewport: Viewport = {

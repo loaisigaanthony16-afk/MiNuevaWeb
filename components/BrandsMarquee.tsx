@@ -1,24 +1,26 @@
 "use client";
 
-import { FORMATS, LINES } from "@/lib/data";
+import { BRANDS, STRAIN_LABEL, type Strain } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 
+const STRAINS: Strain[] = ["indica", "sativa", "hybrid"];
+
 /**
- * Cinta de líneas y formatos, al estilo de "nuestras marcas".
+ * Cinta de marcas y cepas, al estilo de "nuestras marcas".
  * Dos filas en sentidos opuestos; cada nombre lleva a su parte del catálogo.
  */
-export default function LinesMarquee() {
+export default function BrandsMarquee() {
   const t = useT();
   const { browse } = useUi();
 
-  const lineItems = LINES.map((l) => ({
-    label: l.name,
-    go: () => browse({ format: "aio", line: l.id }),
+  const brandItems = [...BRANDS, ...BRANDS].map((b) => ({
+    label: b.name,
+    go: () => browse({ brand: b.id, strain: "all" }),
   }));
-  const formatItems = [...FORMATS, ...FORMATS].map((f) => ({
-    label: f.name,
-    go: () => browse({ format: f.id, line: "all" }),
+  const strainItems = STRAINS.map((s) => ({
+    label: STRAIN_LABEL[s],
+    go: () => browse({ brand: "all", strain: s }),
   }));
 
   const row = (
@@ -60,13 +62,13 @@ export default function LinesMarquee() {
   };
 
   return (
-    <section aria-label={t("col.lines")} className="overflow-hidden border-y border-white/8 py-10 sm:py-14">
+    <section aria-label={t("col.brands")} className="overflow-hidden border-y border-white/8 py-10 sm:py-14">
       <p className="mb-7 text-center text-[11px] font-semibold uppercase tracking-wide3 text-ink-500">
-        {t("col.lines")}
+        {t("col.brands")}
       </p>
       <div className="space-y-4 sm:space-y-6">
-        {row(lineItems, false, false)}
-        {row(formatItems, true, true)}
+        {row(brandItems, false, false)}
+        {row(strainItems, true, true)}
       </div>
     </section>
   );

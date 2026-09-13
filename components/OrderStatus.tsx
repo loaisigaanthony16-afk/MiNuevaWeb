@@ -6,7 +6,6 @@ import { useStore } from "@/lib/store";
 import { getProduct } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
-import { shippingModeFor } from "@/lib/shipping";
 import Wordmark from "@/components/Wordmark";
 import { buildWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
 import { clearPendingOrder, confirmPendingOrder } from "@/lib/pending-order";
@@ -89,7 +88,7 @@ export default function OrderStatus() {
         lines ? `Artículos: ${lines}` : "",
         delivery ? `Recibe: ${delivery.alias}` : "",
         delivery ? `Tel: ${delivery.phone}` : "",
-        delivery ? `Zona: ${delivery.region}` : "",
+        delivery ? `Ciudad: ${delivery.region}` : "",
         delivery ? `Dirección: ${delivery.address}` : "",
         delivery?.notes ? `Referencias: ${delivery.notes}` : "",
       ]
@@ -111,7 +110,6 @@ export default function OrderStatus() {
 
   if (!status) return null;
 
-  const mode = delivery?.region ? shippingModeFor(delivery.region) : null;
   const ok = status === "success";
 
   /** Al abrir el chat el pedido ya está coordinado: se retira el aviso. */
@@ -228,9 +226,7 @@ export default function OrderStatus() {
             <ol className="mt-7 space-y-3 text-left text-[13.5px] leading-relaxed text-ink-400">
               {[
                 t("order.step1"),
-                mode
-                  ? `${t("order.step2")} ${t(mode.nameKey)} · ${t(mode.etaKey)}.`
-                  : t("order.step2Generic"),
+                t("order.step2"),
                 t("order.step3"),
               ].map((line, i) => (
                 <li key={i} className="flex gap-3">

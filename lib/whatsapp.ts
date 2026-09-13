@@ -8,6 +8,7 @@
 // =====================================================================
 
 import type { DeliveryInfo } from "@/lib/delivery";
+import { DELIVERY_FEE_NIO } from "@/lib/checkout-util";
 
 /** Número del comercio, en formato internacional sin signos. */
 export const WHATSAPP_NUMBER = "50584905512";
@@ -33,11 +34,13 @@ export function buildWhatsappMessage(params: {
     "",
     orderId ? `Referencia: ${orderId}` : "",
     items ? `\nPedido:\n${items}` : "",
-    typeof totalUsd === "number" ? `\nTotal: $${totalUsd.toFixed(2)}` : "",
+    typeof totalUsd === "number"
+      ? `\nTotal: $${totalUsd.toFixed(2)} (incluye entrega C$${DELIVERY_FEE_NIO})`
+      : "",
     delivery ? "\nDatos de entrega:" : "",
     delivery ? `Recibe: ${delivery.alias}` : "",
     delivery ? `Teléfono: ${delivery.phone}` : "",
-    delivery ? `Departamento: ${delivery.region}` : "",
+    delivery ? `Ciudad: ${delivery.region}` : "",
     delivery ? `Dirección: ${delivery.address}` : "",
     delivery?.notes ? `Referencias: ${delivery.notes}` : "",
   ]

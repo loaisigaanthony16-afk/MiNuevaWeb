@@ -1,31 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
-  CreditCard,
+  ChevronRight,
   Loader2,
   Lock,
   MapPin,
   Minus,
   Plus,
   ShoppingBag,
-  Trash2,
-  Truck,
   X,
 } from "lucide-react";
-import { getLine, getProduct } from "@/lib/data";
+import { getBrand, getProduct, STRAIN_LABEL } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
-import { shippingModeFor } from "@/lib/shipping";
 import {
-  DELIVERY_ETA,
-  FREE_SHIPPING_AT,
+  DELIVERY_FEE_NIO,
+  DELIVERY_ZONE,
   formatNIO,
   formatUSD,
 } from "@/lib/checkout-util";
-import { ReviewMini, ReviewSummary } from "@/components/Reviews";
-import { REVIEWS } from "@/lib/reviews";
 import { useT } from "@/components/locale-context";
 import { savePendingOrder } from "@/lib/pending-order";
 import { buildWhatsappMessage } from "@/lib/whatsapp";
@@ -33,32 +28,22 @@ import { buildWhatsappMessage } from "@/lib/whatsapp";
 export default function CartDrawer() {
   const t = useT();
   const { drawerOpen, closeDrawer, openAddress, delivery } = useUi();
-  const {
-    items,
-    subtotal,
-    shipping,
-    total,
-    count,
-    missingForFree,
-    freeProgress,
-    changeQty,
-    remove,
-    clear,
-  } = useStore();
+  const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Una reseña distinta por apertura, para que no sea siempre la misma.
-  const reviewSeed = useMemo(
-    () => Math.floor(Math.random() * REVIEWS.length),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [drawerOpen]
-  );
-
   if (!drawerOpen) return null;
 
   const ready = isDeliveryComplete(delivery);
+
+  // Precio de lista y ahorro, solo para mostrar: el cobro usa el precio
+  // con descuento que calcula el servidor.
+  const listSubtotal = items.reduce(
+    (acc, it) => acc + (getProduct(it.id)?.listPrice ?? it.price) * it.qty,
+    0
+  );
+  const savings = Math.max(0, listSubtotal - subtotal);
 
   // Pide la factura al servidor y manda a la pasarela de NOWPayments.
   async function goToCheckout() {
@@ -82,6 +67,7 @@ export default function CartDrawer() {
       const data = (await res.json()) as {
         invoiceUrl?: string;
         orderId?: string;
+        totalUsd?: number;
         error?: string;
       };
       if (res.ok && data.invoiceUrl) {
@@ -97,7 +83,7 @@ export default function CartDrawer() {
               name: getProduct(it.id)?.name ?? "",
             })),
             delivery,
-            totalUsd: total,
+            totalUsd: data.totalUsd ?? total,
           }),
           "iniciado"
         );
@@ -121,268 +107,188 @@ export default function CartDrawer() {
         aria-hidden
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-[440px] animate-slideIn flex-col border-l border-white/10 bg-ink-900 shadow-pop">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-[420px] animate-slideIn flex-col bg-ink-900 shadow-pop sm:border-l sm:border-white/8">
         {/* Cabecera */}
-        <div className="flex shrink-0 items-center justify-between border-b border-white/8 px-5 py-4">
-          <h2 className="font-display text-[16px] font-bold uppercase tracking-[0.14em] text-ink-50">
+        <div className="flex shrink-0 items-center justify-between px-6 pb-4 pt-6">
+          <h2 className="font-display text-[20px] font-semibold uppercase tracking-[0.08em] text-ink-50">
             {t("cart.title")}
-            {count > 0 && <span className="ml-2 text-ink-500">{count}</span>}
-          </h2>
-          <div className="flex items-center gap-2">
-            {items.length > 0 && (
-              <button
-                onClick={clear}
-                className="text-[11px] font-semibold uppercase tracking-wide2 text-ink-500 transition hover:text-red-400"
-              >
-                {t("cart.clear")}
-              </button>
+            {count > 0 && (
+              <span className="ml-2 align-middle text-[13px] font-medium tabular-nums text-ink-500">
+                {count}
+              </span>
             )}
-            <button
-              onClick={closeDrawer}
-              aria-label="Cerrar"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-ink-400 transition hover:bg-white/5 hover:text-ink-50"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          </h2>
+          <button
+            onClick={closeDrawer}
+            aria-label="Cerrar"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-400 transition hover:bg-white/5 hover:text-ink-50"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {items.length === 0 ? (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-8 py-8 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10">
-              <ShoppingBag className="h-6 w-6 text-ink-500" />
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.03]">
+              <ShoppingBag className="h-7 w-7 text-ink-500" />
             </span>
-            <p className="mt-6 font-display text-[16px] font-bold uppercase tracking-[0.1em] text-ink-50">
+            <p className="mt-6 font-display text-[17px] font-semibold uppercase tracking-[0.08em] text-ink-50">
               {t("cart.empty")}
             </p>
-            <p className="mt-2 text-[14px] text-ink-400">
-              {t("cart.emptyBody")}
-            </p>
-            <button onClick={closeDrawer} className="btn-ghost mt-7">
+            <p className="mt-2 text-[14px] text-ink-400">{t("cart.emptyBody")}</p>
+            <button onClick={closeDrawer} className="btn-primary mt-8">
               {t("cart.browse")}
             </button>
-
-            <div className="mt-10 w-full">
-              <ReviewSummary className="mb-3" />
-              <ReviewMini offset={reviewSeed} />
-            </div>
           </div>
         ) : (
           <>
-            {/* Progreso a envío gratis */}
-            <div className="shrink-0 border-b border-white/8 px-5 py-3.5">
-              <div className="flex items-center justify-between text-[11.5px] font-semibold uppercase tracking-wide2">
-                <span className="flex items-center gap-1.5 text-ink-400">
-                  <Truck className="h-3.5 w-3.5" />
-                  {missingForFree > 0 ? t("cart.shipping") : t("cart.free")}
-                </span>
-                <span className={missingForFree > 0 ? "text-ink-400" : "text-hybrid"}>
-                  {missingForFree > 0
-                    ? `${t("cart.missing")} ${formatUSD(missingForFree)}`
-                    : t("cart.applied")}
-                </span>
-              </div>
-              <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/8">
-                <div
-                  className="h-full rounded-full bg-gold-400 transition-all duration-700 ease-smooth"
-                  style={{ width: `${freeProgress * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Artículos */}
-            {/* `min-h-0` es imprescindible: sin él, el min-height:auto del
-                hijo flex impide que la lista se encoja y el pie termina
-                tapando los productos en pantallas de escritorio. */}
-            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
+            {/* Artículos. `min-h-0` deja que la lista se encoja y el pie
+                nunca tape productos. */}
+            <ul className="no-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-4">
               {items.map((item) => {
                 const p = getProduct(item.id);
                 if (!p) return null;
                 return (
-                  <div key={item.id} className="flex gap-3.5 border-b border-white/6 p-5">
-                    <div className="h-[74px] w-[64px] shrink-0 overflow-hidden rounded-[10px] border border-white/8">
+                  <li key={item.id} className="bubble-in flex gap-4 rounded-card p-2 transition-colors hover:bg-white/[0.02]">
+                    <div className="grid h-[88px] w-[88px] shrink-0 place-items-center rounded-[12px] bg-white/[0.03]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={p.img}
-                        alt={p.name}
-                        className="h-full w-full object-contain p-1"
-                      />
+                      <img src={p.img} alt={p.name} className="h-[80px] w-[80px] object-contain" />
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display text-[13px] font-bold uppercase leading-tight tracking-[0.05em] text-ink-50">
-                        {p.name}
-                      </p>
-                      <p className="mt-1 text-[11.5px] text-ink-500">
-                        {getLine(p.line).name}
-                      </p>
+                    <div className="flex min-w-0 flex-1 flex-col py-0.5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-[14px] font-semibold text-ink-50">{p.name}</p>
+                          <p className="mt-0.5 text-[12px] text-ink-500">
+                            {getBrand(p.brand).name} · {STRAIN_LABEL[p.strain]}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-50">
+                          {formatUSD(item.price * item.qty)}
+                        </p>
+                      </div>
 
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center rounded-full border border-white/10">
+                      <div className="mt-auto flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-1 rounded-full bg-white/[0.05] p-0.5">
                           <button
                             onClick={() => changeQty(item.id, -1)}
                             aria-label="-1"
-                            className="flex h-8 w-8 items-center justify-center text-ink-400 transition hover:text-ink-50"
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-300 transition hover:bg-white/10 hover:text-ink-50"
                           >
-                            <Minus className="h-3 w-3" />
+                            <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="w-6 text-center text-[13px] font-semibold tabular-nums text-ink-50">
+                          <span className="w-5 text-center text-[13px] font-semibold tabular-nums text-ink-50">
                             {item.qty}
                           </span>
                           <button
                             onClick={() => changeQty(item.id, 1)}
                             aria-label="+1"
-                            className="flex h-8 w-8 items-center justify-center text-ink-400 transition hover:text-ink-50"
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-300 transition hover:bg-white/10 hover:text-ink-50"
                           >
-                            <Plus className="h-3 w-3" />
+                            <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="font-display text-[14px] font-bold tabular-nums text-ink-50">
-                            {formatUSD(item.price * item.qty)}
-                          </span>
-                          <button
-                            onClick={() => remove(item.id)}
-                            aria-label={`Eliminar ${p.name}`}
-                            className="text-ink-600 transition hover:text-red-400"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => remove(item.id)}
+                          className="text-[12px] text-ink-500 underline-offset-4 transition hover:text-red-400 hover:underline"
+                        >
+                          {t("cart.remove")}
+                        </button>
                       </div>
                     </div>
-                  </div>
+                  </li>
                 );
               })}
 
-              {/* Prueba social dentro de la lista, sin interrumpir el flujo */}
-              <div className="p-5">
-                <ReviewMini offset={reviewSeed} />
-              </div>
-            </div>
+              <li className="px-2 pt-1 text-right">
+                <button
+                  onClick={clear}
+                  className="text-[11.5px] uppercase tracking-wide2 text-ink-600 transition hover:text-red-400"
+                >
+                  {t("cart.clear")}
+                </button>
+              </li>
+            </ul>
 
             {/* Pie */}
-            <div className="max-h-[55%] shrink-0 overflow-y-auto border-t border-white/8 p-5">
+            <div className="shrink-0 border-t border-white/8 bg-ink-900 px-6 pb-6 pt-5">
+              {/* Dirección */}
               <button
                 onClick={openAddress}
-                className={`flex w-full items-start gap-3 rounded-[10px] border p-3.5 text-left transition-all duration-300 ease-smooth ${
-                  ready
-                    ? "border-white/10 hover:border-white/25"
-                    : "border-gold-400/40 bg-gold-400/[0.06] hover:border-gold-400"
+                className={`group flex w-full items-center gap-3 rounded-[12px] px-4 py-3 text-left transition ${
+                  ready ? "bg-white/[0.03] hover:bg-white/[0.06]" : "bg-gold-400/10 ring-1 ring-gold-400/40 hover:bg-gold-400/15"
                 }`}
               >
-                <MapPin
-                  className={`mt-0.5 h-4 w-4 shrink-0 ${ready ? "text-gold-300" : "text-gold-400"}`}
-                />
+                <MapPin className={`h-4 w-4 shrink-0 ${ready ? "text-ink-400" : "text-gold-300"}`} />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-semibold uppercase tracking-wide2 text-ink-400">
-                    {t("nav.shipTo")}
-                  </span>
                   {ready ? (
                     <>
-                      <span className="mt-1 block truncate text-[13px] font-semibold text-ink-50">
-                        {delivery!.alias} · {delivery!.region}
+                      <span className="block truncate text-[13px] font-semibold text-ink-50">
+                        {delivery!.alias} · {DELIVERY_ZONE}
                       </span>
-                      <span className="mt-0.5 block truncate text-[12px] text-ink-500">
-                        {delivery!.address}
-                      </span>
-                      <span className="mt-1.5 block text-[11.5px] text-gold-300">
-                        {t(shippingModeFor(delivery!.region).nameKey)} ·{" "}
-                        {t(shippingModeFor(delivery!.region).etaKey)}
-                      </span>
+                      <span className="block truncate text-[12px] text-ink-500">{delivery!.address}</span>
                     </>
                   ) : (
-                    <span className="mt-1 block text-[13px] font-semibold text-gold-200">
+                    <span className="block text-[13px] font-semibold text-gold-200">
                       {t("cart.needAddress")}
                     </span>
                   )}
                 </span>
+                <span className="flex items-center text-[12px] text-ink-500 group-hover:text-ink-200">
+                  {ready && t("cart.edit")}
+                  <ChevronRight className="h-4 w-4" />
+                </span>
               </button>
 
-              {/* Único medio de pago */}
-              <div className="mt-3 flex items-center gap-2.5 rounded-[10px] border border-white/8 px-3.5 py-3">
-                <CreditCard className="h-4 w-4 shrink-0 text-gold-300" />
-                <span className="text-[12.5px] text-ink-300">
-                  {t("cart.cardOnly")}
-                </span>
-              </div>
-
               {/* Totales */}
-              <div className="mt-4 space-y-2 border-t border-white/8 pt-4 text-[13px]">
-                <Row label={t("cart.subtotal")} value={formatUSD(subtotal)} />
-                <Row
-                  label={t("cart.shipping")}
-                  value={shipping === 0 ? t("cart.freeWord") : formatNIO(shipping)}
-                  accent={shipping === 0}
-                />
-                <div className="flex items-baseline justify-between pt-2">
-                  <span className="font-display text-[13px] font-bold uppercase tracking-wide2 text-ink-50">
-                    {t("cart.total")}
-                  </span>
-                  <span className="text-right">
-                    <span className="block font-display text-[22px] font-bold leading-none tabular-nums text-ink-50">
+              <dl className="mt-5 space-y-2 text-[13.5px]">
+                <div className="flex justify-between">
+                  <dt className="text-ink-400">{t("cart.subtotal")}</dt>
+                  <dd className="tabular-nums text-ink-100">{formatUSD(listSubtotal)}</dd>
+                </div>
+                {savings > 0 && (
+                  <div className="flex justify-between">
+                    <dt className="text-red-400">{t("cart.discount")}</dt>
+                    <dd className="font-semibold tabular-nums text-red-400">-{formatUSD(savings)}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <dt className="text-ink-400">{t("cart.delivery")}</dt>
+                  <dd className="tabular-nums text-ink-100">C$ {DELIVERY_FEE_NIO}</dd>
+                </div>
+                <div className="flex items-baseline justify-between border-t border-white/8 pt-3">
+                  <dt className="text-[14px] font-semibold text-ink-50">{t("cart.total")}</dt>
+                  <dd className="text-right">
+                    <span className="block font-display text-[26px] font-semibold leading-none tabular-nums text-ink-50">
                       {formatUSD(total)}
                     </span>
-                    <span className="mt-1 block text-[11.5px] tabular-nums text-ink-500">
+                    <span className="mt-1 block text-[12px] tabular-nums text-ink-500">
                       {formatNIO(total)}
                     </span>
-                  </span>
+                  </dd>
                 </div>
-              </div>
+              </dl>
 
-              {error && (
-                <p className="mt-3 text-center text-[12px] text-red-400">{error}</p>
-              )}
+              {error && <p className="mt-3 text-center text-[12.5px] text-red-400">{error}</p>}
 
               <button
                 onClick={goToCheckout}
                 disabled={loading}
-                className="btn-primary mt-4 w-full disabled:opacity-50"
+                className="btn-gold mt-5 w-full disabled:opacity-60"
               >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Lock className="h-4 w-4" />
-                )}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                 {!ready
                   ? t("cart.needAddress")
                   : loading
                     ? t("pay.processing")
-                    : t("cart.pay")}
+                    : `${t("cart.pay")} ${formatUSD(total)}`}
               </button>
 
-
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[11px] text-ink-500">
-                  {t("cart.deliveryIn")} {DELIVERY_ETA} · {t("cart.freeFrom")} $
-                  {FREE_SHIPPING_AT}
-                </p>
-                <ReviewSummary />
-              </div>
+              <p className="mt-3 text-center text-[11.5px] text-ink-500">{t("cart.secure")}</p>
             </div>
           </>
         )}
       </aside>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-ink-400">{label}</span>
-      <span className={`tabular-nums ${accent ? "text-hybrid" : "text-ink-100"}`}>
-        {value}
-      </span>
     </div>
   );
 }

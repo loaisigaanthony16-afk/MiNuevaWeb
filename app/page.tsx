@@ -3,17 +3,15 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ServiceBar from "@/components/ServiceBar";
 import Collections from "@/components/Collections";
-import LinesMarquee from "@/components/LinesMarquee";
-import FeaturedRail from "@/components/FeaturedRail";
+import BrandsMarquee from "@/components/BrandsMarquee";
 import Catalog from "@/components/Catalog";
-import ShippingSection from "@/components/ShippingSection";
-import Reviews from "@/components/Reviews";
 import PrivacySection from "@/components/PrivacySection";
-import Assistant from "@/components/Assistant";
+import Community from "@/components/Community";
 import Footer from "@/components/Footer";
 
-// Orden de la portada: primero qué es y qué garantiza, luego por dónde
-// entrar (colecciones), y recién después el catálogo completo y los detalles.
+// Orden de la portada: qué es y qué garantiza, por dónde entrar
+// (colecciones), el catálogo, cómo cuidamos tu privacidad y lo que opina
+// la gente que ya compró.
 export default function HomePage() {
   return (
     <main id="top">
@@ -22,13 +20,10 @@ export default function HomePage() {
       <Hero />
       <ServiceBar />
       <Collections />
-      <LinesMarquee />
-      <FeaturedRail />
+      <BrandsMarquee />
       <Catalog />
-      <ShippingSection />
-      <Reviews />
       <PrivacySection />
-      <Assistant />
+      <Community />
       <Footer />
     </main>
   );

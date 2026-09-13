@@ -7,7 +7,7 @@
 // =====================================================================
 
 import { getProduct } from "@/lib/data";
-import { FREE_SHIPPING_AT, shippingFor } from "@/lib/checkout-util";
+import { deliveryFor } from "@/lib/checkout-util";
 
 /** Lo único que aceptamos del cliente. */
 export interface CartLineInput {
@@ -79,7 +79,8 @@ export function priceOrder(input: unknown): PricedOrder {
   }
 
   const subtotalUsd = round2(lines.reduce((acc, l) => acc + l.lineTotalUsd, 0));
-  const shippingUsd = round2(shippingFor(subtotalUsd));
+  // Entrega fija en Estelí, sumada a cada pedido.
+  const shippingUsd = round2(deliveryFor(subtotalUsd));
   const totalUsd = round2(subtotalUsd + shippingUsd);
 
   if (totalUsd <= 0) {
@@ -100,9 +101,6 @@ export function priceOrder(input: unknown): PricedOrder {
 export function summarize(order: PricedOrder): string {
   return order.lines.map((l) => `${l.qty}x ${l.name}`).join(", ");
 }
-
-/** Envío gratis a partir de este monto (para mensajes al cliente). */
-export const FREE_SHIPPING_THRESHOLD = FREE_SHIPPING_AT;
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;

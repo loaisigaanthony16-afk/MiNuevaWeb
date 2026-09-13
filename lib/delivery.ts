@@ -2,15 +2,16 @@
 // Datos de entrega del cliente.
 //
 // Modelo de privacidad: no hay cuenta ni servidor de perfiles. Lo que el
-// cliente escribe vive solo en su navegador (localStorage) y se envía,
-// cifrado, únicamente al crear la sesión de pago. Lo leemos solo para
-// despachar ese envío.
+// cliente escribe vive solo en su navegador (localStorage) y nos llega
+// únicamente por WhatsApp, enviado por el propio cliente tras pagar.
 // =====================================================================
+
+import { DELIVERY_ZONE } from "@/lib/checkout-util";
 
 export interface DeliveryInfo {
   alias: string; // nombre o apodo para recibir (no requiere ser real)
   phone: string; // contacto para coordinar la entrega
-  region: string; // departamento / región
+  region: string; // zona de entrega: por ahora siempre Estelí
   address: string; // dirección exacta
   notes: string; // referencias, horario preferido
 }
@@ -18,31 +19,10 @@ export interface DeliveryInfo {
 export const EMPTY_DELIVERY: DeliveryInfo = {
   alias: "",
   phone: "",
-  region: "",
+  region: DELIVERY_ZONE,
   address: "",
   notes: "",
 };
-
-// Cobertura nacional: departamentos y regiones autónomas de Nicaragua.
-export const REGIONS: string[] = [
-  "Boaco",
-  "Carazo",
-  "Chinandega",
-  "Chontales",
-  "Estelí",
-  "Granada",
-  "Jinotega",
-  "León",
-  "Madriz",
-  "Managua",
-  "Masaya",
-  "Matagalpa",
-  "Nueva Segovia",
-  "Región Autónoma Caribe Norte",
-  "Región Autónoma Caribe Sur",
-  "Río San Juan",
-  "Rivas",
-];
 
 export const DELIVERY_KEY = "vibeDelivery";
 
@@ -51,7 +31,8 @@ export function loadDelivery(): DeliveryInfo | null {
     const raw = window.localStorage.getItem(DELIVERY_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<DeliveryInfo>;
-    return { ...EMPTY_DELIVERY, ...parsed };
+    // Direcciones guardadas con otro departamento pasan a la única zona.
+    return { ...EMPTY_DELIVERY, ...parsed, region: DELIVERY_ZONE };
   } catch {
     return null;
   }
@@ -79,15 +60,8 @@ export function isDeliveryComplete(info: DeliveryInfo | null): info is DeliveryI
   return (
     info.alias.trim().length > 1 &&
     info.phone.replace(/\D/g, "").length >= 8 &&
-    info.region.trim().length > 0 &&
     info.address.trim().length > 5
   );
-}
-
-/** Resumen de una línea para mostrar en la barra y el carrito. */
-export function deliverySummary(info: DeliveryInfo | null): string {
-  if (!isDeliveryComplete(info)) return "Agregar dirección";
-  return `${info.region} · ${info.address}`;
 }
 
 /** Errores por campo, para el formulario. */
@@ -98,9 +72,6 @@ export function validateDelivery(info: DeliveryInfo): Partial<Record<keyof Deliv
   }
   if (info.phone.replace(/\D/g, "").length < 8) {
     errors.phone = "Necesitamos un número de 8 dígitos para coordinar.";
-  }
-  if (!info.region.trim()) {
-    errors.region = "Elegí tu departamento o región.";
   }
   if (info.address.trim().length < 6) {
     errors.address = "Detallá la dirección exacta de entrega.";

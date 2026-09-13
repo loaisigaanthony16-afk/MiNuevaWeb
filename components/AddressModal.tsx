@@ -1,21 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Lock, Trash2, X } from "lucide-react";
+import { Check, Lock, MapPin, Trash2, X } from "lucide-react";
 import { useUi } from "@/components/ui-context";
 import {
   EMPTY_DELIVERY,
-  REGIONS,
   clearDelivery,
   validateDelivery,
   type DeliveryInfo,
 } from "@/lib/delivery";
-import {
-  FREE_SHIPPING_AT,
-  NATIONAL_SHIPPING_NIO,
-} from "@/lib/checkout-util";
-import { shippingModeFor } from "@/lib/shipping";
-import { AlertCircle, Bike, Truck } from "lucide-react";
 import { useT } from "@/components/locale-context";
 
 export default function AddressModal() {
@@ -99,6 +92,10 @@ export default function AddressModal() {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
+          <p className="mb-6 flex items-start gap-2.5 rounded-[10px] border border-gold-400/25 bg-gold-400/[0.06] px-4 py-3 text-[13px] leading-relaxed text-gold-100">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
+            {t("addr.zone")}
+          </p>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="alias">
@@ -130,25 +127,6 @@ export default function AddressModal() {
             </div>
           </div>
 
-          <div className="mt-5">
-            <label className="label" htmlFor="region">
-              {t("addr.region")}
-            </label>
-            <select
-              id="region"
-              value={form.region}
-              onChange={(e) => update("region", e.target.value)}
-              className={`field ${errors.region ? "field-error" : ""}`}
-            >
-              <option value="">{t("addr.regionHint")}</option>
-              {REGIONS.map((r) => (
-                <option key={r} value={r} className="bg-ink-850">
-                  {r}
-                </option>
-              ))}
-            </select>
-            {errors.region && <Err msg={errors.region} />}
-          </div>
 
           <div className="mt-5">
             <label className="label" htmlFor="address">
@@ -179,58 +157,6 @@ export default function AddressModal() {
             />
           </div>
 
-          {/* Qué implica el departamento elegido, al instante */}
-          <div className="mt-6 rounded-[10px] border border-white/10 bg-white/[0.02] p-4">
-            {form.region ? (
-              (() => {
-                const m = shippingModeFor(form.region);
-                const Icon = m.mode === "directa" ? Bike : Truck;
-                return (
-                  <div className="bubble-in">
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="h-4 w-4 shrink-0 text-gold-300" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-400">
-                        {t("ship.modeFor")} {form.region}
-                      </span>
-                    </div>
-
-                    <dl className="mt-3 space-y-1.5 text-[12.5px]">
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-ink-500">{t("ship.yourMode")}</dt>
-                        <dd className="font-semibold text-ink-50">
-                          {t(m.nameKey)}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-ink-500">{t("ship.eta")}</dt>
-                        <dd className="text-ink-100">{t(m.etaKey)}</dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-ink-500">{t("ship.cost")}</dt>
-                        <dd className="text-ink-100">
-                          C${NATIONAL_SHIPPING_NIO} · {t("cart.freeFrom")} $
-                          {FREE_SHIPPING_AT}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    <p className="mt-3 text-[12px] leading-relaxed text-ink-400">
-                      {t(m.anonKey)}
-                    </p>
-
-                    {m.mayRequireId && (
-                      <p className="mt-3 flex items-start gap-2 text-[11.5px] leading-relaxed text-gold-100">
-                        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-300" />
-                        {t("ship.idWarning")}
-                      </p>
-                    )}
-                  </div>
-                );
-              })()
-            ) : (
-              <p className="text-[12.5px] text-ink-500">{t("ship.chooseRegion")}</p>
-            )}
-          </div>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <button type="submit" className="btn-gold flex-1">

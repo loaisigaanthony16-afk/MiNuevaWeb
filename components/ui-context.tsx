@@ -11,9 +11,9 @@ import {
 } from "react";
 import {
   getProduct,
-  type FormatId,
-  type LineId,
+  type BrandId,
   type Product,
+  type Strain,
 } from "@/lib/data";
 import { scrollToSection } from "@/lib/scroll";
 import {
@@ -48,12 +48,12 @@ interface UiStore {
 
   // Filtros del catálogo. Viven acá para que el menú y las colecciones
   // puedan llevar al catálogo ya filtrado.
-  catalogFormat: FormatId;
-  setCatalogFormat: (f: FormatId) => void;
-  catalogLine: "all" | LineId;
-  setCatalogLine: (l: "all" | LineId) => void;
+  catalogBrand: "all" | BrandId;
+  setCatalogBrand: (b: "all" | BrandId) => void;
+  catalogStrain: "all" | Strain;
+  setCatalogStrain: (s: "all" | Strain) => void;
   /** Aplica el filtro, limpia la búsqueda y baja hasta el catálogo. */
-  browse: (opts: { format?: FormatId; line?: "all" | LineId }) => void;
+  browse: (opts: { brand?: "all" | BrandId; strain?: "all" | Strain }) => void;
 
   // Edad
   ageVerified: boolean;
@@ -70,8 +70,8 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   const [delivery, setDeliveryState] = useState<DeliveryInfo | null>(null);
   const [deliveryLoaded, setDeliveryLoaded] = useState(false);
   const [search, setSearch] = useState("");
-  const [catalogFormat, setCatalogFormat] = useState<FormatId>("aio");
-  const [catalogLine, setCatalogLine] = useState<"all" | LineId>("all");
+  const [catalogBrand, setCatalogBrand] = useState<"all" | BrandId>("all");
+  const [catalogStrain, setCatalogStrain] = useState<"all" | Strain>("all");
   const [ageVerified, setAgeVerified] = useState(false);
 
   // Rehidratación tras el montaje (nunca durante el render).
@@ -120,9 +120,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const browse = useCallback(
-    ({ format, line }: { format?: FormatId; line?: "all" | LineId }) => {
-      if (format) setCatalogFormat(format);
-      if (line) setCatalogLine(line);
+    ({ brand, strain }: { brand?: "all" | BrandId; strain?: "all" | Strain }) => {
+      if (brand) setCatalogBrand(brand);
+      if (strain) setCatalogStrain(strain);
       setSearch("");
       // Tras pintar el filtro, para medir la sección ya actualizada.
       window.requestAnimationFrame(() => scrollToSection("catalogo"));
@@ -156,10 +156,10 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       setDelivery,
       search,
       setSearch,
-      catalogFormat,
-      setCatalogFormat,
-      catalogLine,
-      setCatalogLine,
+      catalogBrand,
+      setCatalogBrand,
+      catalogStrain,
+      setCatalogStrain,
       browse,
       ageVerified,
       passAge,
@@ -178,8 +178,8 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       deliveryLoaded,
       setDelivery,
       search,
-      catalogFormat,
-      catalogLine,
+      catalogBrand,
+      catalogStrain,
       browse,
       ageVerified,
       passAge,

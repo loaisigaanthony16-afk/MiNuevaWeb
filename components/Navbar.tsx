@@ -8,29 +8,29 @@ import { useLocale } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
 import { scrollToSection } from "@/lib/scroll";
-import type { FormatId } from "@/lib/data";
+import { BRANDS, type BrandId } from "@/lib/data";
 import type { Key } from "@/lib/i18n";
 
 interface MenuItem {
-  key: Key;
+  key: Key | "brand";
+  /** Texto fijo cuando es una marca (no se traduce). */
+  label?: string;
   /** Sección a la que lleva. */
   target: string;
-  /** Si lleva al catálogo, con qué formato. */
-  format?: FormatId;
+  /** Si lleva al catálogo, con qué marca. */
+  brand?: BrandId;
 }
 
 const MENU: MenuItem[] = [
   { key: "menu.home", target: "top" },
   { key: "menu.collections", target: "colecciones" },
-  { key: "menu.aio", target: "catalogo", format: "aio" },
-  { key: "menu.cart", target: "catalogo", format: "cart" },
-  { key: "menu.shipping", target: "envios" },
-  { key: "menu.reviews", target: "resenas" },
-  { key: "menu.faq", target: "faq" },
+  ...BRANDS.map((b) => ({ key: "brand" as const, label: b.name, target: "catalogo", brand: b.id })),
+  { key: "menu.opinions", target: "opiniones" },
+  { key: "menu.privacy", target: "privacidad" },
 ];
 
 // Orden en que aparecen en la página, para saber dónde está la persona.
-const SPY = ["colecciones", "catalogo", "envios", "resenas", "faq"];
+const SPY = ["colecciones", "catalogo", "privacidad", "opiniones"];
 
 // Alto fijo de la fila de categorías. Es fijo a propósito: la fila flota
 // sobre el contenido y un espaciador con este mismo alto la compensa, así
@@ -51,7 +51,7 @@ export default function Navbar() {
     search,
     setSearch,
     browse,
-    catalogFormat,
+    catalogBrand,
   } = useUi();
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -115,8 +115,11 @@ export default function Navbar() {
   }, [rowHidden]);
 
   const activeIndex = (() => {
-    if (section === "catalogo") return catalogFormat === "cart" ? 3 : 2;
-    const i = MENU.findIndex((m) => m.target === section && !m.format);
+    if (section === "catalogo") {
+      const i = MENU.findIndex((m) => m.brand === catalogBrand);
+      return i === -1 ? 2 : i;
+    }
+    const i = MENU.findIndex((m) => m.target === section && !m.brand);
     return i === -1 ? 0 : i;
   })();
 
@@ -149,7 +152,7 @@ export default function Navbar() {
   }, [activeIndex]);
 
   function go(item: MenuItem) {
-    if (item.format) browse({ format: item.format, line: "all" });
+    if (item.brand) browse({ brand: item.brand, strain: "all" });
     else scrollToSection(item.target);
   }
 
@@ -309,7 +312,7 @@ export default function Navbar() {
               onMouseLeave={() => setHovered(null)}
             >
               {MENU.map((item, i) => (
-                <li key={item.key}>
+                <li key={item.label ?? item.key}>
                   <button
                     ref={(el) => {
                       itemRefs.current[i] = el;
@@ -322,7 +325,7 @@ export default function Navbar() {
                       i === activeIndex ? "text-ink-50" : "text-ink-400 hover:text-ink-100"
                     }`}
                   >
-                    {t(item.key)}
+                    {item.key === "brand" ? item.label : t(item.key)}
                   </button>
                 </li>
               ))}

@@ -3,17 +3,16 @@
 import { useRef } from "react";
 import { ArrowDown, ShieldCheck } from "lucide-react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
-import { ReviewSummary } from "@/components/Reviews";
+import PriceTag from "@/components/PriceTag";
 import { useT } from "@/components/locale-context";
-import { products } from "@/lib/data";
+import { LIST_PRICE, products, UNIT_PRICE } from "@/lib/data";
 import { scrollToSection } from "@/lib/scroll";
 
-// Tres productos reales de líneas distintas para la vitrina.
-const SHOWCASE = ["Lemon Cherry Gelato", "Golden Papaya", "Mimosa"]
+// Tres cajas reales, de ambas marcas, para la vitrina.
+const SHOWCASE = ["Black Cherry Gelato", "Blue Slushie", "Unicorn Sherbet"]
   .map((name) => products.find((p) => p.name === name))
   .filter((p): p is (typeof products)[number] => Boolean(p));
 
-const FROM_PRICE = Math.min(...products.map((p) => p.price));
 
 // Posición, tamaño, giro y profundidad de cada pieza de la vitrina.
 // `depth` define cuánto se mueve con el puntero: lo cercano se mueve más.
@@ -56,9 +55,8 @@ export default function Hero() {
           </p>
 
           <h1 className="display-xl mt-7">
-            <span className="line-reveal block text-ink-50">{t("hero.line1")}</span>
-            <span className="line-reveal block [animation-delay:180ms]">
-              <span className="text-shine">{t("hero.line2")}</span>
+            <span className="line-reveal block">
+              <span className="text-shine">{t("hero.title")}</span>
             </span>
           </h1>
 
@@ -75,13 +73,14 @@ export default function Hero() {
               {t("hero.cta")}
               <ArrowDown className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-y-1" />
             </button>
-            <button onClick={() => scrollToSection("envios")} className="btn-ghost">
+            <button onClick={() => scrollToSection("privacidad")} className="btn-ghost">
               {t("hero.how")}
             </button>
           </div>
 
-          <div className="mt-9 animate-rise [animation-delay:480ms]">
-            <ReviewSummary />
+          <div className="mt-9 flex flex-wrap items-end gap-x-5 gap-y-2 animate-rise [animation-delay:480ms]">
+            <PriceTag price={UNIT_PRICE} listPrice={LIST_PRICE} />
+            <span className="pb-1 text-[12.5px] text-ink-400">{t("ann.delivery")}</span>
           </div>
         </div>
 
@@ -132,8 +131,8 @@ export default function Hero() {
                   <span className="absolute inset-0 animate-ping rounded-full bg-hybrid/70" />
                   <span className="relative h-2 w-2 rounded-full bg-hybrid" />
                 </span>
-                {t("col.from")}{" "}
-                <span className="font-bold text-gold-200">${FROM_PRICE}</span>
+                {t("hero.allAt")}{" "}
+                <span className="font-bold text-gold-200">${UNIT_PRICE}</span>
               </span>
             </span>
           </div>
