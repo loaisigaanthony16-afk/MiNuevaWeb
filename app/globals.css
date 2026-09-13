@@ -711,3 +711,30 @@ html[data-age="ok"] .gate {
     animation: none !important;
   }
 }
+
+
+/* ============================================================
+   ACCESOS FLOTANTES
+   ============================================================ */
+.wa-ping {
+  box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55);
+  animation: waPing 2.4s ease-out infinite;
+}
+@keyframes waPing {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+  70% { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+.bar-in {
+  animation: barIn 0.5s var(--ease) both;
+}
+@keyframes barIn {
+  from { transform: translateY(120%); }
+  to { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wa-ping,
+  .bar-in {
+    animation: none !important;
+  }
+}

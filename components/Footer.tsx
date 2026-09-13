@@ -14,7 +14,7 @@ export default function Footer() {
     "text-[13.5px] text-ink-300 transition-colors hover:text-gold-300";
 
   return (
-    <footer id="contacto" className="border-t border-white/8">
+    <footer id="contacto" className="border-t border-white/8 pb-20 md:pb-0">
       <div className="container-page py-16">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
@@ -48,7 +48,7 @@ export default function Footer() {
             </h3>
             <ul className="mt-5 space-y-3">
               <li>
-                <button onClick={() => scrollToSection("privacidad")} className={link}>
+                <button onClick={() => scrollToSection("como-funciona")} className={link}>
                   {t("foot.anon")}
                 </button>
               </li>

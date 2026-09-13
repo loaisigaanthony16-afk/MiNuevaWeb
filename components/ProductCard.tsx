@@ -8,6 +8,7 @@ import { useStore } from "@/lib/store";
 import { formatNIO } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
+import { flyToCart } from "@/lib/fly";
 
 const STRAIN_BG: Record<Product["strain"], string> = {
   sativa: "bg-sativa text-ink-900",
@@ -45,6 +46,7 @@ export default function ProductCard({
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
     add(product.id);
+    flyToCart(imgRef.current);
     setBounceKey((k) => k + 1);
     setAdded(true);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import { getBrand, STRAIN_EFFECT, STRAIN_LABEL } from "@/lib/data";
 import { useStore } from "@/lib/store";
@@ -8,6 +8,7 @@ import { useUi } from "@/components/ui-context";
 import { formatNIO } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
+import { flyToCart } from "@/lib/fly";
 
 const STRAIN_BG: Record<string, string> = {
   sativa: "bg-sativa text-ink-900",
@@ -20,6 +21,7 @@ export default function QuickView() {
   const { quickProduct: p, closeQuick } = useUi();
   const { add } = useStore();
   const [added, setAdded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     setAdded(false);
@@ -31,6 +33,7 @@ export default function QuickView() {
   function handleAdd() {
     if (!p) return;
     add(p.id);
+    flyToCart(imgRef.current);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }
@@ -60,6 +63,7 @@ export default function QuickView() {
           <div className="grid place-items-center bg-ink-950 p-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
+              ref={imgRef}
               src={p.img}
               alt={p.name}
               className="aspect-square w-full max-w-[360px] object-contain"

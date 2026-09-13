@@ -3,15 +3,15 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ServiceBar from "@/components/ServiceBar";
 import Collections from "@/components/Collections";
-import BrandsMarquee from "@/components/BrandsMarquee";
 import Catalog from "@/components/Catalog";
-import PrivacySection from "@/components/PrivacySection";
+import HowItWorks from "@/components/HowItWorks";
 import Community from "@/components/Community";
 import Footer from "@/components/Footer";
+import FloatingActions from "@/components/FloatingActions";
 
 // Orden de la portada: qué es y qué garantiza, por dónde entrar
-// (colecciones), el catálogo, cómo cuidamos tu privacidad y lo que opina
-// la gente que ya compró.
+// (colecciones), el catálogo, cómo se compra sin dar tu nombre y lo que
+// opina la gente que ya compró.
 export default function HomePage() {
   return (
     <main id="top">
@@ -20,11 +20,11 @@ export default function HomePage() {
       <Hero />
       <ServiceBar />
       <Collections />
-      <BrandsMarquee />
       <Catalog />
-      <PrivacySection />
+      <HowItWorks />
       <Community />
       <Footer />
+      <FloatingActions />
     </main>
   );
 }

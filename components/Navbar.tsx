@@ -25,12 +25,12 @@ const MENU: MenuItem[] = [
   { key: "menu.home", target: "top" },
   { key: "menu.collections", target: "colecciones" },
   ...BRANDS.map((b) => ({ key: "brand" as const, label: b.name, target: "catalogo", brand: b.id })),
+  { key: "menu.how", target: "como-funciona" },
   { key: "menu.opinions", target: "opiniones" },
-  { key: "menu.privacy", target: "privacidad" },
 ];
 
 // Orden en que aparecen en la página, para saber dónde está la persona.
-const SPY = ["colecciones", "catalogo", "privacidad", "opiniones"];
+const SPY = ["colecciones", "catalogo", "como-funciona", "opiniones"];
 
 // Alto fijo de la fila de categorías. Es fijo a propósito: la fila flota
 // sobre el contenido y un espaciador con este mismo alto la compensa, así
@@ -55,6 +55,16 @@ export default function Navbar() {
   } = useUi();
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  // En pantallas angostas el buscador es chico: texto de ayuda más corto.
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const apply = () => setCompact(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
   // La fila de categorías se pliega al bajar y vuelve al subir.
   const [rowHidden, setRowHidden] = useState(false);
   const [section, setSection] = useState<string>("top");
@@ -75,6 +85,9 @@ export default function Navbar() {
       frame = 0;
       const y = window.scrollY;
       setScrolled(y > 12);
+      // Progreso de lectura: una línea dorada bajo la barra.
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressRef.current?.style.setProperty("transform", `scaleX(${max > 0 ? y / max : 0})`);
 
       if (y < 180) setRowHidden(false);
       else if (y > lastY + 6) setRowHidden(true);
@@ -217,7 +230,7 @@ export default function Navbar() {
               setSearch(e.target.value);
               if (e.target.value) goSearch();
             }}
-            placeholder={t("nav.search")}
+            placeholder={t(compact ? "nav.searchShort" : "nav.search")}
             aria-label={t("nav.searchLabel")}
             className="field h-11 rounded-full pl-11 pr-10 text-[14px]"
           />
@@ -282,6 +295,7 @@ export default function Navbar() {
         {/* Bolsa */}
         <button
           onClick={openDrawer}
+          data-cart-target
           aria-label={`${t("nav.bag")} (${count})`}
           className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 transition-all duration-300 ease-smooth hover:border-gold-400/50 hover:bg-white/5 ${
             jiggle ? "cart-jiggle" : ""
@@ -295,6 +309,12 @@ export default function Navbar() {
           )}
         </button>
       </div>
+
+      <span
+        ref={progressRef}
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[2px] origin-left scale-x-0 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-200"
+      />
 
       {/* Fila de categorías */}
       <nav

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   ChevronRight,
+  CreditCard,
   Loader2,
   Lock,
   MapPin,
@@ -22,6 +23,7 @@ import {
   formatUSD,
 } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
+import CardLogos from "@/components/CardLogos";
 import { savePendingOrder } from "@/lib/pending-order";
 import { buildWhatsappMessage } from "@/lib/whatsapp";
 
@@ -276,7 +278,7 @@ export default function CartDrawer() {
                 disabled={loading}
                 className="btn-gold mt-5 w-full disabled:opacity-60"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                 {!ready
                   ? t("cart.needAddress")
                   : loading
@@ -284,7 +286,13 @@ export default function CartDrawer() {
                     : `${t("cart.pay")} ${formatUSD(total)}`}
               </button>
 
-              <p className="mt-3 text-center text-[11.5px] text-ink-500">{t("cart.secure")}</p>
+              <div className="mt-3 flex flex-col items-center gap-2">
+                <CardLogos />
+                <p className="flex items-center gap-1.5 text-[11.5px] text-ink-500">
+                  <Lock className="h-3 w-3" />
+                  {t("cart.secure")}
+                </p>
+              </div>
             </div>
           </>
         )}

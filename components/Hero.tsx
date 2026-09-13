@@ -73,7 +73,7 @@ export default function Hero() {
               {t("hero.cta")}
               <ArrowDown className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-y-1" />
             </button>
-            <button onClick={() => scrollToSection("privacidad")} className="btn-ghost">
+            <button onClick={() => scrollToSection("como-funciona")} className="btn-ghost">
               {t("hero.how")}
             </button>
           </div>

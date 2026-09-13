@@ -13,6 +13,7 @@ export const LOCALES: Locale[] = ["es", "en"];
 const es = {
   // --- Barra superior ---
   "nav.search": "Buscar sabor, marca o cepa…",
+  "nav.searchShort": "Buscar",
   "nav.searchLabel": "Buscar productos",
   "nav.clear": "Limpiar búsqueda",
   "nav.shipTo": "Entregar en",
@@ -54,7 +55,7 @@ const es = {
   "menu.home": "Inicio",
   "menu.collections": "Colecciones",
   "menu.opinions": "Opiniones",
-  "menu.privacy": "Privacidad",
+  "menu.how": "Cómo comprar",
 
   // --- Barra de servicio ---
   "svc.pay": "Pago",
@@ -112,10 +113,10 @@ const es = {
   "cart.discount": "Descuento",
   "cart.delivery": "Entrega en Estelí",
   "cart.total": "Total",
-  "cart.pay": "Pagar",
+  "cart.pay": "Pagar con tarjeta",
   "cart.needAddress": "Agregar dirección",
   "cart.edit": "Cambiar",
-  "cart.secure": "Pago cifrado · Coordinamos la entrega por WhatsApp",
+  "cart.secure": "Pago cifrado. Nunca vemos tu tarjeta.",
   "cart.remove": "Quitar",
 
   // --- Dirección ---
@@ -136,20 +137,29 @@ const es = {
   "addr.saved": "Guardado",
   "addr.delete": "Borrar mis datos",
 
-  // --- Privacidad ---
-  "priv.kicker": "Privacidad",
-  "priv.title1": "Anónimo,",
-  "priv.title2": "pero entregable.",
-  "priv.body":
-    "Necesitamos una dirección para llegar, no tu identidad para guardarla.",
-  "priv.s1t": "Ponés tu dirección",
-  "priv.s1b": "Un apodo basta. No verificamos identidad.",
-  "priv.s2t": "No se crea cuenta",
-  "priv.s2b": "Sin registro, sin correo, sin contraseña.",
-  "priv.s3t": "Se queda en tu equipo",
-  "priv.s3b": "Tu dirección no pasa por nuestro servidor ni por la pasarela.",
-  "priv.s4t": "Nos llega por WhatsApp",
-  "priv.s4b": "La enviás vos al terminar de pagar, solo para coordinar.",
+  // --- Cómo comprar ---
+  "how.kicker": "Cómo comprar",
+  "how.title": "Cuatro pasos. Sin nombre.",
+  "how.body": "Sin cuenta ni registro. Tu dirección nunca pasa por nuestro servidor.",
+  "how.s1t": "Elegí tus sabores",
+  "how.s1b": "Añadilos a la bolsa. Todos con el mismo precio.",
+  "how.s2t": "Pagá con tarjeta",
+  "how.s2b": "En pasarela cifrada. Nunca vemos los datos de tu tarjeta.",
+  "how.s3t": "Confirmá por WhatsApp",
+  "how.s3b": "Al pagar, enviás tus datos de entrega con un toque.",
+  "how.s4t": "Recibí en Estelí",
+  "how.s4b": "Te lo llevamos en empaque neutro. Entrega C$150.",
+  "how.p1t": "Un apodo basta",
+  "how.p1b": "No verificamos identidad ni creamos cuentas.",
+  "how.p2t": "Se queda en tu equipo",
+  "how.p2b": "Tu dirección no pasa por nuestro servidor ni por la pasarela.",
+  "how.p3t": "Solo por WhatsApp",
+  "how.p3b": "La enviás vos al terminar de pagar, únicamente para coordinar.",
+
+  // --- Accesos flotantes ---
+  "float.help": "¿Dudas? Escribinos",
+  "float.bag": "Tu bolsa",
+  "float.checkout": "Pagar",
 
   // --- Opiniones ---
   "op.kicker": "Comunidad",
@@ -243,6 +253,7 @@ export type Key = keyof typeof es;
 
 const en: Partial<Record<Key, string>> = {
   "nav.search": "Search flavor, brand or strain…",
+  "nav.searchShort": "Search",
   "nav.searchLabel": "Search products",
   "nav.clear": "Clear search",
   "nav.shipTo": "Deliver to",
@@ -280,7 +291,7 @@ const en: Partial<Record<Key, string>> = {
   "menu.home": "Home",
   "menu.collections": "Collections",
   "menu.opinions": "Opinions",
-  "menu.privacy": "Privacy",
+  "menu.how": "How to buy",
 
   "svc.pay": "Payment",
   "svc.payStrong": "100% encrypted",
@@ -331,10 +342,10 @@ const en: Partial<Record<Key, string>> = {
   "cart.discount": "Discount",
   "cart.delivery": "Delivery in Estelí",
   "cart.total": "Total",
-  "cart.pay": "Pay",
+  "cart.pay": "Pay by card",
   "cart.needAddress": "Add address",
   "cart.edit": "Change",
-  "cart.secure": "Encrypted payment · Delivery arranged on WhatsApp",
+  "cart.secure": "Encrypted payment. We never see your card.",
   "cart.remove": "Remove",
 
   "addr.kicker": "Delivery in Estelí",
@@ -354,18 +365,27 @@ const en: Partial<Record<Key, string>> = {
   "addr.saved": "Saved",
   "addr.delete": "Delete my data",
 
-  "priv.kicker": "Privacy",
-  "priv.title1": "Anonymous,",
-  "priv.title2": "still deliverable.",
-  "priv.body": "We need an address to reach you, not your identity to keep.",
-  "priv.s1t": "You set the address",
-  "priv.s1b": "A nickname is enough. We don't verify identity.",
-  "priv.s2t": "No account is created",
-  "priv.s2b": "No sign-up, no email, no password.",
-  "priv.s3t": "It stays on your device",
-  "priv.s3b": "Your address never goes through our server or the gateway.",
-  "priv.s4t": "It reaches us on WhatsApp",
-  "priv.s4b": "You send it after paying, only to arrange delivery.",
+  "how.kicker": "How to buy",
+  "how.title": "Four steps. No name.",
+  "how.body": "No account, no sign-up. Your address never touches our server.",
+  "how.s1t": "Pick your flavors",
+  "how.s1b": "Add them to your bag. Same price for all.",
+  "how.s2t": "Pay by card",
+  "how.s2b": "On an encrypted gateway. We never see your card details.",
+  "how.s3t": "Confirm on WhatsApp",
+  "how.s3b": "After paying, send your delivery details in one tap.",
+  "how.s4t": "Receive in Estelí",
+  "how.s4b": "We bring it in plain packaging. Delivery C$150.",
+  "how.p1t": "A nickname is enough",
+  "how.p1b": "We do not verify identity or create accounts.",
+  "how.p2t": "It stays on your device",
+  "how.p2b": "Your address never goes through our server or the gateway.",
+  "how.p3t": "Only on WhatsApp",
+  "how.p3b": "You send it after paying, only to arrange delivery.",
+
+  "float.help": "Questions? Message us",
+  "float.bag": "Your bag",
+  "float.checkout": "Pay",
 
   "op.kicker": "Community",
   "op.title": "Real opinions.",
