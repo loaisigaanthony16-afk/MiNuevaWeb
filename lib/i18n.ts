@@ -54,6 +54,7 @@ const es = {
   "menu.label": "Secciones",
   "menu.home": "Inicio",
   "menu.collections": "Colecciones",
+  "menu.reels": "Reels",
   "menu.opinions": "Opiniones",
   "menu.how": "Cómo comprar",
 
@@ -79,6 +80,26 @@ const es = {
   // --- Descuento ---
   "promo.label": "Descuento",
   "promo.only": "termina en",
+
+  // --- Reels ---
+  "reels.kicker": "Reels",
+  "reels.title": "Mirá cada sabor.",
+  "reels.body": "15 reels con música. Deslizá como en tus redes, mantené presionado para pausar y añadí a la bolsa sin salir.",
+  "reels.watch": "Ver reels",
+  "reels.hint": "Deslizá para ver más",
+  "reels.like": "Me gusta",
+  "reels.share": "Compartir",
+  "reels.copied": "Enlace copiado",
+  "reels.close": "Cerrar reels",
+  "reels.next": "Siguiente",
+  "reels.prev": "Anterior",
+  "reels.bag": "Bolsa",
+  "reels.sound": "Sonido",
+  "reels.tapSound": "Tocá para activar el sonido",
+  "reels.quiz": "¿Qué cepa buscás?",
+  "reels.voted": "¡Voto guardado! Gracias",
+  "reels.seeAll": "Ver los 14 sabores",
+  "reels.keys": "↑ ↓ cambiar · Espacio pausa · Doble clic me gusta · Esc cerrar",
 
   // --- Catálogo ---
   "cat.kicker": "Catálogo",
@@ -290,6 +311,7 @@ const en: Partial<Record<Key, string>> = {
   "menu.label": "Sections",
   "menu.home": "Home",
   "menu.collections": "Collections",
+  "menu.reels": "Reels",
   "menu.opinions": "Opinions",
   "menu.how": "How to buy",
 
@@ -312,6 +334,25 @@ const en: Partial<Record<Key, string>> = {
 
   "promo.label": "Discount",
   "promo.only": "ends in",
+
+  "reels.kicker": "Reels",
+  "reels.title": "See every flavor.",
+  "reels.body": "15 reels with music. Swipe like on your socials, press and hold to pause, add to your bag without leaving.",
+  "reels.watch": "Watch reels",
+  "reels.hint": "Swipe for more",
+  "reels.like": "Like",
+  "reels.share": "Share",
+  "reels.copied": "Link copied",
+  "reels.close": "Close reels",
+  "reels.next": "Next",
+  "reels.prev": "Previous",
+  "reels.bag": "Bag",
+  "reels.sound": "Sound",
+  "reels.tapSound": "Tap to turn on sound",
+  "reels.quiz": "Which strain are you after?",
+  "reels.voted": "Vote saved! Thanks",
+  "reels.seeAll": "See all 14 flavors",
+  "reels.keys": "↑ ↓ switch · Space pause · Double-click like · Esc close",
 
   "cat.kicker": "Catalog",
   "cat.title": "Every flavor.",

@@ -4,15 +4,17 @@
 // el producto ya se añadió antes de que empiece.
 // =====================================================================
 
-export function flyToCart(from: HTMLElement | null): void {
+export function flyToCart(from: HTMLElement | null, to?: HTMLElement | null): void {
   if (!from || typeof window === "undefined") return;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
   // Hay dos destinos posibles: la bolsa de la barra y la barra inferior del
   // teléfono. Se usa el que esté visible.
-  const target = [...document.querySelectorAll<HTMLElement>("[data-cart-target]")].find(
-    (el) => el.offsetParent !== null
-  );
+  const target =
+    to ??
+    [...document.querySelectorAll<HTMLElement>("[data-cart-target]")].find(
+      (el) => el.offsetParent !== null
+    );
   if (!target) return;
 
   const a = from.getBoundingClientRect();

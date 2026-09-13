@@ -19,7 +19,11 @@ export function scrollToSection(id: string): void {
     return;
   }
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) {
+    // La sección está en la portada y estamos en otra página.
+    window.location.assign(`/#${id}`);
+    return;
+  }
 
   const target = el.getBoundingClientRect().top + window.scrollY;
   const goingDown = target > window.scrollY;

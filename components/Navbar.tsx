@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MapPin, Search, ShoppingBag, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import Wordmark from "@/components/Wordmark";
 import { useStore } from "@/lib/store";
 import { useLocale } from "@/components/locale-context";
@@ -19,6 +20,8 @@ interface MenuItem {
   target: string;
   /** Si lleva al catálogo, con qué marca. */
   brand?: BrandId;
+  /** Página aparte (en vez de una sección de la portada). */
+  href?: string;
 }
 
 const MENU: MenuItem[] = [
@@ -27,6 +30,7 @@ const MENU: MenuItem[] = [
   ...BRANDS.map((b) => ({ key: "brand" as const, label: b.name, target: "catalogo", brand: b.id })),
   { key: "menu.how", target: "como-funciona" },
   { key: "menu.opinions", target: "opiniones" },
+  { key: "menu.reels", target: "reels", href: "/reels" },
 ];
 
 // Orden en que aparecen en la página, para saber dónde está la persona.
@@ -56,6 +60,9 @@ export default function Navbar() {
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const progressRef = useRef<HTMLSpanElement>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const onHome = pathname === "/";
   // En pantallas angostas el buscador es chico: texto de ayuda más corto.
   const [compact, setCompact] = useState(false);
   useEffect(() => {
@@ -128,6 +135,10 @@ export default function Navbar() {
   }, [rowHidden]);
 
   const activeIndex = (() => {
+    if (!onHome) {
+      const i = MENU.findIndex((m) => m.href === pathname);
+      return i === -1 ? 0 : i;
+    }
     if (section === "catalogo") {
       const i = MENU.findIndex((m) => m.brand === catalogBrand);
       return i === -1 ? 2 : i;
@@ -165,6 +176,16 @@ export default function Navbar() {
   }, [activeIndex]);
 
   function go(item: MenuItem) {
+    if (item.href) {
+      router.push(item.href);
+      return;
+    }
+    if (!onHome) {
+      // Las secciones viven en la portada.
+      const q = item.brand ? `?marca=${item.brand}` : "";
+      router.push(item.target === "top" ? "/" : `/${q}#${item.target}`);
+      return;
+    }
     if (item.brand) browse({ brand: item.brand, strain: "all" });
     else scrollToSection(item.target);
   }
@@ -196,7 +217,7 @@ export default function Navbar() {
   const hasAddress = isDeliveryComplete(delivery);
 
   function goSearch() {
-    scrollToSection("catalogo");
+    if (onHome) scrollToSection("catalogo");
   }
 
   return (
@@ -229,6 +250,12 @@ export default function Navbar() {
             onChange={(e) => {
               setSearch(e.target.value);
               if (e.target.value) goSearch();
+            }}
+            onKeyDown={(e) => {
+              // Fuera de la portada, Enter lleva al catálogo con la búsqueda.
+              if (e.key === "Enter" && !onHome && search.trim()) {
+                router.push(`/?q=${encodeURIComponent(search.trim())}#catalogo`);
+              }
             }}
             placeholder={t(compact ? "nav.searchShort" : "nav.search")}
             aria-label={t("nav.searchLabel")}

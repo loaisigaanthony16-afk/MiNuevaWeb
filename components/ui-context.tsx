@@ -78,6 +78,19 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setDeliveryState(loadDelivery());
     setDeliveryLoaded(true);
+
+    // Filtros que llegan desde otra página (/?marca=muha, /?q=texto).
+    const params = new URLSearchParams(window.location.search);
+    const marca = params.get("marca");
+    const q = params.get("q");
+    if (marca === "muha" || marca === "packwoods") setCatalogBrand(marca);
+    if (q) setSearch(q);
+    if (marca || q) {
+      params.delete("marca");
+      params.delete("q");
+      const rest = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
+    }
   }, []);
 
   // Bloquea el scroll de fondo mientras hay una capa abierta.
@@ -121,6 +134,12 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
 
   const browse = useCallback(
     ({ brand, strain }: { brand?: "all" | BrandId; strain?: "all" | Strain }) => {
+      // Fuera de la portada no hay catálogo: se va a la portada ya filtrada.
+      if (!document.getElementById("catalogo")) {
+        const q = brand && brand !== "all" ? `?marca=${brand}` : "";
+        window.location.assign(`/${q}#catalogo`);
+        return;
+      }
       if (brand) setCatalogBrand(brand);
       if (strain) setCatalogStrain(strain);
       setSearch("");
