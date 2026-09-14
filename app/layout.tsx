@@ -46,7 +46,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('pv18s')==='1'||document.cookie.indexOf('pv18s=1')>-1){document.documentElement.dataset.age='ok'}}catch(e){}",
+              "try{if(localStorage.getItem('vibe21')==='1'||document.cookie.indexOf('vibe21=1')>-1){document.documentElement.dataset.age='ok'}}catch(e){}",
           }}
         />
       </head>

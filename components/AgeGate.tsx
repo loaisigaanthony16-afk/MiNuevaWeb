@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import Wordmark from "@/components/Wordmark";
 import { useT } from "@/components/locale-context";
+// La clave cambió al pasar de 18+ a 21+: quien confirmó 18 vuelve a confirmar.
+import { AGE_KEY } from "@/lib/legal";
 
-const AGE_KEY = "pv18s";
 
 /**
  * Portal de edad: cubre el sitio hasta que la persona confirma ser mayor.

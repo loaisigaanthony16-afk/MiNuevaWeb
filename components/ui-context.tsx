@@ -16,6 +16,7 @@ import {
   type Strain,
 } from "@/lib/data";
 import { scrollToSection } from "@/lib/scroll";
+import { AGE_KEY } from "@/lib/legal";
 import {
   loadDelivery,
   saveDelivery,
@@ -66,7 +67,6 @@ interface UiStore {
 }
 
 const Ctx = createContext<UiStore | null>(null);
-const AGE_KEY = "pv18s";
 
 export function UIContextProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);

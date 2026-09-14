@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
+import { LEGAL } from "@/lib/legal";
 import { useT } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { BRANDS } from "@/lib/data";
@@ -16,7 +18,7 @@ export default function Footer() {
   return (
     <footer id="contacto" className="border-t border-white/8 pb-20 md:pb-0">
       <div className="container-page py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <Wordmark />
             <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-ink-400">
@@ -56,6 +58,31 @@ export default function Footer() {
                 <button onClick={() => scrollToSection("opiniones")} className={link}>
                   {t("foot.opinions")}
                 </button>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-display text-[11px] font-bold uppercase tracking-wide3 text-ink-500">
+              {t("foot.legalTitle")}
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {[
+                { href: "/terms", label: t("foot.terms") },
+                { href: "/privacy", label: t("foot.privacy") },
+                { href: "/shipping", label: t("foot.shipping") },
+                { href: "/refunds", label: t("foot.refunds") },
+              ].map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className={link}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <a href={LEGAL.whatsappUrl} target="_blank" rel="noopener noreferrer" className={link}>
+                  {t("foot.support")} · {LEGAL.whatsappDisplay}
+                </a>
               </li>
             </ul>
           </div>

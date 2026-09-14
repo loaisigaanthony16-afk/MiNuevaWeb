@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import { AlertCircle, Check, Loader2, Lock, RotateCcw, X } from "lucide-react";
@@ -19,7 +20,7 @@ import {
 import { confirmPendingOrder, savePendingOrder } from "@/lib/pending-order";
 import CardLogos from "@/components/CardLogos";
 
-type Phase = "creating" | "paying" | "verifying" | "paid" | "failed" | "error";
+type Phase = "confirm" | "creating" | "paying" | "verifying" | "paid" | "failed" | "error";
 
 const POLL_MS = 3000;
 
@@ -46,10 +47,11 @@ function Checkout() {
   const { closeCheckout, closeDrawer, delivery } = useUi();
   const { items, total, clear } = useStore();
 
-  const [phase, setPhase] = useState<Phase>("creating");
+  // Primero la confirmación de edad: sin ella no se crea el cobro.
+  const [phase, setPhase] = useState<Phase>("confirm");
+  const [adult, setAdult] = useState(false);
   const [session, setSession] = useState<InitResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const started = useRef(false);
 
   const start = useCallback(async () => {
     setPhase("creating");
@@ -77,12 +79,6 @@ function Checkout() {
       setPhase("error");
     }
   }, [items, delivery, t]);
-
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    void start();
-  }, [start]);
 
   // Tras enviar el formulario, se consulta el estado hasta confirmarlo.
   useEffect(() => {
@@ -159,6 +155,39 @@ function Checkout() {
                 <EmbeddedCheckout className="overflow-hidden rounded-2xl" />
               </EmbeddedCheckoutProvider>
             </div>
+          )}
+
+          {phase === "confirm" && (
+            <Center>
+              <span className="grid h-16 w-16 place-items-center rounded-full border border-gold-400/35 bg-gold-400/[0.06] font-display text-[20px] font-bold text-gold-200">
+                21+
+              </span>
+              <p className="mt-6 text-[17px] font-semibold text-ink-50">{t("co.ageTitle")}</p>
+              <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-ink-500">{t("co.ageBody")}</p>
+
+              <label className="mt-7 flex w-full max-w-sm cursor-pointer items-start gap-3 rounded-2xl border border-[#262626] bg-white/[0.02] p-4 text-left transition hover:border-white/20">
+                <input
+                  type="checkbox"
+                  checked={adult}
+                  onChange={(e) => setAdult(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[#c9a758]"
+                />
+                <span className="text-[13.5px] leading-relaxed text-ink-200">
+                  {t("co.ageCheck")}{" "}
+                  <span className="text-ink-400">
+                    {t("co.ageAccept")}{" "}
+                    <Link href="/terms" target="_blank" className="text-gold-300 underline underline-offset-4">{t("foot.terms")}</Link>
+                    {" · "}
+                    <Link href="/refunds" target="_blank" className="text-gold-300 underline underline-offset-4">{t("foot.refunds")}</Link>
+                  </span>
+                </span>
+              </label>
+
+              <button onClick={() => void start()} disabled={!adult} className="btn-gold mt-6 w-full max-w-sm disabled:cursor-not-allowed disabled:opacity-40">
+                <Lock className="h-4 w-4" />
+                {t("co.continue")}
+              </button>
+            </Center>
           )}
 
           {phase === "creating" && (
