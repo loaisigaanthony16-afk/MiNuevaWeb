@@ -10,6 +10,7 @@ import PendingOrderBanner from "@/components/PendingOrderBanner";
 import AddressModal from "@/components/AddressModal";
 import QuickView from "@/components/QuickView";
 import CartDrawer from "@/components/CartDrawer";
+import CheckoutModal from "@/components/CheckoutModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({
@@ -56,6 +57,7 @@ export default function RootLayout({
               {children}
               {/* Capas globales */}
               <CartDrawer />
+              <CheckoutModal />
               <QuickView />
               <AddressModal />
               <AgeGate />

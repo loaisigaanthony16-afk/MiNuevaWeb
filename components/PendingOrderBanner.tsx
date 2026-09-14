@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AlertTriangle, MessageCircle } from "lucide-react";
 import {
   PENDING_EVENT,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/pending-order";
 import { whatsappLink } from "@/lib/whatsapp";
 import { useT } from "@/components/locale-context";
+import { useUi } from "@/components/ui-context";
 
 /**
  * Aviso persistente de pedido sin coordinar.
@@ -26,6 +28,8 @@ import { useT } from "@/components/locale-context";
 export default function PendingOrderBanner() {
   const t = useT();
   const [pending, setPending] = useState<PendingOrder | null>(null);
+  const { checkoutOpen } = useUi();
+  const pathname = usePathname();
 
   const refresh = useCallback(() => {
     setPending(loadPendingOrder());
@@ -43,7 +47,8 @@ export default function PendingOrderBanner() {
     };
   }, [refresh]);
 
-  if (!pending) return null;
+  // En la confirmación y durante el pago ya hay otra pantalla a cargo.
+  if (!pending || checkoutOpen || pathname === "/order-success") return null;
 
   const paid = pending.stage === "pagado";
 

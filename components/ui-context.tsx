@@ -23,6 +23,11 @@ import {
 } from "@/lib/delivery";
 
 interface UiStore {
+  // Checkout
+  checkoutOpen: boolean;
+  openCheckout: () => void;
+  closeCheckout: () => void;
+
   // Carrito
   drawerOpen: boolean;
   openDrawer: () => void;
@@ -65,6 +70,7 @@ const AGE_KEY = "pv18s";
 
 export function UIContextProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [quickProduct, setQuickProduct] = useState<Product | null>(null);
   const [addressOpen, setAddressOpen] = useState(false);
   const [delivery, setDeliveryState] = useState<DeliveryInfo | null>(null);
@@ -109,15 +115,18 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     if (!anyOverlay) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      if (checkoutOpen) return; // el modal de pago se cierra con su botón
       if (quickProduct) setQuickProduct(null);
       else if (addressOpen) setAddressOpen(false);
       else if (drawerOpen) setDrawerOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [anyOverlay, quickProduct, addressOpen, drawerOpen]);
+  }, [anyOverlay, quickProduct, addressOpen, drawerOpen, checkoutOpen]);
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const openCheckout = useCallback(() => setCheckoutOpen(true), []);
+  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const closeQuick = useCallback(() => setQuickProduct(null), []);
   const openQuick = useCallback((id: number) => {
@@ -161,6 +170,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
 
   const store = useMemo<UiStore>(
     () => ({
+      checkoutOpen,
+      openCheckout,
+      closeCheckout,
       drawerOpen,
       openDrawer,
       closeDrawer,
@@ -184,6 +196,9 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
       passAge,
     }),
     [
+      checkoutOpen,
+      openCheckout,
+      closeCheckout,
       drawerOpen,
       openDrawer,
       closeDrawer,

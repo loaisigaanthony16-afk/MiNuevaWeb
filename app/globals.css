@@ -781,3 +781,26 @@ html[data-age="ok"] .gate {
     animation: none !important;
   }
 }
+
+
+/* ============================================================
+   CHECKOUT
+   ============================================================ */
+.co-success {
+  animation: coSuccess 0.7s var(--ease) both;
+  box-shadow: 0 0 0 0 rgba(46, 158, 107, 0.6);
+}
+@keyframes coSuccess {
+  0% { transform: scale(0.4); opacity: 0; box-shadow: 0 0 0 0 rgba(46, 158, 107, 0.6); }
+  55% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); box-shadow: 0 0 0 22px rgba(46, 158, 107, 0); }
+}
+.co-live {
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .co-success,
+  .co-live {
+    animation: none !important;
+  }
+}

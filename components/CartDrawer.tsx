@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import {
   ChevronRight,
   CreditCard,
-  Loader2,
   Lock,
   MapPin,
   Minus,
@@ -24,16 +22,11 @@ import {
 } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import CardLogos from "@/components/CardLogos";
-import { savePendingOrder } from "@/lib/pending-order";
-import { buildWhatsappMessage } from "@/lib/whatsapp";
 
 export default function CartDrawer() {
   const t = useT();
-  const { drawerOpen, closeDrawer, openAddress, delivery } = useUi();
+  const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } = useUi();
   const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
-
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   if (!drawerOpen) return null;
 
@@ -47,58 +40,13 @@ export default function CartDrawer() {
   );
   const savings = Math.max(0, listSubtotal - subtotal);
 
-  // Pide la factura al servidor y manda a la pasarela de NOWPayments.
-  async function goToCheckout() {
-    if (!ready || !delivery) {
+  // El cobro pasa en un modal: la persona no sale del sitio.
+  function goToCheckout() {
+    if (!ready) {
       openAddress();
       return;
     }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/create-nowpayments-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          // Solo id y cantidad. Ni el precio ni la dirección salen del
-          // navegador: el precio lo pone el servidor y la dirección se
-          // queda en este dispositivo.
-          items: items.map((it) => ({ id: it.id, qty: it.qty })),
-        }),
-      });
-      const data = (await res.json()) as {
-        invoiceUrl?: string;
-        orderId?: string;
-        totalUsd?: number;
-        error?: string;
-      };
-      if (res.ok && data.invoiceUrl) {
-        // El respaldo se guarda ANTES de salir del sitio. Si la pasarela no
-        // devuelve al cliente, el aviso ya está esperándolo acá: sin esto,
-        // un pedido pagado podría quedarse sin datos de entrega.
-        savePendingOrder(
-          data.orderId ?? "",
-          buildWhatsappMessage({
-            orderId: data.orderId ?? null,
-            lines: items.map((it) => ({
-              qty: it.qty,
-              name: getProduct(it.id)?.name ?? "",
-            })),
-            delivery,
-            totalUsd: data.totalUsd ?? total,
-          }),
-          "iniciado"
-        );
-
-        window.location.href = data.invoiceUrl;
-        return;
-      }
-      setError(data.error ?? t("pay.errorStart"));
-    } catch {
-      setError(t("pay.errorNetwork"));
-    } finally {
-      setLoading(false);
-    }
+    openCheckout();
   }
 
   return (
@@ -271,19 +219,12 @@ export default function CartDrawer() {
                 </div>
               </dl>
 
-              {error && <p className="mt-3 text-center text-[12.5px] text-red-400">{error}</p>}
-
               <button
                 onClick={goToCheckout}
-                disabled={loading}
-                className="btn-gold mt-5 w-full disabled:opacity-60"
+                className="btn-gold mt-5 w-full"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                {!ready
-                  ? t("cart.needAddress")
-                  : loading
-                    ? t("pay.processing")
-                    : `${t("cart.pay")} ${formatUSD(total)}`}
+                <CreditCard className="h-4 w-4" />
+                {!ready ? t("cart.needAddress") : `${t("cart.pay")} ${formatUSD(total)}`}
               </button>
 
               <div className="mt-3 flex flex-col items-center gap-2">
