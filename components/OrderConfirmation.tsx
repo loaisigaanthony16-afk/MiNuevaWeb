@@ -19,9 +19,8 @@ type View = "loading" | "verifying" | "paid" | "failed" | "missing";
  * Página de confirmación del pedido (/order-success?order_id=…).
  *
  * Solo muestra "pago confirmado" cuando la base lo dice. Si todavía no
- * está confirmado, espera consultando cada 3 s. Si el servidor no tiene
- * base de datos configurada, confía en el retorno de la pasarela, como
- * antes.
+ * está confirmado, espera consultando cada 3 s (la ruta de estado revisa
+ * Supabase y, si hace falta, la sesión en Stripe).
  *
  * El paso de WhatsApp es obligatorio: la dirección vive solo en este
  * dispositivo y es la única vía por la que el comercio la recibe.
@@ -32,13 +31,14 @@ export default function OrderConfirmation() {
   const { delivery, deliveryLoaded } = useUi();
 
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [view, setView] = useState<View>("loading");
   const [message, setMessage] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const settled = useRef(false);
 
-  // La pasarela puede volver dentro del iframe del modal: se sale al sitio.
+  // Si por algún motivo la página carga dentro de un iframe, se sale al sitio.
   useEffect(() => {
     if (window.top && window.top !== window.self) {
       try {
@@ -47,7 +47,9 @@ export default function OrderConfirmation() {
         /* distinto origen: se sigue acá */
       }
     }
-    const id = new URLSearchParams(window.location.search).get("order_id");
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("order_id");
+    setSessionId(params.get("session_id"));
     setOrderId(id && /^VIBE-[A-Z0-9]{4,20}$/.test(id) ? id : null);
     if (!id) setView("missing");
   }, []);
@@ -56,10 +58,16 @@ export default function OrderConfirmation() {
   useEffect(() => {
     if (!orderId) return;
     let alive = true;
+    let unknown = 0;
     const tick = async () => {
-      const status: OrderStatusValue = await fetchOrderStatus(orderId);
+      const status: OrderStatusValue = await fetchOrderStatus(orderId, sessionId);
       if (!alive) return;
-      if (status === "paid" || status === "unknown") setView("paid");
+      // Sin base ni sesión de Stripe no hay forma de verificar el pago.
+      if (status === "unknown" && ++unknown >= 3) {
+        setView("missing");
+        return;
+      }
+      if (status === "paid") setView("paid");
       else if (status === "failed" || status === "expired" || status === "refunded") setView("failed");
       else if (status === "not_found") setView("missing");
       else setView("verifying");
@@ -70,7 +78,7 @@ export default function OrderConfirmation() {
       alive = false;
       clearInterval(id);
     };
-  }, [orderId]);
+  }, [orderId, sessionId]);
 
   // Pagado: se arma el mensaje y se vacía la bolsa (una sola vez).
   useEffect(() => {

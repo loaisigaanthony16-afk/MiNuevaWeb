@@ -20,8 +20,11 @@ export type OrderStatusValue =
 
 export interface InitResponse {
   orderId: string;
-  invoiceUrl: string;
-  embeddable: boolean;
+  sessionId: string;
+  /** Formulario incrustado de Stripe. */
+  clientSecret: string | null;
+  /** Página alojada de Stripe, cuando no hay formulario incrustado. */
+  url: string | null;
   tracked: boolean;
   totalUsd: number;
 }
@@ -42,15 +45,16 @@ export async function initCheckout(items: CartItem[]): Promise<InitResponse> {
     throw new CheckoutError("network");
   }
   const data = (await res.json().catch(() => ({}))) as Partial<InitResponse> & { error?: string };
-  if (!res.ok || !data.invoiceUrl || !data.orderId) {
+  if (!res.ok || !data.orderId || (!data.clientSecret && !data.url)) {
     throw new CheckoutError(data.error ?? "start");
   }
   return data as InitResponse;
 }
 
-export async function fetchOrderStatus(orderId: string): Promise<OrderStatusValue> {
+export async function fetchOrderStatus(orderId: string, sessionId?: string | null): Promise<OrderStatusValue> {
   try {
-    const res = await fetch(`/api/checkout/status/${encodeURIComponent(orderId)}`, { cache: "no-store" });
+    const q = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
+    const res = await fetch(`/api/checkout/status/${encodeURIComponent(orderId)}${q}`, { cache: "no-store" });
     const data = (await res.json().catch(() => ({}))) as { status?: OrderStatusValue };
     return data.status ?? "unknown";
   } catch {

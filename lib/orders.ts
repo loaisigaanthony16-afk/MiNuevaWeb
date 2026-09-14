@@ -1,9 +1,9 @@
 // =====================================================================
-// Pedidos: registro y estado del pago.
+// Pedidos: registro y estado del pago (Stripe + Supabase).
 //
-// El pedido se guarda en Supabase al iniciar el cobro (`pending`) y el
-// webhook de NOWPayments lo actualiza. La página consulta ese estado, así
-// la confirmación no depende de que la pasarela devuelva al cliente.
+// El pedido se guarda al iniciar el cobro (`pending`) y el webhook de
+// Stripe lo actualiza. La página consulta ese estado, así la confirmación
+// no depende de que el navegador del cliente siga abierto.
 //
 // Sin datos personales: referencia, artículos, importes y estado.
 // =====================================================================
@@ -11,7 +11,6 @@
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import type { PricedOrder } from "@/lib/pricing";
 
-/** Estado del pedido en nuestra base. */
 export type OrderStatus =
   | "pending"
   | "confirming"
@@ -20,23 +19,6 @@ export type OrderStatus =
   | "failed"
   | "expired"
   | "refunded";
-
-/** Estados que manda NOWPayments en el IPN. */
-const FROM_NOWPAYMENTS: Record<string, OrderStatus> = {
-  waiting: "pending",
-  confirming: "confirming",
-  confirmed: "confirming",
-  sending: "confirming",
-  finished: "paid",
-  partially_paid: "partially_paid",
-  failed: "failed",
-  refunded: "refunded",
-  expired: "expired",
-};
-
-export function statusFromNowPayments(np: string): OrderStatus | null {
-  return FROM_NOWPAYMENTS[np] ?? null;
-}
 
 /** Referencia válida: evita consultas raras contra la base. */
 export function isOrderId(value: string): boolean {
@@ -56,13 +38,16 @@ interface OrderRow {
   status: OrderStatus;
   total_usd: number;
   paid_at: string | null;
+  stripe_session_id: string | null;
 }
+
+const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id";
 
 /** Guarda el pedido recién creado. Devuelve false si la base no está lista. */
 export async function createOrder(
   orderId: string,
   order: PricedOrder,
-  invoiceId: string | number | null
+  stripeSessionId: string
 ): Promise<boolean> {
   if (!ordersDbConfigured()) return false;
   try {
@@ -76,67 +61,60 @@ export async function createOrder(
         subtotal_usd: order.subtotalUsd,
         delivery_usd: order.shippingUsd,
         total_usd: order.totalUsd,
-        invoice_id: invoiceId === null ? null : String(invoiceId),
+        stripe_session_id: stripeSessionId,
       },
     });
     return true;
   } catch (err) {
     // El cobro sigue igual: sin registro solo se pierde la confirmación
-    // automática, y el respaldo por WhatsApp sigue funcionando.
+    // desde la base, y la página verifica directamente con Stripe.
     console.error("No se pudo guardar el pedido:", err instanceof Error ? err.message : "desconocido");
     return false;
   }
 }
 
-export interface IpnUpdate {
+export interface PaymentUpdate {
   orderId: string;
-  npStatus: string;
-  paymentId: string | number | null;
-  priceAmount?: number;
-  actuallyPaid?: number;
-  payCurrency?: string;
+  status: OrderStatus;
+  stripeSessionId: string;
+  paymentIntent: string | null;
+  amountTotalCents: number | null;
 }
 
 /**
- * Aplica un aviso del webhook.
+ * Aplica un cambio de estado que llegó por webhook.
  *
- * - Un pedido pagado no retrocede por un aviso viejo o repetido (salvo
+ * - Un pedido pagado no retrocede por un evento viejo o repetido (salvo
  *   reembolso).
- * - Si el importe del aviso no coincide con el del pedido, no se marca
- *   como pagado: queda para revisar.
+ * - Si el importe cobrado no coincide con el del pedido, no se marca como
+ *   pagado: queda para revisar.
  */
-export async function applyIpn(update: IpnUpdate): Promise<void> {
-  let status = statusFromNowPayments(update.npStatus);
-
-  // Registro sin datos personales, útil aunque la base falle.
+export async function applyPayment(update: PaymentUpdate): Promise<void> {
   console.log(
     "[pedido]",
-    JSON.stringify({
-      orderId: update.orderId,
-      npStatus: update.npStatus,
-      status,
-      paymentId: update.paymentId,
-      priceAmount: update.priceAmount,
-    })
+    JSON.stringify({ orderId: update.orderId, status: update.status, session: update.stripeSessionId })
   );
 
-  if (!status || !ordersDbConfigured() || !isOrderId(update.orderId)) return;
+  if (!ordersDbConfigured() || !isOrderId(update.orderId)) return;
 
-  const rows = await db<OrderRow[]>(
-    `orders?order_id=eq.${encodeURIComponent(update.orderId)}&select=order_id,status,total_usd,paid_at`
-  );
+  const rows = await db<OrderRow[]>(`orders?order_id=eq.${encodeURIComponent(update.orderId)}&${SELECT}`);
   const current = rows[0];
   if (!current) {
-    console.warn("IPN de un pedido que no está en la base:", update.orderId);
+    console.warn("Evento de un pedido que no está en la base:", update.orderId);
+    return;
+  }
+  if (current.stripe_session_id && current.stripe_session_id !== update.stripeSessionId) {
+    console.warn("Evento con una sesión distinta a la del pedido, descartado:", update.orderId);
     return;
   }
 
+  let status = update.status;
   if (
     status === "paid" &&
-    typeof update.priceAmount === "number" &&
-    Math.abs(update.priceAmount - Number(current.total_usd)) > 0.01
+    update.amountTotalCents !== null &&
+    update.amountTotalCents !== Math.round(Number(current.total_usd) * 100)
   ) {
-    console.warn("IPN con importe distinto al del pedido, queda para revisar:", update.orderId);
+    console.warn("Importe cobrado distinto al del pedido, queda para revisar:", update.orderId);
     status = "partially_paid";
   }
 
@@ -147,24 +125,15 @@ export async function applyIpn(update: IpnUpdate): Promise<void> {
     prefer: "return=minimal",
     body: {
       status,
-      np_status: update.npStatus,
-      payment_id: update.paymentId === null ? null : String(update.paymentId),
-      actually_paid: update.actuallyPaid ?? null,
-      pay_currency: update.payCurrency ?? null,
+      stripe_payment_intent: update.paymentIntent,
       ...(status === "paid" && !current.paid_at ? { paid_at: new Date().toISOString() } : {}),
     },
   });
 }
 
-/** Estado público de un pedido: solo lo que la página necesita saber. */
-export async function getOrderStatus(
-  orderId: string
-): Promise<{ status: OrderStatus | "unknown" | "not_found"; totalUsd?: number }> {
-  if (!ordersDbConfigured()) return { status: "unknown" };
-  const rows = await db<OrderRow[]>(
-    `orders?order_id=eq.${encodeURIComponent(orderId)}&select=order_id,status,total_usd,paid_at`
-  );
-  const row = rows[0];
-  if (!row) return { status: "not_found" };
-  return { status: row.status, totalUsd: Number(row.total_usd) };
+/** Estado de un pedido según la base. */
+export async function getOrderRow(orderId: string): Promise<OrderRow | null | "unconfigured"> {
+  if (!ordersDbConfigured()) return "unconfigured";
+  const rows = await db<OrderRow[]>(`orders?order_id=eq.${encodeURIComponent(orderId)}&${SELECT}`);
+  return rows[0] ?? null;
 }
