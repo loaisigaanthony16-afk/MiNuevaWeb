@@ -88,7 +88,6 @@ export default function QuickView() {
             <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-white/8 bg-white/8">
               {[
                 [t("quick.flavor"), p.flavor],
-                [t("quick.weight"), p.weight],
               ].map(([k, v]) => (
                 <div key={k} className="bg-ink-850 px-4 py-3.5">
                   <dt className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-500">{k}</dt>

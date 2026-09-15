@@ -7,7 +7,7 @@ import FloatingActions from "@/components/FloatingActions";
 
 export const metadata: Metadata = {
   title: "Reels · Vibe 505",
-  description: "Mirá cada sabor en video: 15 reels de Muha Meds y Packwoods de 2000 mg.",
+  description: "Mirá cada sabor en video: 15 reels de Muha Meds y Packwoods.",
 };
 
 // Pestaña propia: todos los reels juntos, fuera de la portada.

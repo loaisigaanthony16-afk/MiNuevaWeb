@@ -27,7 +27,6 @@ export interface Product {
   /** Precio de lista, para mostrar tachado. */
   listPrice: number;
   flavor: string;
-  weight: string;
   img: string;
 }
 
@@ -39,12 +38,12 @@ export const DISCOUNT_USD = 5;
 export const UNIT_PRICE = LIST_PRICE - DISCOUNT_USD;
 
 export const STRAIN_LABEL: Record<Strain, string> = {
-  sativa: "Sativa",
-  indica: "Indica",
-  hybrid: "Híbrida",
+  sativa: "Energía",
+  indica: "Relax",
+  hybrid: "Balance",
 };
 
-/** Efecto según cepa, tal como lo describe el empaque. */
+/** Sensación de cada perfil. */
 export const STRAIN_EFFECT: Record<Strain, string> = {
   sativa: "Chispa y lucidez",
   indica: "Difuso y relajado",
@@ -55,16 +54,16 @@ export const BRANDS: Brand[] = [
   {
     id: "muha",
     name: "Muha Meds",
-    kicker: "All-in-one · 2000 mg",
+    kicker: "All-in-one",
     description:
-      "Desechable recargable, listo para usar. Cerámica y batería que duran hasta la última calada.",
+      "Desechable recargable, listo para usar. Cerámica y batería que duran hasta el final.",
   },
   {
     id: "packwoods",
     name: "Packwoods",
-    kicker: "Desechable · 2000 mg",
+    kicker: "Desechable",
     description:
-      "Sabores intensos de postre y fruta en un equipo compacto de 2 gramos.",
+      "Sabores intensos de postre y fruta en un equipo compacto.",
   },
 ];
 
@@ -105,7 +104,6 @@ export const products: Product[] = ROWS.map(([name, slug, brand, strain, flavor]
   price: UNIT_PRICE,
   listPrice: LIST_PRICE,
   flavor,
-  weight: "2000 mg",
   img: `/catalogo/${slug}.webp`,
 }));
 

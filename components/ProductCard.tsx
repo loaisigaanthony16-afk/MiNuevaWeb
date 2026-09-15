@@ -93,7 +93,7 @@ export default function ProductCard({
         {/* Info */}
         <div className="flex flex-col px-3.5 pt-3.5 sm:px-4 sm:pt-4">
           <p className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-500">
-            {getBrand(product.brand).name} · {product.weight}
+            {getBrand(product.brand).name}
           </p>
           <h3 className="mt-1 font-display text-[14px] font-bold uppercase leading-tight tracking-[0.03em] text-ink-50 sm:text-[15px]">
             {product.name}

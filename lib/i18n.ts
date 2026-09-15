@@ -12,7 +12,7 @@ export const LOCALES: Locale[] = ["es", "en"];
 
 const es = {
   // --- Barra superior ---
-  "nav.search": "Buscar sabor, marca o cepa…",
+  "nav.search": "Buscar sabor o marca…",
   "nav.searchShort": "Buscar",
   "nav.searchLabel": "Buscar productos",
   "nav.clear": "Limpiar búsqueda",
@@ -34,7 +34,7 @@ const es = {
   "gate.legal": "Consumo responsable. Venta exclusiva a mayores de 21 años.",
 
   // --- Hero ---
-  "hero.kicker": "Vapes 2000 mg · Estelí",
+  "hero.kicker": "Vapes premium · Estelí",
   "hero.title": "Recibí sin nombre.",
   "hero.lede":
     "Conexión cifrada de extremo a extremo. Compra anónima y empaque neutro.",
@@ -71,10 +71,10 @@ const es = {
   // --- Colecciones ---
   "col.kicker": "Explorá por marca",
   "col.title": "Colecciones principales",
-  "col.body": "Dos marcas, tres cepas. Tocá una colección y te llevamos directo.",
+  "col.body": "Dos marcas, tres perfiles. Tocá una colección y te llevamos directo.",
   "col.refs": "sabores",
   "col.view": "Ver colección",
-  "col.strains": "Por cepa",
+  "col.strains": "Por perfil",
   "col.brands": "Nuestras marcas",
 
   // --- Descuento ---
@@ -96,7 +96,7 @@ const es = {
   "reels.bag": "Bolsa",
   "reels.sound": "Sonido",
   "reels.tapSound": "Tocá para activar el sonido",
-  "reels.quiz": "¿Qué cepa buscás?",
+  "reels.quiz": "¿Qué perfil buscás?",
   "reels.voted": "¡Voto guardado! Gracias",
   "reels.seeAll": "Ver los 14 sabores",
   "reels.keys": "↑ ↓ cambiar · Espacio pausa · Doble clic me gusta · Esc cerrar",
@@ -104,7 +104,7 @@ const es = {
   // --- Catálogo ---
   "cat.kicker": "Catálogo",
   "cat.title": "Todos los sabores.",
-  "cat.body": "2000 mg por equipo. Mismo precio en todo el catálogo.",
+  "cat.body": "Mismo precio en todo el catálogo.",
   "cat.brandAll": "Todas",
   "cat.strainAll": "Todas",
   "cat.results": "resultado",
@@ -118,9 +118,8 @@ const es = {
   "cat.buyNow": "Comprar ahora",
 
   // --- Vista rápida ---
-  "quick.weight": "Contenido",
   "quick.brand": "Marca",
-  "quick.strain": "Cepa",
+  "quick.strain": "Perfil",
   "quick.flavor": "Perfil de sabor",
   "quick.added": "Añadido",
   "quick.delivery": "+ C$150 de entrega en Estelí",
@@ -323,7 +322,7 @@ const es = {
 export type Key = keyof typeof es;
 
 const en: Partial<Record<Key, string>> = {
-  "nav.search": "Search flavor, brand or strain…",
+  "nav.search": "Search flavor or brand…",
   "nav.searchShort": "Search",
   "nav.searchLabel": "Search products",
   "nav.clear": "Clear search",
@@ -343,7 +342,7 @@ const en: Partial<Record<Key, string>> = {
   "gate.back": "Go back",
   "gate.legal": "Consume responsibly. Sales to people 21+ only.",
 
-  "hero.kicker": "2000 mg vapes · Estelí",
+  "hero.kicker": "Premium vapes · Estelí",
   "hero.title": "Get it with no name.",
   "hero.lede":
     "End-to-end encrypted connection. Anonymous purchase and plain packaging.",
@@ -376,10 +375,10 @@ const en: Partial<Record<Key, string>> = {
 
   "col.kicker": "Browse by brand",
   "col.title": "Main collections",
-  "col.body": "Two brands, three strains. Tap a collection and we take you straight there.",
+  "col.body": "Two brands, three profiles. Tap a collection and we take you straight there.",
   "col.refs": "flavors",
   "col.view": "View collection",
-  "col.strains": "By strain",
+  "col.strains": "By profile",
   "col.brands": "Our brands",
 
   "promo.label": "Discount",
@@ -399,14 +398,14 @@ const en: Partial<Record<Key, string>> = {
   "reels.bag": "Bag",
   "reels.sound": "Sound",
   "reels.tapSound": "Tap to turn on sound",
-  "reels.quiz": "Which strain are you after?",
+  "reels.quiz": "Which profile are you after?",
   "reels.voted": "Vote saved! Thanks",
   "reels.seeAll": "See all 14 flavors",
   "reels.keys": "↑ ↓ switch · Space pause · Double-click like · Esc close",
 
   "cat.kicker": "Catalog",
   "cat.title": "Every flavor.",
-  "cat.body": "2000 mg per device. Same price across the catalog.",
+  "cat.body": "Same price across the catalog.",
   "cat.brandAll": "All",
   "cat.strainAll": "All",
   "cat.results": "result",
@@ -418,9 +417,8 @@ const en: Partial<Record<Key, string>> = {
   "cat.add": "Add",
   "cat.buyNow": "Buy now",
 
-  "quick.weight": "Content",
   "quick.brand": "Brand",
-  "quick.strain": "Strain",
+  "quick.strain": "Profile",
   "quick.flavor": "Flavor profile",
   "quick.added": "Added",
   "quick.delivery": "+ C$150 delivery in Estelí",

@@ -26,7 +26,7 @@ const sections: LegalSection[] = [
   {
     title: "Productos",
     body: [
-      "Vendemos vapes desechables de 2000 mg de las marcas que figuran en el catálogo. Las fotos corresponden a nuestro inventario real; el empaque puede variar levemente entre lotes.",
+      "Vendemos vapes desechables de las marcas que figuran en el catálogo. Las fotos corresponden a nuestro inventario real; el empaque puede variar levemente entre lotes.",
       "La disponibilidad depende del inventario. Si un sabor se agota después de tu pago, te ofrecemos otro o te devolvemos ese producto.",
       "Son productos de uso adulto. Usalos con responsabilidad y lejos del alcance de menores.",
     ],

@@ -578,9 +578,9 @@ function Viewer({
                       <p className="text-[16px] font-black">{t("reels.quiz")}</p>
                       <div className="mt-2.5 flex flex-col gap-2">
                         {[
-                          ["indica", "🌙 Indica · relajado"],
-                          ["sativa", "⚡ Sativa · con chispa"],
-                          ["hybrid", "🌗 Híbrida · equilibrio"],
+                          ["indica", "🌙 Relax · suave"],
+                          ["sativa", "⚡ Energía · con chispa"],
+                          ["hybrid", "🌗 Balance · equilibrio"],
                         ].map(([value, label]) => (
                           <button
                             key={value}

@@ -20,9 +20,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vibe 505 · Vapes 2000 mg con entrega en Estelí",
+  title: "Vibe 505 · Vapes premium con entrega en Estelí",
   description:
-    "Muha Meds y Packwoods de 2000 mg. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
+    "Muha Meds y Packwoods. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
 };
 
 export const viewport: Viewport = {
