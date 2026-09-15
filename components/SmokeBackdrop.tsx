@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 /**
  * Capa de humo real detrás del titular.
  *
@@ -9,19 +13,34 @@
  * para el primer pintado. Sin audio y sin JavaScript.
  */
 export default function SmokeBackdrop() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
+    const check = () => setIsDesktop(mq.matches);
+    check();
+    mq.addEventListener("change", check);
+    return () => mq.removeEventListener("change", check);
+  }, []);
+
   return (
     <div className="smoke-layer" aria-hidden>
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/smoke-poster.jpg"
-      >
-        <source src="/smoke.webm" type="video/webm" />
-        <source src="/smoke.mp4" type="video/mp4" />
-      </video>
+      {isDesktop ? (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/smoke-poster.jpg"
+        >
+          <source src="/smoke.webm" type="video/webm" />
+          <source src="/smoke.mp4" type="video/mp4" />
+        </video>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src="/smoke-poster.jpg" alt="" className="h-full w-full object-cover" />
+      )}
     </div>
   );
 }

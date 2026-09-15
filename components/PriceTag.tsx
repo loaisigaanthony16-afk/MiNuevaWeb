@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useState, useEffect } from "react";
 import { Timer } from "lucide-react";
 import { useT } from "@/components/locale-context";
 
@@ -84,6 +84,11 @@ export default function PriceTag({
   const clock = usePromoClock();
   const off = listPrice - price;
   const lg = size === "lg";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div>
@@ -95,20 +100,21 @@ export default function PriceTag({
         >
           ${price}
         </span>
-        <span
+        <del
           className={`tabular-nums text-ink-500 line-through decoration-red-500/70 ${
             lg ? "text-[16px]" : "text-[12px]"
           }`}
         >
+          <span className="sr-only">Original price: </span>
           ${listPrice}
-        </span>
+        </del>
       </div>
 
       <span
         className={`promo-tag mt-2 inline-flex items-center whitespace-nowrap rounded-full font-semibold tabular-nums ${
           lg ? "gap-2 px-3 py-1.5 text-[12.5px]" : "gap-1.5 px-2 py-[3px] text-[10.5px]"
         }`}
-        aria-label={`-$${off} · ${t("promo.label")} ${t("promo.only")} ${clock}`}
+        aria-label={`-$${off} · ${t("promo.label")} ${t("promo.only")}`}
       >
         <span className="promo-off font-bold">-${off}</span>
         {lg && (
@@ -116,9 +122,9 @@ export default function PriceTag({
             {t("promo.label")} {t("promo.only")}
           </span>
         )}
-        <span className="flex items-center gap-1 text-red-100">
+        <span className="flex items-center gap-1 text-red-100" aria-hidden="true">
           <Timer className={`promo-clock ${lg ? "h-4 w-4" : "h-3.5 w-3.5"}`} />
-          <span className="font-mono">{clock}</span>
+          <span className="font-mono">{mounted ? clock : "20:00"}</span>
         </span>
       </span>
     </div>

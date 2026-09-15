@@ -28,11 +28,13 @@ import { useUi } from "@/components/ui-context";
 export default function PendingOrderBanner() {
   const t = useT();
   const [pending, setPending] = useState<PendingOrder | null>(null);
+  const [sent, setSent] = useState(false);
   const { checkoutOpen } = useUi();
   const pathname = usePathname();
 
   const refresh = useCallback(() => {
     setPending(loadPendingOrder());
+    setSent(false);
   }, []);
 
   useEffect(() => {
@@ -52,10 +54,7 @@ export default function PendingOrderBanner() {
 
   const paid = pending.stage === "pagado";
 
-  function send() {
-    if (!pending) return;
-    // Se abre el chat y recién ahí se retira el aviso.
-    window.open(whatsappLink(pending.message), "_blank", "noopener,noreferrer");
+  function confirmSent() {
     clearPendingOrder();
     setPending(null);
   }
@@ -73,45 +72,60 @@ export default function PendingOrderBanner() {
             paid ? "border-gold-400/50" : "border-white/15"
           }`}
         >
-          <button
-            onClick={send}
-            className="group flex w-full items-center gap-3 p-4 text-left sm:gap-4 sm:p-5"
-          >
-            <span
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
-                paid ? "bg-gold-400/15" : "bg-white/8"
-              }`}
+          {sent ? (
+            <div className="p-4 sm:p-5 text-center">
+              <p className="text-[13px] text-ink-300 mb-4">{t("pending.body")}</p>
+              <button
+                onClick={confirmSent}
+                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wide2 text-ink-900 transition hover:scale-[1.02]"
+              >
+                Ya envié mis datos
+              </button>
+            </div>
+          ) : (
+            <a
+              href={whatsappLink(pending.message)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setSent(true)}
+              className="group flex w-full items-center gap-3 p-4 text-left sm:gap-4 sm:p-5 hover:bg-white/5 transition-colors"
             >
-              <AlertTriangle
-                className={`h-[18px] w-[18px] ${
-                  paid ? "text-gold-300" : "text-ink-300"
-                }`}
-              />
-            </span>
-
-            <span className="min-w-0 flex-1">
               <span
-                className={`block font-display text-[12.5px] font-bold uppercase tracking-[0.1em] ${
-                  paid ? "text-gold-200" : "text-ink-100"
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
+                  paid ? "bg-gold-400/15" : "bg-white/8"
                 }`}
               >
-                {paid ? t("pending.title") : t("pending.titleStarted")}
+                <AlertTriangle
+                  className={`h-[18px] w-[18px] ${
+                    paid ? "text-gold-300" : "text-ink-300"
+                  }`}
+                />
               </span>
-              <span className="mt-1 block text-[13px] leading-snug text-ink-300">
-                {paid ? t("pending.body") : t("pending.bodyStarted")}
-              </span>
-              {pending.ref && (
-                <span className="mt-1 block font-mono text-[11px] text-ink-500">
-                  {pending.ref}
-                </span>
-              )}
-            </span>
 
-            <span className="flex shrink-0 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-[11.5px] font-bold uppercase tracking-wide2 text-ink-900 transition-transform duration-300 group-hover:scale-[1.03]">
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("pending.cta")}</span>
-            </span>
-          </button>
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block font-display text-[12.5px] font-bold uppercase tracking-[0.1em] ${
+                    paid ? "text-gold-200" : "text-ink-100"
+                  }`}
+                >
+                  {paid ? t("pending.title") : t("pending.titleStarted")}
+                </span>
+                <span className="mt-1 block text-[13px] leading-snug text-ink-300">
+                  {paid ? t("pending.body") : t("pending.bodyStarted")}
+                </span>
+                {pending.ref && (
+                  <span className="mt-1 block font-mono text-[11px] text-ink-500">
+                    {pending.ref}
+                  </span>
+                )}
+              </span>
+
+              <span className="flex shrink-0 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-[11.5px] font-bold uppercase tracking-wide2 text-ink-900 transition-transform duration-300 group-hover:scale-[1.03]">
+                <MessageCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("pending.cta")}</span>
+              </span>
+            </a>
+          )}
 
           {/* Solo quien no llegó a pagar puede descartarlo. Un pedido ya
               pagado no se cierra: sin sus datos no se puede despachar. */}

@@ -38,7 +38,7 @@ const es = {
   "hero.title": "Recibí sin nombre.",
   "hero.lede":
     "Conexión cifrada de extremo a extremo. Compra anónima y empaque neutro.",
-  "hero.cta": "Ver catálogo",
+  "hero.cta": "Comprar ahora",
   "hero.how": "Cómo funciona",
   "hero.scroll": "Deslizá",
   "hero.allAt": "Todos a",
@@ -53,7 +53,7 @@ const es = {
   // --- Menú de categorías ---
   "menu.label": "Secciones",
   "menu.home": "Inicio",
-  "menu.collections": "Colecciones",
+  "menu.catalog": "Catálogo",
   "menu.reels": "Reels",
   "menu.opinions": "Opiniones",
   "menu.how": "Cómo comprar",
@@ -115,6 +115,7 @@ const es = {
     "Probá con otro sabor o quitá los filtros para ver todo el catálogo.",
   "cat.reset": "Reiniciar filtros",
   "cat.add": "Añadir",
+  "cat.buyNow": "Comprar ahora",
 
   // --- Vista rápida ---
   "quick.weight": "Contenido",
@@ -130,6 +131,7 @@ const es = {
   "cart.emptyBody": "Elegí tus sabores y aparecen acá.",
   "cart.browse": "Ver catálogo",
   "cart.clear": "Vaciar",
+  "cart.clearConfirm": "¿Seguro? Toca para confirmar",
   "cart.subtotal": "Productos",
   "cart.discount": "Descuento",
   "cart.delivery": "Entrega en Estelí",
@@ -139,6 +141,10 @@ const es = {
   "cart.edit": "Cambiar",
   "cart.secure": "Pago cifrado. Nunca vemos tu tarjeta.",
   "cart.remove": "Quitar",
+  "cart.close": "Cerrar bolsa",
+  "cart.decrease": "Reducir cantidad",
+  "cart.increase": "Aumentar cantidad",
+  "cat.quickView": "Vista rápida de",
 
   // --- Dirección ---
   "addr.kicker": "Entrega en Estelí",
@@ -297,6 +303,7 @@ const es = {
 
   // --- Pie ---
   "foot.brands": "Marcas",
+  "foot.shop": "Tienda",
   "foot.info": "Información",
   "foot.anon": "Cómo funciona el anonimato",
   "foot.opinions": "Opiniones",
@@ -340,7 +347,7 @@ const en: Partial<Record<Key, string>> = {
   "hero.title": "Get it with no name.",
   "hero.lede":
     "End-to-end encrypted connection. Anonymous purchase and plain packaging.",
-  "hero.cta": "View catalog",
+  "hero.cta": "Shop now",
   "hero.how": "How it works",
   "hero.scroll": "Scroll",
   "hero.allAt": "All at",
@@ -353,7 +360,7 @@ const en: Partial<Record<Key, string>> = {
 
   "menu.label": "Sections",
   "menu.home": "Home",
-  "menu.collections": "Collections",
+  "menu.catalog": "Catalog",
   "menu.reels": "Reels",
   "menu.opinions": "Opinions",
   "menu.how": "How to buy",
@@ -409,6 +416,7 @@ const en: Partial<Record<Key, string>> = {
   "cat.emptyBody": "Try another flavor or clear the filters to see everything.",
   "cat.reset": "Reset filters",
   "cat.add": "Add",
+  "cat.buyNow": "Buy now",
 
   "quick.weight": "Content",
   "quick.brand": "Brand",
@@ -422,6 +430,7 @@ const en: Partial<Record<Key, string>> = {
   "cart.emptyBody": "Pick your flavors and they show up here.",
   "cart.browse": "View catalog",
   "cart.clear": "Clear",
+  "cart.clearConfirm": "Sure? Tap to confirm",
   "cart.subtotal": "Products",
   "cart.discount": "Discount",
   "cart.delivery": "Delivery in Estelí",
@@ -431,6 +440,10 @@ const en: Partial<Record<Key, string>> = {
   "cart.edit": "Change",
   "cart.secure": "Encrypted payment. We never see your card.",
   "cart.remove": "Remove",
+  "cart.close": "Close bag",
+  "cart.decrease": "Decrease quantity",
+  "cart.increase": "Increase quantity",
+  "cat.quickView": "Quick view of",
 
   "addr.kicker": "Delivery in Estelí",
   "addr.title": "Where should we bring it?",
@@ -578,6 +591,7 @@ const en: Partial<Record<Key, string>> = {
   "order.retry": "Back to the shop",
 
   "foot.brands": "Brands",
+  "foot.shop": "Shop",
   "foot.info": "Information",
   "foot.anon": "How anonymity works",
   "foot.opinions": "Opinions",

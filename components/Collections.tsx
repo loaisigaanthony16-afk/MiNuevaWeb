@@ -3,25 +3,14 @@
 import { ArrowUpRight } from "lucide-react";
 import {
   BRANDS,
-  STRAIN_EFFECT,
-  STRAIN_LABEL,
   products,
   type Brand,
   type Product,
-  type Strain,
 } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import { useReveal } from "@/hooks/useReveal";
 import { useTilt } from "@/hooks/useTilt";
-
-const STRAINS: Strain[] = ["indica", "sativa", "hybrid"];
-
-const STRAIN_DOT: Record<Strain, string> = {
-  sativa: "bg-sativa",
-  indica: "bg-indica",
-  hybrid: "bg-hybrid",
-};
 
 /**
  * "Colecciones principales": la puerta de entrada al catálogo.
@@ -32,7 +21,7 @@ export default function Collections() {
   useReveal([]);
 
   return (
-    <section id="colecciones" className="scroll-mt-[var(--nav-min)] py-20 sm:py-24">
+    <section id="colecciones" className="scroll-mt-[var(--nav-min)] py-16 sm:py-24">
       <div className="container-page">
         <div className="reveal mx-auto max-w-2xl text-center">
           <p className="kicker justify-center">
@@ -41,7 +30,7 @@ export default function Collections() {
             <span className="h-px w-8 bg-gold-400/60" />
           </p>
           <h2 className="mt-5 font-display text-[clamp(2.1rem,5.6vw,4rem)] font-medium uppercase leading-[0.98] tracking-tightest">
-            <span className="text-shine">{t("col.title")}</span>
+            <span className="text-ink-50">{t("col.title")}</span>
           </h2>
           <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-ink-400">
             {t("col.body")}
@@ -49,7 +38,7 @@ export default function Collections() {
         </div>
 
         {/* Marcas */}
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4">
           {BRANDS.map((brand, i) => (
             <BrandCard
               key={brand.id}
@@ -60,15 +49,6 @@ export default function Collections() {
           ))}
         </div>
 
-        {/* Cepas */}
-        <p className="reveal mt-14 text-center text-[11px] font-semibold uppercase tracking-wide3 text-ink-500">
-          {t("col.strains")}
-        </p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          {STRAINS.map((s, i) => (
-            <StrainCard key={s} strain={s} index={i} />
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -85,16 +65,20 @@ function BrandCard({
 }) {
   const t = useT();
   const { browse } = useUi();
-  const tilt = useTilt<HTMLButtonElement>(5);
+  const tilt = useTilt<HTMLAnchorElement>(5);
   const fan = items.slice(0, 3);
 
   return (
     <div className="reveal" style={{ transitionDelay: `${index * 110}ms` }}>
-      <button
+      <a
+        href="#catalogo"
         ref={tilt.ref}
         onPointerMove={tilt.onPointerMove}
         onPointerLeave={tilt.onPointerLeave}
-        onClick={() => browse({ brand: brand.id, strain: "all" })}
+        onClick={(e) => {
+          e.preventDefault();
+          browse({ brand: brand.id, strain: "all" });
+        }}
         aria-label={`${t("col.view")}: ${brand.name}`}
         className="tilt card-press group relative flex w-full flex-col overflow-hidden rounded-card border border-white/8 bg-ink-850 text-left transition-colors duration-500 hover:border-white/20"
       >
@@ -109,7 +93,7 @@ function BrandCard({
         <span className="tilt-glare" aria-hidden />
 
         {/* Abanico de cajas reales */}
-        <span className="fan relative mx-auto mt-8 block h-[190px] w-full sm:h-[240px]">
+        <span className="fan relative mx-auto mt-6 block h-[150px] w-full sm:h-[240px]">
           {fan.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -140,36 +124,8 @@ function BrandCard({
             <ArrowUpRight className="h-4 w-4" />
           </span>
         </span>
-      </button>
+      </a>
     </div>
   );
 }
 
-function StrainCard({ strain, index }: { strain: Strain; index: number }) {
-  const t = useT();
-  const { browse } = useUi();
-  const count = products.filter((p) => p.strain === strain).length;
-
-  return (
-    <div className="reveal" style={{ transitionDelay: `${index * 90}ms` }}>
-      <button
-        onClick={() => browse({ brand: "all", strain })}
-        aria-label={`${t("col.view")}: ${STRAIN_LABEL[strain]}`}
-        className="card-gold card-press group flex w-full items-center justify-between gap-4 p-5 text-left hover:border-white/20"
-      >
-        <span className="min-w-0">
-          <span className="flex items-center gap-2.5">
-            <span className={`h-2 w-2 rounded-full ${STRAIN_DOT[strain]}`} />
-            <span className="font-display text-[18px] font-semibold uppercase tracking-[0.06em] text-ink-50">
-              {STRAIN_LABEL[strain]}
-            </span>
-          </span>
-          <span className="mt-1.5 block text-[12.5px] text-ink-400">
-            {STRAIN_EFFECT[strain]} · <span className="tabular-nums">{count}</span> {t("col.refs")}
-          </span>
-        </span>
-        <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-500 transition-all duration-500 group-hover:rotate-45 group-hover:text-gold-300" />
-      </button>
-    </div>
-  );
-}

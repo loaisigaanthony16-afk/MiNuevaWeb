@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { getBrand, getProduct, STRAIN_LABEL } from "@/lib/data";
+import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
@@ -27,6 +28,7 @@ export default function CartDrawer() {
   const t = useT();
   const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } = useUi();
   const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
+  const [confirmClear, setConfirmClear] = useState(false);
 
   if (!drawerOpen) return null;
 
@@ -47,6 +49,16 @@ export default function CartDrawer() {
       return;
     }
     openCheckout();
+  }
+
+  function handleClear() {
+    if (confirmClear) {
+      clear();
+      setConfirmClear(false);
+    } else {
+      setConfirmClear(true);
+      setTimeout(() => setConfirmClear(false), 3000);
+    }
   }
 
   return (
@@ -70,7 +82,7 @@ export default function CartDrawer() {
           </h2>
           <button
             onClick={closeDrawer}
-            aria-label="Cerrar"
+            aria-label={t("cart.close")}
             className="flex h-10 w-10 items-center justify-center rounded-full text-ink-400 transition hover:bg-white/5 hover:text-ink-50"
           >
             <X className="h-5 w-5" />
@@ -122,7 +134,7 @@ export default function CartDrawer() {
                         <div className="flex items-center gap-1 rounded-full bg-white/[0.05] p-0.5">
                           <button
                             onClick={() => changeQty(item.id, -1)}
-                            aria-label="-1"
+                            aria-label={t("cart.decrease")}
                             className="flex h-8 w-8 items-center justify-center rounded-full text-ink-300 transition hover:bg-white/10 hover:text-ink-50"
                           >
                             <Minus className="h-3.5 w-3.5" />
@@ -132,8 +144,9 @@ export default function CartDrawer() {
                           </span>
                           <button
                             onClick={() => changeQty(item.id, 1)}
-                            aria-label="+1"
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-300 transition hover:bg-white/10 hover:text-ink-50"
+                            disabled={item.qty >= 99}
+                            aria-label={t("cart.increase")}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-300 transition hover:bg-white/10 hover:text-ink-50 disabled:opacity-50 disabled:hover:bg-transparent"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -152,16 +165,16 @@ export default function CartDrawer() {
 
               <li className="px-2 pt-1 text-right">
                 <button
-                  onClick={clear}
+                  onClick={handleClear}
                   className="text-[11.5px] uppercase tracking-wide2 text-ink-600 transition hover:text-red-400"
                 >
-                  {t("cart.clear")}
+                  {confirmClear ? t("cart.clearConfirm" as any) : t("cart.clear")}
                 </button>
               </li>
             </ul>
 
             {/* Pie */}
-            <div className="shrink-0 border-t border-white/8 bg-ink-900 px-6 pb-6 pt-5">
+            <div className="shrink-0 border-t border-white/8 bg-ink-900 p-4 pb-6 sm:p-6 sm:pb-6">
               {/* Dirección */}
               <button
                 onClick={openAddress}

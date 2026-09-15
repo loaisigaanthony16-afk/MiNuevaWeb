@@ -40,13 +40,12 @@ export default function FloatingActions() {
     };
   }, []);
 
-  if (pending || drawerOpen || quickProduct || addressOpen) return null;
-
+  const isHidden = pending || drawerOpen || quickProduct || addressOpen;
   const showBar = hydrated && count > 0;
   const help = whatsappLink("Hola, tengo una consulta sobre Vibe 505.");
 
   return (
-    <>
+    <div className={isHidden ? 'pointer-events-none opacity-0 transition-opacity duration-200' : 'pointer-events-auto opacity-100 transition-opacity duration-200'}>
       {/* WhatsApp */}
       <a
         href={help}
@@ -93,6 +92,6 @@ export default function FloatingActions() {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

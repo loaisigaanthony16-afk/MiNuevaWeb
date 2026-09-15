@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { ArrowDown, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, ShoppingBag } from "lucide-react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import PriceTag from "@/components/PriceTag";
 import { useT } from "@/components/locale-context";
@@ -9,8 +9,8 @@ import { LIST_PRICE, products, UNIT_PRICE } from "@/lib/data";
 import { scrollToSection } from "@/lib/scroll";
 
 // Tres cajas reales, de ambas marcas, para la vitrina.
-const SHOWCASE = ["Black Cherry Gelato", "Blue Slushie", "Unicorn Sherbet"]
-  .map((name) => products.find((p) => p.name === name))
+const SHOWCASE = [110, 103, 112]
+  .map((id) => products.find((p) => p.id === id))
   .filter((p): p is (typeof products)[number] => Boolean(p));
 
 
@@ -44,9 +44,8 @@ export default function Hero() {
     >
       <SmokeBackdrop />
       <div className="pointer-events-none absolute inset-0 z-[1] aurora" aria-hidden />
-      <div className="pointer-events-none absolute inset-0 z-[1] grid-lines" aria-hidden />
 
-      <div className="container-page relative z-10 grid items-center gap-6 pb-14 pt-14 sm:pt-20 lg:min-h-[640px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-20">
+      <div className="container-page relative z-10 grid items-center gap-4 pb-10 pt-12 sm:pt-20 lg:min-h-[620px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-20">
         {/* Texto */}
         <div>
           <p className="kicker animate-rise">
@@ -55,9 +54,7 @@ export default function Hero() {
           </p>
 
           <h1 className="display-xl mt-7">
-            <span className="line-reveal block">
-              <span className="text-shine">{t("hero.title")}</span>
-            </span>
+            <span className="line-reveal block text-ink-50">{t("hero.title")}</span>
           </h1>
 
           <p className="lede-mono mt-7 animate-rise [animation-delay:320ms]">
@@ -67,13 +64,14 @@ export default function Hero() {
 
           <div className="mt-9 flex flex-wrap items-center gap-3 animate-rise [animation-delay:400ms]">
             <button
-              onClick={() => scrollToSection("colecciones")}
-              className="btn-primary group"
+              onClick={() => scrollToSection("catalogo")}
+              className="btn-gold group w-full sm:w-auto"
             >
+              <ShoppingBag className="h-4 w-4" />
               {t("hero.cta")}
-              <ArrowDown className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-y-1" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-x-1" />
             </button>
-            <button onClick={() => scrollToSection("como-funciona")} className="btn-ghost">
+            <button onClick={() => scrollToSection("como-funciona")} className="btn-ghost w-full sm:w-auto">
               {t("hero.how")}
             </button>
           </div>
@@ -87,7 +85,7 @@ export default function Hero() {
         {/* Vitrina */}
         <div
           ref={stageRef}
-          className="relative mx-auto h-[300px] w-full max-w-[520px] sm:h-[400px] lg:h-[520px]"
+          className="relative mx-auto h-[250px] w-full max-w-[520px] sm:h-[400px] lg:h-[520px]"
           aria-hidden
         >
           {/* Anillos que giran detrás */}
@@ -139,15 +137,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Invitación a bajar (solo PC) */}
-      <div className="pointer-events-none absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 lg:flex">
-        <span className="text-[10px] font-semibold uppercase tracking-wide3 text-ink-500">
-          {t("hero.scroll")}
-        </span>
-        <span className="relative h-9 w-px overflow-hidden bg-white/10">
-          <span className="scroll-cue absolute inset-x-0 top-0 h-1/2 bg-gold-400" />
-        </span>
-      </div>
     </section>
   );
 }

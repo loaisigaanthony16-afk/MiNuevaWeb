@@ -18,7 +18,7 @@ const STRAIN_BG: Record<string, string> = {
 
 export default function QuickView() {
   const t = useT();
-  const { quickProduct: p, closeQuick } = useUi();
+  const { quickProduct: p, closeQuick, openDrawer } = useUi();
   const { add } = useStore();
   const [added, setAdded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -108,13 +108,26 @@ export default function QuickView() {
                     {formatNIO(p.price)} · {t("quick.delivery")}
                   </p>
                 </div>
-                <button
-                  onClick={handleAdd}
-                  className={`btn w-full sm:w-auto ${added ? "bg-hybrid text-white" : "btn-gold"}`}
-                >
-                  {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  {added ? t("quick.added") : t("cat.add")}
-                </button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  <button
+                    onClick={handleAdd}
+                    className={`btn w-full sm:w-auto ${added ? "bg-hybrid text-white" : "btn-ghost"}`}
+                  >
+                    {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    {added ? t("quick.added") : t("cat.add")}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!p) return;
+                      add(p.id);
+                      closeQuick();
+                      openDrawer();
+                    }}
+                    className="btn-gold w-full sm:w-auto"
+                  >
+                    {t("cat.buyNow")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

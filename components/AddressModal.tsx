@@ -107,8 +107,10 @@ export default function AddressModal() {
                 onChange={(e) => update("alias", e.target.value)}
                 placeholder={t("addr.aliasHint")}
                 className={`field ${errors.alias ? "field-error" : ""}`}
+                aria-invalid={Boolean(errors.alias)}
+                aria-describedby={errors.alias ? "alias-error" : undefined}
               />
-              {errors.alias && <Err msg={errors.alias} />}
+              {errors.alias && <Err id="alias-error" msg={errors.alias} />}
             </div>
 
             <div>
@@ -122,8 +124,10 @@ export default function AddressModal() {
                 onChange={(e) => update("phone", e.target.value)}
                 placeholder="8888 8888"
                 className={`field ${errors.phone ? "field-error" : ""}`}
+                aria-invalid={Boolean(errors.phone)}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
               />
-              {errors.phone && <Err msg={errors.phone} />}
+              {errors.phone && <Err id="phone-error" msg={errors.phone} />}
             </div>
           </div>
 
@@ -139,8 +143,10 @@ export default function AddressModal() {
               onChange={(e) => update("address", e.target.value)}
               placeholder={t("addr.addressHint")}
               className={`field h-auto resize-none py-3 ${errors.address ? "field-error" : ""}`}
+              aria-invalid={Boolean(errors.address)}
+              aria-describedby={errors.address ? "address-error" : undefined}
             />
-            {errors.address && <Err msg={errors.address} />}
+            {errors.address && <Err id="address-error" msg={errors.address} />}
           </div>
 
           <div className="mt-5">
@@ -149,7 +155,7 @@ export default function AddressModal() {
               <span className="normal-case text-ink-500">{t("addr.optional")}</span>
             </label>
             <input
-                id="notes"
+              id="notes"
               value={form.notes}
               onChange={(e) => update("notes", e.target.value)}
               placeholder={t("addr.notesHint")}
@@ -185,6 +191,6 @@ export default function AddressModal() {
   );
 }
 
-function Err({ msg }: { msg: string }) {
-  return <p className="mt-1.5 text-[12px] text-red-400">{msg}</p>;
+function Err({ id, msg }: { id: string; msg: string }) {
+  return <p id={id} className="mt-1.5 text-[12px] text-red-400">{msg}</p>;
 }

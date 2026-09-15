@@ -5,7 +5,6 @@ import Wordmark from "@/components/Wordmark";
 import { LEGAL } from "@/lib/legal";
 import { useT } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
-import { BRANDS } from "@/lib/data";
 import { scrollToSection } from "@/lib/scroll";
 
 export default function Footer() {
@@ -17,8 +16,8 @@ export default function Footer() {
 
   return (
     <footer id="contacto" className="border-t border-white/8 pb-20 md:pb-0">
-      <div className="container-page py-16">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="container-page py-12 sm:py-16">
+        <div className="grid gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <Wordmark />
             <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-ink-400">
@@ -31,33 +30,26 @@ export default function Footer() {
 
           <div>
             <h3 className="font-display text-[11px] font-bold uppercase tracking-wide3 text-ink-500">
-              {t("foot.brands")}
-            </h3>
-            <ul className="mt-5 space-y-3">
-              {BRANDS.map((b) => (
-                <li key={b.id}>
-                  <button onClick={() => browse({ brand: b.id, strain: "all" })} className={link}>
-                    {b.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-display text-[11px] font-bold uppercase tracking-wide3 text-ink-500">
-              {t("foot.info")}
+              {t("foot.shop")}
             </h3>
             <ul className="mt-5 space-y-3">
               <li>
-                <button onClick={() => scrollToSection("como-funciona")} className={link}>
-                  {t("foot.anon")}
-                </button>
+                <a href="#catalogo" onClick={(e) => { e.preventDefault(); browse({ brand: "all", strain: "all" }); }} className={link}>
+                  {t("menu.catalog")}
+                </a>
               </li>
               <li>
-                <button onClick={() => scrollToSection("opiniones")} className={link}>
+                <Link href="/reels" className={link}>{t("menu.reels")}</Link>
+              </li>
+              <li>
+                <a href="#como-funciona" onClick={(e) => { e.preventDefault(); scrollToSection("como-funciona"); }} className={link}>
+                  {t("foot.anon")}
+                </a>
+              </li>
+              <li>
+                <a href="#opiniones" onClick={(e) => { e.preventDefault(); scrollToSection("opiniones"); }} className={link}>
                   {t("foot.opinions")}
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -82,14 +74,15 @@ export default function Footer() {
               <li>
                 <a href={LEGAL.whatsappUrl} target="_blank" rel="noopener noreferrer" className={link}>
                   {t("foot.support")} · {LEGAL.whatsappDisplay}
+                  <span className="sr-only"> (opens in new window)</span>
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-3 border-t border-white/8 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11.5px] text-ink-600">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/8 pt-7 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11.5px] text-ink-600" suppressHydrationWarning>
             &copy; {new Date().getFullYear()} Vibe 505 · {t("foot.rights")}
           </p>
           <p className="text-[11.5px] text-ink-600">{t("foot.legal")}</p>

@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 /**
  * Marca Vibe 505.
  *
@@ -10,6 +12,7 @@ export default function Wordmark({
   size?: "md" | "lg";
 }) {
   const lg = size === "lg";
+  const gradId = useId();
 
   return (
     <span className="inline-flex items-center gap-3">
@@ -26,13 +29,13 @@ export default function Wordmark({
         >
           <path
             d="M5 6.5 L12 18 L19 6.5"
-            stroke="url(#vg)"
+            stroke={`url(#${gradId})`}
             strokeWidth="1.9"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           <defs>
-            <linearGradient id="vg" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#f6edd6" />
               <stop offset="60%" stopColor="#dcc183" />
               <stop offset="100%" stopColor="#b08d3e" />

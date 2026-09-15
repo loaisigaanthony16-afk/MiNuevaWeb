@@ -7,8 +7,10 @@ import {
   useEffect,
   useMemo,
   useState,
+  Suspense,
   type ReactNode,
 } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   getProduct,
   type BrandId,
@@ -84,23 +86,10 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setDeliveryState(loadDelivery());
     setDeliveryLoaded(true);
-
-    // Filtros que llegan desde otra página (/?marca=muha, /?q=texto).
-    const params = new URLSearchParams(window.location.search);
-    const marca = params.get("marca");
-    const q = params.get("q");
-    if (marca === "muha" || marca === "packwoods") setCatalogBrand(marca);
-    if (q) setSearch(q);
-    if (marca || q) {
-      params.delete("marca");
-      params.delete("q");
-      const rest = params.toString();
-      window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
-    }
   }, []);
 
   // Bloquea el scroll de fondo mientras hay una capa abierta.
-  const anyOverlay = drawerOpen || addressOpen || quickProduct !== null;
+  const anyOverlay = drawerOpen || addressOpen || checkoutOpen || quickProduct !== null;
   useEffect(() => {
     if (!anyOverlay) return;
     const prev = document.body.style.overflow;
@@ -220,7 +209,29 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
     ]
   );
 
-  return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={store}>
+      {children}
+      <Suspense fallback={null}>
+        <SearchParamsSync />
+      </Suspense>
+    </Ctx.Provider>
+  );
+}
+
+function SearchParamsSync() {
+  const searchParams = useSearchParams();
+  const ui = useContext(Ctx);
+
+  useEffect(() => {
+    if (!ui || !searchParams) return;
+    const marca = searchParams.get("marca");
+    const q = searchParams.get("q");
+    if (marca === "muha" || marca === "packwoods") ui.setCatalogBrand(marca);
+    if (typeof q === "string") ui.setSearch(q);
+  }, [searchParams, ui]);
+
+  return null;
 }
 
 export function useUi(): UiStore {

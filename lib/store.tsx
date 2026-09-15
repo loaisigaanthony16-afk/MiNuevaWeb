@@ -66,6 +66,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const stored = loadCart();
     if (stored.length) setItems(stored);
     setIsHydrated(true);
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        const fresh = loadCart();
+        setItems(fresh);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   useEffect(() => {

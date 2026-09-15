@@ -9,7 +9,7 @@ import { useLocale } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { isDeliveryComplete } from "@/lib/delivery";
 import { scrollToSection } from "@/lib/scroll";
-import { BRANDS, type BrandId } from "@/lib/data";
+import type { BrandId } from "@/lib/data";
 import type { Key } from "@/lib/i18n";
 
 interface MenuItem {
@@ -19,22 +19,21 @@ interface MenuItem {
   /** Sección a la que lleva. */
   target: string;
   /** Si lleva al catálogo, con qué marca. */
-  brand?: BrandId;
+  brand?: "all" | BrandId;
   /** Página aparte (en vez de una sección de la portada). */
   href?: string;
 }
 
 const MENU: MenuItem[] = [
   { key: "menu.home", target: "top" },
-  { key: "menu.collections", target: "colecciones" },
-  ...BRANDS.map((b) => ({ key: "brand" as const, label: b.name, target: "catalogo", brand: b.id })),
+  { key: "menu.catalog", target: "catalogo", brand: "all" },
+  { key: "menu.reels", target: "reels", href: "/reels" },
   { key: "menu.how", target: "como-funciona" },
   { key: "menu.opinions", target: "opiniones" },
-  { key: "menu.reels", target: "reels", href: "/reels" },
 ];
 
 // Orden en que aparecen en la página, para saber dónde está la persona.
-const SPY = ["colecciones", "catalogo", "como-funciona", "opiniones"];
+const SPY = ["catalogo", "como-funciona", "opiniones"];
 
 // Alto fijo de la fila de categorías. Es fijo a propósito: la fila flota
 // sobre el contenido y un espaciador con este mismo alto la compensa, así
@@ -55,7 +54,6 @@ export default function Navbar() {
     search,
     setSearch,
     browse,
-    catalogBrand,
   } = useUi();
   const [jiggle, setJiggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -97,8 +95,8 @@ export default function Navbar() {
       progressRef.current?.style.setProperty("transform", `scaleX(${max > 0 ? y / max : 0})`);
 
       if (y < 180) setRowHidden(false);
-      else if (y > lastY + 6) setRowHidden(true);
-      else if (y < lastY - 6) setRowHidden(false);
+      else if (y > lastY + 12) setRowHidden(true);
+      else if (y < lastY - 12) setRowHidden(false);
       lastY = y;
 
       // La sección activa es la última cuyo inicio ya pasó bajo la barra.
@@ -139,11 +137,7 @@ export default function Navbar() {
       const i = MENU.findIndex((m) => m.href === pathname);
       return i === -1 ? 0 : i;
     }
-    if (section === "catalogo") {
-      const i = MENU.findIndex((m) => m.brand === catalogBrand);
-      return i === -1 ? 2 : i;
-    }
-    const i = MENU.findIndex((m) => m.target === section && !m.brand);
+    const i = MENU.findIndex((m) => m.target === section);
     return i === -1 ? 0 : i;
   })();
 
@@ -182,7 +176,7 @@ export default function Navbar() {
     }
     if (!onHome) {
       // Las secciones viven en la portada.
-      const q = item.brand ? `?marca=${item.brand}` : "";
+      const q = item.brand && item.brand !== "all" ? `?marca=${item.brand}` : "";
       router.push(item.target === "top" ? "/" : `/${q}#${item.target}`);
       return;
     }

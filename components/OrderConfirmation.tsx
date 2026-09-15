@@ -10,6 +10,7 @@ import Wordmark from "@/components/Wordmark";
 import { whatsappLink } from "@/lib/whatsapp";
 import { clearPendingOrder, confirmPendingOrder, loadPendingOrder } from "@/lib/pending-order";
 import { fetchOrderStatus, whatsappMessageFor, type OrderStatusValue } from "@/lib/checkout-client";
+import { deliveryFor } from "@/lib/checkout-util";
 
 const POLL_MS = 3000;
 
@@ -88,10 +89,12 @@ export default function OrderConfirmation() {
 
     // Si el modal ya vació la bolsa, el mensaje guardado al pagar manda.
     const saved = loadPendingOrder();
+    const subtotal = items.reduce((a, it) => a + it.price * it.qty, 0);
+    const total = subtotal + deliveryFor(subtotal);
     const msg =
       saved && saved.ref === orderId
         ? saved.message
-        : whatsappMessageFor(orderId, items, delivery, items.reduce((a, it) => a + it.price * it.qty, 0));
+        : whatsappMessageFor(orderId, items, delivery, total);
     setMessage(msg);
     confirmPendingOrder(orderId, msg);
     clear();

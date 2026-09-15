@@ -49,7 +49,7 @@
   :focus-visible {
     outline: 2px solid var(--gold);
     outline-offset: 3px;
-    border-radius: 4px;
+    border-radius: inherit;
   }
 
   /* Scrollbar acorde al tema */
@@ -238,14 +238,6 @@
       radial-gradient(60% 60% at 50% 108%, rgba(111, 200, 190, 0.07) 0%, transparent 60%);
   }
 
-  .grid-lines {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-    background-size: 72px 72px;
-    mask-image: radial-gradient(75% 65% at 50% 30%, #000 0%, transparent 88%);
-    -webkit-mask-image: radial-gradient(75% 65% at 50% 30%, #000 0%, transparent 88%);
-  }
 }
 
 /* ============================================================
@@ -798,6 +790,20 @@ html[data-age="ok"] .gate {
 .co-live {
   animation: dotPulse 1.4s ease-in-out infinite;
 }
+
+/* ============================================================
+   ACCESIBILIDAD
+   ============================================================ */
+@media (forced-colors: active) {
+  .text-shine,
+  .text-gold-gradient {
+    color: CanvasText;
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .co-success,
   .co-live {

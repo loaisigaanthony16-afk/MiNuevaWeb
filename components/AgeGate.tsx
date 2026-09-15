@@ -1,12 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 import SmokeBackdrop from "@/components/SmokeBackdrop";
 import Wordmark from "@/components/Wordmark";
 import { useT } from "@/components/locale-context";
 // La clave cambió al pasar de 18+ a 21+: quien confirmó 18 vuelve a confirmar.
 import { AGE_KEY } from "@/lib/legal";
 
+function subscribe(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
+
+function getClientSnapshot() {
+  return document.documentElement.dataset.age === 'ok' ||
+    window.localStorage.getItem(AGE_KEY) === "1" ||
+    document.cookie.includes(`${AGE_KEY}=1`);
+}
+
+function getServerSnapshot() {
+  return false;
+}
 
 /**
  * Portal de edad: cubre el sitio hasta que la persona confirma ser mayor.
@@ -15,23 +29,9 @@ import { AGE_KEY } from "@/lib/legal";
  * coincidan, y bloquea el scroll del fondo mientras está abierto.
  */
 export default function AgeGate() {
-  // Por defecto el portal está puesto: es lo primero que se ve. Solo se
-  // retira si al montar comprobamos que esta persona ya confirmó.
   const t = useT();
-  const [allowed, setAllowed] = useState(false);
+  const allowed = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const [denied, setDenied] = useState(false);
-
-  useEffect(() => {
-    let ok = false;
-    try {
-      ok =
-        window.localStorage.getItem(AGE_KEY) === "1" ||
-        document.cookie.includes(`${AGE_KEY}=1`);
-    } catch {
-      /* noop */
-    }
-    if (ok) setAllowed(true);
-  }, []);
 
   const blocking = !allowed;
 
@@ -53,7 +53,9 @@ export default function AgeGate() {
     } catch {
       /* noop */
     }
-    setAllowed(true);
+    document.documentElement.dataset.age = "ok";
+    // Forzar re-evaluación del snapshot de useSyncExternalStore.
+    window.dispatchEvent(new Event("storage"));
   }
 
   return (

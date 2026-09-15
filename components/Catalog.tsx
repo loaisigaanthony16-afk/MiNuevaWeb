@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo } from "react";
+import { useDeferredValue, useMemo, startTransition } from "react";
 import { SearchX } from "lucide-react";
 import {
   BRANDS,
@@ -62,9 +62,11 @@ export default function Catalog() {
           <div>
             <p className="kicker">{t("cat.kicker")}</p>
             <h2 className="display-lg mt-5 text-ink-50">
-              {searching
-                ? `${matches.length} ${matches.length === 1 ? t("cat.results") : t("cat.resultsPlural")}`
-                : t("cat.title")}
+              <span role="status" aria-live="polite">
+                {searching
+                  ? `${matches.length} ${matches.length === 1 ? t("cat.results") : t("cat.resultsPlural")}`
+                  : t("cat.title")}
+              </span>
             </h2>
             {!searching && (
               <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-400">
@@ -91,6 +93,7 @@ export default function Catalog() {
               <button
                 key={b.id}
                 onClick={() => setBrand(b.id)}
+                aria-pressed={brand === b.id}
                 className={`h-8 whitespace-nowrap rounded-full px-4 text-[12px] font-bold uppercase tracking-[0.1em] transition-all duration-300 ease-smooth ${
                   brand === b.id ? "bg-ink-50 text-ink-900" : "text-ink-400 hover:text-ink-50"
                 }`}
@@ -106,6 +109,7 @@ export default function Catalog() {
             <button
               key={s}
               onClick={() => setStrain(s)}
+              aria-pressed={strain === s}
               className={`filter-pill shrink-0 ${strain === s ? "filter-pill-active" : ""}`}
             >
               {s === "all" ? t("cat.strainAll") : STRAIN_LABEL[s]}
@@ -126,9 +130,11 @@ export default function Catalog() {
             <p className="mt-3 max-w-sm text-[14.5px] text-ink-400">{t("cat.emptyBody")}</p>
             <button
               onClick={() => {
-                setSearch("");
-                setStrain("all");
-                setBrand("all");
+                startTransition(() => {
+                  setSearch("");
+                  setStrain("all");
+                  setBrand("all");
+                });
               }}
               className="btn-ghost mt-8"
             >
@@ -154,7 +160,9 @@ export default function Catalog() {
 
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5">
                 {items.map((p, i) => (
-                  <ProductCard key={p.id} product={p} delay={(i % 5) * 60} />
+                  <div key={p.id} className="animate-rise">
+                    <ProductCard product={p} delay={(i % 5) * 60} />
+                  </div>
                 ))}
               </div>
             </div>

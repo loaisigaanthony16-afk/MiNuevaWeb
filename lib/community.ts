@@ -58,11 +58,18 @@ export async function fetchThreads(): Promise<Thread[]> {
   const threads = rows
     .filter((r) => r.parent_id === null)
     .map((r) => ({ ...r, replies: [] as Opinion[] }));
-  const byId = new Map(threads.map((t) => [t.id, t]));
+  const rootById = new Map(threads.map((t) => [t.id, t]));
+  const allById = new Map(rows.map((r) => [r.id, r]));
 
   // Las respuestas se leen en orden cronológico dentro de su hilo.
   for (const r of [...rows].reverse()) {
-    if (r.parent_id) byId.get(r.parent_id)?.replies.push(r);
+    if (r.parent_id) {
+      let rootId = r.parent_id;
+      while (allById.get(rootId)?.parent_id) {
+        rootId = allById.get(rootId)!.parent_id!;
+      }
+      rootById.get(rootId)?.replies.push(r);
+    }
   }
   return threads;
 }

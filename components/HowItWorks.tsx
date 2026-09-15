@@ -22,7 +22,6 @@ const STEPS: { icon: typeof ShoppingBag; title: Key; body: Key }[] = [
 export default function HowItWorks() {
   const t = useT();
   const ref = useRef<HTMLOListElement>(null);
-  const [progress, setProgress] = useState(0);
   useReveal([]);
 
   useEffect(() => {
@@ -35,7 +34,11 @@ export default function HowItWorks() {
       const vh = window.innerHeight;
       // 0 cuando la lista asoma abajo, 1 cuando llega a la mitad de pantalla.
       const p = (vh - r.top) / (vh * 0.5 + r.height * 0.5);
-      setProgress(Math.min(1, Math.max(0, p)));
+      const progress = Math.min(1, Math.max(0, p));
+      
+      el.style.setProperty('--scroll-progress', progress.toString());
+      const active = Math.min(STEPS.length, Math.floor(progress * STEPS.length + 0.35));
+      el.dataset.activeStep = active.toString();
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -50,10 +53,26 @@ export default function HowItWorks() {
     };
   }, []);
 
-  const active = Math.min(STEPS.length, Math.floor(progress * STEPS.length + 0.35));
-
   return (
     <section id="como-funciona" className="scroll-mt-[var(--nav-min)] border-t border-white/8 py-24">
+      <style>{`
+        ol[data-active-step="1"] > li:nth-child(-n+1) .step-icon,
+        ol[data-active-step="2"] > li:nth-child(-n+2) .step-icon,
+        ol[data-active-step="3"] > li:nth-child(-n+3) .step-icon,
+        ol[data-active-step="4"] > li:nth-child(-n+4) .step-icon {
+          transform: scale(1);
+          border-color: #facc15;
+          background-color: #facc15;
+          color: #0f0f0f;
+          box-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
+        }
+        ol[data-active-step="1"] > li:nth-child(-n+1) .step-content,
+        ol[data-active-step="2"] > li:nth-child(-n+2) .step-content,
+        ol[data-active-step="3"] > li:nth-child(-n+3) .step-content,
+        ol[data-active-step="4"] > li:nth-child(-n+4) .step-content {
+          opacity: 1;
+        }
+      `}</style>
       <div className="container-page">
         <div className="reveal mx-auto max-w-2xl text-center">
           <p className="kicker justify-center">
@@ -67,32 +86,25 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <ol ref={ref} className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">
+        <ol ref={ref} data-active-step="0" className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">
           {/* Línea que se dibuja: horizontal en PC, vertical en el teléfono */}
           <span className="absolute left-[27px] top-2 hidden h-[calc(100%-1rem)] w-px bg-white/8 max-md:block" aria-hidden>
-            <span className="block w-full bg-gold-400 transition-[height] duration-300" style={{ height: `${progress * 100}%` }} />
+            <span className="block w-full bg-gold-400 transition-[height] duration-300" style={{ height: 'calc(var(--scroll-progress, 0) * 100%)' }} />
           </span>
           <span className="absolute left-[12.5%] right-[12.5%] top-[27px] hidden h-px bg-white/8 md:block" aria-hidden>
-            <span className="block h-full bg-gold-400 transition-[width] duration-300" style={{ width: `${progress * 100}%` }} />
+            <span className="block h-full bg-gold-400 transition-[width] duration-300" style={{ width: 'calc(var(--scroll-progress, 0) * 100%)' }} />
           </span>
 
           {STEPS.map(({ icon: Icon, title, body }, i) => {
-            const on = i < active;
             return (
               <li key={title} className="relative flex gap-5 md:flex-col md:items-center md:text-center">
-                <span
-                  className={`relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full border transition-all duration-700 ease-smooth ${
-                    on
-                      ? "scale-100 border-gold-400 bg-gold-400 text-ink-900 shadow-glow"
-                      : "scale-90 border-white/12 bg-ink-900 text-ink-500"
-                  }`}
-                >
+                <span className="step-icon relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full border border-white/12 bg-ink-900 text-ink-500 scale-90 transition-all duration-700 ease-smooth">
                   <Icon className="h-5 w-5" />
                   <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-ink-900 text-[10px] font-bold tabular-nums text-gold-300 ring-1 ring-white/10">
                     {i + 1}
                   </span>
                 </span>
-                <div className={`transition-all duration-700 ease-smooth ${on ? "opacity-100" : "opacity-50"}`}>
+                <div className="step-content opacity-50 transition-all duration-700 ease-smooth">
                   <p className="font-display text-[15px] font-semibold uppercase tracking-[0.08em] text-ink-50 md:mt-5">
                     {t(title)}
                   </p>
