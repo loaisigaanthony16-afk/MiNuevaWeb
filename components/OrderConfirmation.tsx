@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, Copy, Loader2, Lock, MessageCircle, PackageCheck } from "lucide-react";
+import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import Wordmark from "@/components/Wordmark";
-import { whatsappLink } from "@/lib/whatsapp";
-import { clearPendingOrder, confirmPendingOrder, loadPendingOrder } from "@/lib/pending-order";
-import { fetchOrderStatus, whatsappMessageFor, type OrderStatusValue } from "@/lib/checkout-client";
+import { confirmPendingOrder, loadPendingOrder } from "@/lib/pending-order";
+import OrderChat from "@/components/OrderChat";
+import { fetchOrderStatus, deliveryMessageFor, type OrderStatusValue } from "@/lib/checkout-client";
 import { deliveryFor } from "@/lib/checkout-util";
 
 const POLL_MS = 3000;
@@ -23,8 +23,9 @@ type View = "loading" | "verifying" | "paid" | "failed" | "missing";
  * está confirmado, espera consultando cada 3 s (la ruta de estado revisa
  * Supabase y, si hace falta, la sesión en Stripe).
  *
- * El paso de WhatsApp es obligatorio: la dirección vive solo en este
- * dispositivo y es la única vía por la que el comercio la recibe.
+ * Con el pago confirmado se abre el chat del pedido en la misma página y
+ * los datos de entrega (que viven solo en este dispositivo) se mandan por
+ * ahí, cifrados.
  */
 export default function OrderConfirmation() {
   const t = useT();
@@ -34,9 +35,7 @@ export default function OrderConfirmation() {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [view, setView] = useState<View>("loading");
-  const [message, setMessage] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [chat, setChat] = useState<{ token: string; message: string } | null>(null);
   const settled = useRef(false);
 
   // Si por algún motivo la página carga dentro de un iframe, se sale al sitio.
@@ -87,35 +86,20 @@ export default function OrderConfirmation() {
     if (!hydrated || !deliveryLoaded) return;
     settled.current = true;
 
-    // Si el modal ya vació la bolsa, el mensaje guardado al pagar manda.
+    // El token del chat se guardó al pagar; el mensaje de entrega también.
     const saved = loadPendingOrder();
-    const subtotal = items.reduce((a, it) => a + it.price * it.qty, 0);
-    const total = subtotal + deliveryFor(subtotal);
-    const msg =
-      saved && saved.ref === orderId
-        ? saved.message
-        : whatsappMessageFor(orderId, items, delivery, total);
-    setMessage(msg);
-    confirmPendingOrder(orderId, msg);
+    if (saved && saved.ref === orderId) {
+      const subtotal = items.reduce((a, it) => a + it.price * it.qty, 0);
+      const msg = saved.message || deliveryMessageFor(orderId, items, delivery, subtotal + deliveryFor(subtotal));
+      setChat({ token: saved.token, message: msg });
+      confirmPendingOrder(orderId);
+    }
     clear();
   }, [view, orderId, hydrated, deliveryLoaded, items, delivery, clear]);
 
-  function markSent() {
-    clearPendingOrder();
-    setSent(true);
-  }
-
-  function copy() {
-    if (!message) return;
-    void navigator.clipboard?.writeText(message).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
   return (
     <section className="container-page grid min-h-[70vh] place-items-center py-14">
-      <div className="modal-pop w-full max-w-lg rounded-[24px] border border-[#262626] bg-[#0A0A0A] p-8 text-center sm:p-10">
+      <div className="modal-pop w-full max-w-xl rounded-[24px] border border-[#262626] bg-[#0A0A0A] p-8 text-center sm:p-10">
         <div className="flex justify-center">
           <Wordmark />
         </div>
@@ -168,30 +152,16 @@ export default function OrderConfirmation() {
               </div>
             )}
 
-            {message && (
-              <div className="mt-6">
-                <p className="mb-3 rounded-xl border border-gold-400/35 bg-gold-400/[0.06] px-4 py-3 text-[12.5px] font-semibold leading-relaxed text-gold-100">
-                  {t("order.required")}
-                </p>
-                <a
-                  href={whatsappLink(message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={markSent}
-                  className="btn w-full bg-[#25D366] text-ink-900 hover:bg-[#1fbe5a]"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  {t("order.whatsapp")}
-                </a>
-                <p className="mt-3 flex items-start gap-2 text-left text-[12px] leading-relaxed text-ink-500">
-                  <Lock className="mt-0.5 h-3 w-3 shrink-0 text-hybrid" />
-                  {t("order.whatsappBody")}
-                </p>
-                <button onClick={copy} className="btn-ghost mt-3 w-full">
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  {copied ? t("order.copied") : t("order.copy")}
-                </button>
+            <p className="mt-6 rounded-xl border border-gold-400/35 bg-gold-400/[0.06] px-4 py-3 text-[12.5px] font-semibold leading-relaxed text-gold-100">
+              {t("order.required")}
+            </p>
+
+            {chat ? (
+              <div className="mt-4">
+                <OrderChat orderId={orderId!} token={chat.token} firstMessage={chat.message} />
               </div>
+            ) : (
+              <p className="mt-4 text-[13px] leading-relaxed text-ink-400">{t("chat.noToken")}</p>
             )}
 
             <ol className="mt-7 space-y-3 text-left text-[13.5px] leading-relaxed text-ink-400">
@@ -203,20 +173,7 @@ export default function OrderConfirmation() {
               ))}
             </ol>
 
-            {sent ? (
-              <>
-                <Link href="/" className="btn-gold mt-8 w-full">
-                  <PackageCheck className="h-4 w-4" />
-                  {t("order.done")}
-                </Link>
-                <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-hybrid">
-                  <Check className="h-3.5 w-3.5" />
-                  {t("order.sent")}
-                </p>
-              </>
-            ) : (
-              <p className="mt-6 text-[11.5px] leading-relaxed text-ink-600">{t("order.keepOpen")}</p>
-            )}
+            <Link href="/" className="btn-ghost mt-8 w-full">{t("order.done")}</Link>
           </>
         )}
       </div>

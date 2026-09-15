@@ -1,11 +1,11 @@
 // =====================================================================
-// Llamadas del navegador al checkout y armado del aviso de WhatsApp.
+// Llamadas del navegador al checkout y armado del primer mensaje del chat.
 // =====================================================================
 
 import { getProduct } from "@/lib/data";
 import type { CartItem } from "@/lib/store";
 import type { DeliveryInfo } from "@/lib/delivery";
-import { buildWhatsappMessage } from "@/lib/whatsapp";
+import { buildDeliveryMessage } from "@/lib/delivery-message";
 
 export type OrderStatusValue =
   | "pending"
@@ -26,6 +26,8 @@ export interface InitResponse {
   /** Página alojada de Stripe, cuando no hay formulario incrustado. */
   url: string | null;
   tracked: boolean;
+  /** Token secreto del chat del pedido (null si no hay base). */
+  chatToken: string | null;
   totalUsd: number;
 }
 
@@ -62,14 +64,14 @@ export async function fetchOrderStatus(orderId: string, sessionId?: string | nul
   }
 }
 
-/** Mensaje de WhatsApp con lo que había en la bolsa y la dirección local. */
-export function whatsappMessageFor(
+/** Primer mensaje del chat: lo que había en la bolsa y la dirección local. */
+export function deliveryMessageFor(
   orderId: string | null,
   items: CartItem[],
   delivery: DeliveryInfo | null,
   totalUsd?: number
 ): string {
-  return buildWhatsappMessage({
+  return buildDeliveryMessage({
     orderId,
     lines: items.map((it) => ({ qty: it.qty, name: getProduct(it.id)?.name ?? "" })),
     delivery,

@@ -3,6 +3,7 @@ import { priceOrder, PricingError } from "@/lib/pricing";
 import { DELIVERY_FEE_NIO, DELIVERY_ZONE } from "@/lib/checkout-util";
 import { createOrder, newOrderId } from "@/lib/orders";
 import { stripe, stripeConfigured, toCents } from "@/lib/stripe-server";
+import { newChatToken } from "@/lib/chat-server";
 import { isAllowedOrigin, siteOrigin } from "@/lib/site";
 
 /**
@@ -77,7 +78,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No se pudo iniciar el pago." }, { status: 500 });
     }
 
-    const tracked = await createOrder(orderId, order, session.id);
+    // Secreto del chat del pedido: solo lo conoce este navegador.
+    const chatToken = newChatToken();
+    const tracked = await createOrder(orderId, order, session.id, chatToken);
 
     return NextResponse.json({
       orderId,
@@ -85,6 +88,7 @@ export async function POST(request: Request) {
       clientSecret: embedded ? session.client_secret : null,
       url: embedded ? null : session.url,
       tracked,
+      chatToken: tracked ? chatToken : null,
       subtotalUsd: order.subtotalUsd,
       deliveryUsd: order.shippingUsd,
       totalUsd: order.totalUsd,

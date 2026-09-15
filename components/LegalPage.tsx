@@ -82,11 +82,8 @@ export default function LegalPage({
         <div className="mt-14 rounded-2xl border border-[#262626] bg-white/[0.02] p-6">
           <p className="font-display text-[14px] font-semibold uppercase tracking-[0.08em] text-ink-50">¿Dudas sobre este documento?</p>
           <p className="mt-2 text-[14px] leading-relaxed text-ink-400">
-            Escribinos por WhatsApp al{" "}
-            <a href={LEGAL.whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-gold-300 underline-offset-4 hover:underline">
-              {LEGAL.whatsappDisplay}
-            </a>
-            .
+            Escribinos desde {LEGAL.channel}: al confirmarse tu pago se abre solo, y podés volver a él en{" "}
+            <Link href="/pedido" className="text-gold-300 underline-offset-4 hover:underline">vibe505.com/pedido</Link>.
           </p>
         </div>
       </article>

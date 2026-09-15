@@ -47,7 +47,8 @@ const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id";
 export async function createOrder(
   orderId: string,
   order: PricedOrder,
-  stripeSessionId: string
+  stripeSessionId: string,
+  chatToken: string
 ): Promise<boolean> {
   if (!ordersDbConfigured()) return false;
   try {
@@ -62,6 +63,7 @@ export async function createOrder(
         delivery_usd: order.shippingUsd,
         total_usd: order.totalUsd,
         stripe_session_id: stripeSessionId,
+        chat_token: chatToken,
       },
     });
     return true;

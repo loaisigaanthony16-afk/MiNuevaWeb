@@ -14,7 +14,7 @@ import {
   CheckoutError,
   fetchOrderStatus,
   initCheckout,
-  whatsappMessageFor,
+  deliveryMessageFor,
   type InitResponse,
 } from "@/lib/checkout-client";
 import { confirmPendingOrder, savePendingOrder } from "@/lib/pending-order";
@@ -59,8 +59,16 @@ function Checkout() {
     setSession(null);
     try {
       const data = await initCheckout(items);
-      // Respaldo antes de pagar: el aviso de WhatsApp queda en este equipo.
-      savePendingOrder(data.orderId, whatsappMessageFor(data.orderId, items, delivery, data.totalUsd), "iniciado");
+      // Antes de pagar queda guardado el acceso al chat del pedido y los
+      // datos de entrega, que solo salen de este equipo por ese chat.
+      if (data.chatToken) {
+        savePendingOrder({
+          stage: "iniciado",
+          ref: data.orderId,
+          token: data.chatToken,
+          message: deliveryMessageFor(data.orderId, items, delivery, data.totalUsd),
+        });
+      }
       if (!data.clientSecret && data.url) {
         // Sin formulario incrustado: página segura de Stripe.
         window.location.href = data.url;

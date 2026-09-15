@@ -12,7 +12,7 @@ const sections: LegalSection[] = [
     title: "Quiénes somos",
     body: [
       `${LEGAL.brand} es una tienda en línea que funciona en ${LEGAL.site}. Vendemos vapes desechables y entregamos únicamente dentro de ${LEGAL.zone}, ${LEGAL.country}.`,
-      `Nuestro canal de atención es WhatsApp: ${LEGAL.whatsappDisplay}. Al usar el sitio o comprar aceptás estos términos.`,
+      `Nuestro canal de atención es ${LEGAL.channel}, cifrado. Al usar el sitio o comprar aceptás estos términos.`,
     ],
   },
   {
@@ -47,13 +47,13 @@ const sections: LegalSection[] = [
     title: "Pedido y confirmación",
     body: [
       "Tu pedido queda confirmado cuando el pago se acredita. Te mostramos una referencia con el formato VIBE-XXXX.",
-      "Para entregarlo necesitamos tus datos de entrega: al terminar de pagar te pedimos enviarlos por WhatsApp. Sin ese paso no podemos despachar.",
+      "Para entregarlo necesitamos tus datos de entrega: al confirmarse el pago se abre el chat de tu pedido y tus datos se envían por ahí, cifrados. Sin ese paso no podemos despachar.",
     ],
   },
   {
     title: "Cancelaciones",
     body: [
-      "Podés cancelar un pedido pagado escribiéndonos por WhatsApp antes de que salga a entrega. En ese caso te devolvemos el total. Los detalles están en la Política de reembolsos.",
+      "Podés cancelar un pedido pagado escribiéndonos por el chat del pedido antes de que salga a entrega. En ese caso te devolvemos el total. Los detalles están en la Política de reembolsos.",
     ],
   },
   {

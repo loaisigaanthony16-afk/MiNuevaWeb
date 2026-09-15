@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
-import { LEGAL } from "@/lib/legal";
 import { useT } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 import { scrollToSection } from "@/lib/scroll";
@@ -71,12 +70,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a href={LEGAL.whatsappUrl} target="_blank" rel="noopener noreferrer" className={link}>
-                  {t("foot.support")} · {LEGAL.whatsappDisplay}
-                  <span className="sr-only"> (opens in new window)</span>
-                </a>
-              </li>
             </ul>
           </div>
         </div>

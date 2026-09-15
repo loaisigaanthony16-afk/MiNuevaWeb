@@ -3,7 +3,7 @@
 //
 // Modelo de privacidad: no hay cuenta ni servidor de perfiles. Lo que el
 // cliente escribe vive solo en su navegador (localStorage) y nos llega
-// únicamente por WhatsApp, enviado por el propio cliente tras pagar.
+// únicamente por el chat cifrado del pedido, enviado por el cliente tras pagar.
 // =====================================================================
 
 import { DELIVERY_ZONE } from "@/lib/checkout-util";

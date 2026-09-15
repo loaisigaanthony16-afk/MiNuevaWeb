@@ -25,9 +25,9 @@ const sections: LegalSection[] = [
     title: "Cómo se coordina",
     body: [
       [
-        "Al confirmarse el pago te pedimos enviar tus datos de entrega por WhatsApp.",
+        "Al confirmarse el pago se abre el chat de tu pedido y tus datos de entrega se envían por ahí.",
         "Con esos datos acordamos el día y la franja horaria de entrega.",
-        "Te avisamos por WhatsApp cuando el pedido sale.",
+        "Te avisamos por el chat cuando el pedido sale.",
       ],
       "No tenés que dar tu nombre real: basta con un nombre o apodo para recibir y un teléfono de contacto.",
     ],
@@ -40,14 +40,14 @@ const sections: LegalSection[] = [
     title: "Al recibir",
     body: [
       `Quien recibe el pedido debe ser mayor de ${LEGAL.minAge} años. Si hay motivos para creer que no lo es, no entregamos y reembolsamos el pedido.`,
-      "Revisá que los productos coincidan con tu pedido y avisanos en ese momento por WhatsApp si falta algo o llegó dañado.",
+      "Revisá que los productos coincidan con tu pedido y avisanos en ese momento por el chat si falta algo o llegó dañado.",
     ],
   },
   {
     title: "Si no se puede entregar",
     body: [
       "Si no hay nadie para recibir o la dirección no es correcta, te escribimos para reprogramar sin costo adicional.",
-      "Si después de dos intentos acordados no es posible entregar y no hay respuesta por WhatsApp durante 7 días, cancelamos el pedido y devolvemos el importe de los productos. El costo de entrega no se devuelve en ese caso.",
+      "Si después de dos intentos acordados no es posible entregar y no hay respuesta en el chat durante 7 días, cancelamos el pedido y devolvemos el importe de los productos. El costo de entrega no se devuelve en ese caso.",
     ],
   },
 ];

@@ -1,37 +1,29 @@
 // =====================================================================
-// Pedido pendiente de coordinar por WhatsApp.
+// Pedido pendiente de coordinar, guardado en el navegador.
 //
-// Como la dirección nunca sale del dispositivo, si alguien no nos manda sus
-// datos el pedido queda sin despachar. Este módulo guarda el aviso en el
-// navegador para poder reclamarlo cuando la persona vuelva a entrar.
-//
-// CLAVE: el aviso se guarda ANTES de salir hacia la pasarela, no al volver.
-// Si esperáramos al retorno y la pasarela no redirigiera —o el cliente
-// cerrara la pestaña en la página de pago— no quedaría rastro de nada.
-//
-// El mensaje se guarda ya armado porque después del pago la bolsa se vacía
-// y más tarde no habría forma de reconstruir la lista de artículos.
+// Guarda la referencia y el token secreto del chat del pedido para poder
+// volver a la conversación desde cualquier página del sitio. La
+// dirección de entrega sigue viviendo solo en este dispositivo hasta que
+// el cliente la manda por el chat.
 // =====================================================================
 
-export const PENDING_KEY = "pending_whatsapp_order";
+export const PENDING_KEY = "vibe_pending_order";
 
 /** Evento propio para que el banner reaccione sin recargar la página. */
 export const PENDING_EVENT = "vibe:pending-changed";
 
 /**
- * En qué punto del pago quedó.
- * - `iniciado`: se fue a la pasarela; no sabemos si llegó a pagar.
- * - `pagado`: volvió por el success_url, así que el cobro se completó.
+ * - `iniciado`: se fue a pagar; no sabemos si completó.
+ * - `pagado`: el pago se confirmó; el chat está abierto.
  */
 export type PendingStage = "iniciado" | "pagado";
 
 export interface PendingOrder {
-  /** Marca explícita del pendiente. */
-  pending_whatsapp_order: true;
   stage: PendingStage;
-  /** Referencia del pedido, la que ve el cliente. */
   ref: string;
-  /** Mensaje de WhatsApp ya construido. */
+  /** Token secreto del chat del pedido. */
+  token: string;
+  /** Datos de entrega ya redactados, para mandarlos al abrir el chat. */
   message: string;
   createdAt: string;
 }
@@ -44,52 +36,36 @@ function announce(): void {
   }
 }
 
-export function savePendingOrder(
-  ref: string,
-  message: string,
-  stage: PendingStage
-): void {
+export function savePendingOrder(order: Omit<PendingOrder, "createdAt">): void {
   try {
-    const payload: PendingOrder = {
-      pending_whatsapp_order: true,
-      stage,
-      ref,
-      message,
-      createdAt: new Date().toISOString(),
-    };
-    window.localStorage.setItem(PENDING_KEY, JSON.stringify(payload));
+    window.localStorage.setItem(
+      PENDING_KEY,
+      JSON.stringify({ ...order, createdAt: new Date().toISOString() } satisfies PendingOrder)
+    );
     announce();
   } catch {
     /* noop */
   }
 }
 
-/**
- * Sube el pendiente a "pagado" conservando el mensaje ya guardado.
- * Se usa al volver por el success_url.
- */
-export function confirmPendingOrder(ref: string, message?: string): void {
+export function confirmPendingOrder(ref: string): void {
   const current = loadPendingOrder();
-  savePendingOrder(
-    ref || current?.ref || "",
-    message ?? current?.message ?? "",
-    "pagado"
-  );
+  if (!current || current.ref !== ref) return;
+  savePendingOrder({ ...current, stage: "pagado" });
 }
 
 export function loadPendingOrder(): PendingOrder | null {
   try {
     const raw = window.localStorage.getItem(PENDING_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<PendingOrder>;
-    if (!parsed?.pending_whatsapp_order || !parsed.message) return null;
+    const p = JSON.parse(raw) as Partial<PendingOrder>;
+    if (!p.ref || !p.token) return null;
     return {
-      pending_whatsapp_order: true,
-      // Los avisos guardados antes de existir `stage` se tratan como pagados.
-      stage: parsed.stage === "iniciado" ? "iniciado" : "pagado",
-      ref: parsed.ref ?? "",
-      message: parsed.message,
-      createdAt: parsed.createdAt ?? new Date().toISOString(),
+      stage: p.stage === "iniciado" ? "iniciado" : "pagado",
+      ref: p.ref,
+      token: p.token,
+      message: p.message ?? "",
+      createdAt: p.createdAt ?? new Date().toISOString(),
     };
   } catch {
     return null;

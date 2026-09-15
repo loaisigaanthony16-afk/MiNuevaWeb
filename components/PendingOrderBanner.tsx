@@ -1,47 +1,35 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AlertTriangle, MessageCircle } from "lucide-react";
-import {
-  PENDING_EVENT,
-  clearPendingOrder,
-  loadPendingOrder,
-  type PendingOrder,
-} from "@/lib/pending-order";
-import { whatsappLink } from "@/lib/whatsapp";
+import { PENDING_EVENT, clearPendingOrder, loadPendingOrder, type PendingOrder } from "@/lib/pending-order";
+import { fetchChat, notify } from "@/lib/chat-client";
 import { useT } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
 
+const POLL_MS = 15000;
+
 /**
- * Aviso persistente de pedido sin coordinar.
+ * Aviso persistente del pedido en curso.
  *
- * Se guarda al salir hacia la pasarela, así que aparece incluso si esta no
- * devuelve al cliente al sitio. Es la red que impide que un pedido pagado
- * se quede sin dirección de entrega.
- *
- * Dos tonos según el punto en que quedó:
- * - `pagado` (volvió por el success_url): exigente y sin forma de cerrar.
- * - `iniciado` (se fue a pagar y no sabemos si completó): pregunta en vez
- *   de afirmar, y deja descartarlo si nunca llegó a pagar.
+ * - `iniciado`: se fue a pagar y no volvió; pregunta y deja descartar.
+ * - `pagado`: chat abierto con el comercio; muestra mensajes sin leer y
+ *   lleva a la conversación. Desaparece solo cuando el pedido se entrega.
  */
 export default function PendingOrderBanner() {
   const t = useT();
-  const [pending, setPending] = useState<PendingOrder | null>(null);
-  const [sent, setSent] = useState(false);
-  const { checkoutOpen } = useUi();
+  const router = useRouter();
   const pathname = usePathname();
+  const { checkoutOpen } = useUi();
+  const [pending, setPending] = useState<PendingOrder | null>(null);
+  const [unread, setUnread] = useState(0);
 
-  const refresh = useCallback(() => {
-    setPending(loadPendingOrder());
-    setSent(false);
-  }, []);
+  const refresh = useCallback(() => setPending(loadPendingOrder()), []);
 
   useEffect(() => {
-    // Se lee tras el montaje para no romper la hidratación.
     refresh();
     window.addEventListener(PENDING_EVENT, refresh);
-    // Si la persona lo resuelve en otra pestaña, esta se entera.
     window.addEventListener("storage", refresh);
     return () => {
       window.removeEventListener(PENDING_EVENT, refresh);
@@ -49,92 +37,59 @@ export default function PendingOrderBanner() {
     };
   }, [refresh]);
 
-  // En la confirmación y durante el pago ya hay otra pantalla a cargo.
-  if (!pending || checkoutOpen || pathname === "/order-success") return null;
+  // Mensajes sin leer del comercio, sin abrir el chat.
+  useEffect(() => {
+    if (!pending || pending.stage !== "pagado") return;
+    let last = 0;
+    const tick = async () => {
+      const res = await fetchChat(pending.ref, pending.token, 0, false);
+      if (!res.ok) {
+        if (res.reason === "closed") clearPendingOrder();
+        return;
+      }
+      if (res.data.delivered) {
+        clearPendingOrder();
+        return;
+      }
+      setUnread(res.data.unread);
+      if (res.data.unread > last) notify("Vibe 505", t("pending.newMessage"));
+      last = res.data.unread;
+    };
+    void tick();
+    const id = setInterval(tick, POLL_MS);
+    return () => clearInterval(id);
+  }, [pending, t]);
+
+  const hidden = !pending || checkoutOpen || pathname === "/order-success" || pathname === "/pedido" || pathname === "/admin";
+  if (hidden) return null;
 
   const paid = pending.stage === "pagado";
-
-  function confirmSent() {
-    clearPendingOrder();
-    setPending(null);
-  }
-
-  function discard() {
-    clearPendingOrder();
-    setPending(null);
-  }
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4">
       <div className="container-page max-w-3xl">
-        <div
-          className={`rounded-card border bg-ink-850/95 shadow-pop backdrop-blur ${
-            paid ? "border-gold-400/50" : "border-white/15"
-          }`}
-        >
-          {sent ? (
-            <div className="p-4 sm:p-5 text-center">
-              <p className="text-[13px] text-ink-300 mb-4">{t("pending.body")}</p>
-              <button
-                onClick={confirmSent}
-                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wide2 text-ink-900 transition hover:scale-[1.02]"
-              >
-                Ya envié mis datos
-              </button>
-            </div>
-          ) : (
-            <a
-              href={whatsappLink(pending.message)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setSent(true)}
-              className="group flex w-full items-center gap-3 p-4 text-left sm:gap-4 sm:p-5 hover:bg-white/5 transition-colors"
-            >
-              <span
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
-                  paid ? "bg-gold-400/15" : "bg-white/8"
-                }`}
-              >
-                <AlertTriangle
-                  className={`h-[18px] w-[18px] ${
-                    paid ? "text-gold-300" : "text-ink-300"
-                  }`}
-                />
+        <div className={`rounded-card border bg-ink-850/95 shadow-pop backdrop-blur ${paid ? "border-gold-400/50" : "border-white/15"}`}>
+          <button onClick={() => router.push("/pedido")} className="group flex w-full items-center gap-3 p-4 text-left sm:gap-4 sm:p-5">
+            <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-full ${paid ? "bg-gold-400/15" : "bg-white/8"}`}>
+              {paid ? <MessageCircle className="h-[18px] w-[18px] text-gold-300" /> : <AlertTriangle className="h-[18px] w-[18px] text-ink-300" />}
+              {unread > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread}</span>
+              )}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={`block font-display text-[12.5px] font-bold uppercase tracking-[0.1em] ${paid ? "text-gold-200" : "text-ink-100"}`}>
+                {paid ? (unread > 0 ? t("pending.newMessage") : t("pending.title")) : t("pending.titleStarted")}
               </span>
-
-              <span className="min-w-0 flex-1">
-                <span
-                  className={`block font-display text-[12.5px] font-bold uppercase tracking-[0.1em] ${
-                    paid ? "text-gold-200" : "text-ink-100"
-                  }`}
-                >
-                  {paid ? t("pending.title") : t("pending.titleStarted")}
-                </span>
-                <span className="mt-1 block text-[13px] leading-snug text-ink-300">
-                  {paid ? t("pending.body") : t("pending.bodyStarted")}
-                </span>
-                {pending.ref && (
-                  <span className="mt-1 block font-mono text-[11px] text-ink-500">
-                    {pending.ref}
-                  </span>
-                )}
-              </span>
-
-              <span className="flex shrink-0 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-[11.5px] font-bold uppercase tracking-wide2 text-ink-900 transition-transform duration-300 group-hover:scale-[1.03]">
-                <MessageCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("pending.cta")}</span>
-              </span>
-            </a>
-          )}
-
-          {/* Solo quien no llegó a pagar puede descartarlo. Un pedido ya
-              pagado no se cierra: sin sus datos no se puede despachar. */}
+              <span className="mt-1 block text-[13px] leading-snug text-ink-300">{paid ? t("pending.body") : t("pending.bodyStarted")}</span>
+              <span className="mt-1 block font-mono text-[11px] text-ink-500">{pending.ref}</span>
+            </span>
+            <span className="shrink-0 rounded-full bg-gold-400 px-4 py-2.5 text-[11.5px] font-bold uppercase tracking-wide2 text-ink-900 transition-transform duration-300 group-hover:scale-[1.03]">
+              {t("pending.cta")}
+            </span>
+          </button>
           {!paid && (
             <div className="border-t border-white/8 px-5 py-2.5 text-center">
-              <button
-                onClick={discard}
-                className="text-[11.5px] text-ink-500 transition hover:text-ink-200"
-              >
+              <button onClick={clearPendingOrder} className="text-[11.5px] text-ink-500 transition hover:text-ink-200">
                 {t("pending.discard")}
               </button>
             </div>
