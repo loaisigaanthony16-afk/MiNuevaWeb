@@ -37,7 +37,33 @@ export const OPINION_ERRORS = [
   "respuesta_invalida",
   "demasiadas",
   "repetida",
+  "palabras",
+  "limite_diario",
+  "dispositivo",
 ] as const;
+
+const DEVICE_KEY = "vibeDevice";
+
+/** Identificador anónimo de este navegador; sostiene el límite diario. */
+function deviceId(): string {
+  try {
+    let id = window.localStorage.getItem(DEVICE_KEY);
+    if (!id || id.length < 16) {
+      id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+      window.localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+/** Filtro previo en el navegador; el definitivo corre en la base. */
+const BANNED = /(puta|puto|put[ao]s|mierda|verga|pendej|cabron|culer|coño|chinga|joder|carajo|maric|hijueputa|hdp|malparid|pinche|mamad|pija|polla|folla|porno|xxx|nudes|desnud|fuck|shit|bitch|thc|cbd|cannabis|canabis|marihuana|mariguana|marijuana|weed|porro|hierba|yerba|ganja|kush|blunt|sativa|indica|hibrida|cogollo|drog|fumar|volad)/i;
+
+export function hasBannedWords(text: string): boolean {
+  return BANNED.test(text.normalize("NFD").replace(/[̀-ͯ]/g, ""));
+}
 export type OpinionError = (typeof OPINION_ERRORS)[number] | "generic";
 
 export class PostError extends Error {
@@ -80,6 +106,9 @@ export async function postOpinion(input: {
   rating?: number | null;
   parentId?: string | null;
 }): Promise<string> {
+  // Aviso inmediato; la base vuelve a comprobarlo.
+  if (hasBannedWords(input.alias) || hasBannedWords(input.body)) throw new PostError("palabras");
+
   let res: Response;
   try {
     res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/post_opinion`, {
@@ -90,6 +119,7 @@ export async function postOpinion(input: {
         p_body: input.body,
         p_rating: input.parentId ? null : input.rating ?? null,
         p_parent: input.parentId ?? null,
+        p_device: deviceId(),
       }),
     });
   } catch {

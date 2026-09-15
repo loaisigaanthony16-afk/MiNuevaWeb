@@ -87,14 +87,14 @@ export default function Catalog() {
 
       {/* Filtros */}
       <div className="sticky top-[var(--nav-h)] z-30 mt-10 border-y border-white/8 glass transition-[top] duration-500 ease-smooth">
-        <div className="container-page flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
-          <div className="flex shrink-0 gap-1 rounded-full border border-white/10 p-1">
+        <div className="container-page flex flex-col gap-2 py-3 sm:flex-row sm:items-center">
+          <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 p-1 sm:flex sm:shrink-0">
             {[{ id: "all" as const, name: t("cat.brandAll") }, ...BRANDS].map((b) => (
               <button
                 key={b.id}
                 onClick={() => setBrand(b.id)}
                 aria-pressed={brand === b.id}
-                className={`h-8 whitespace-nowrap rounded-full px-4 text-[12px] font-bold uppercase tracking-[0.1em] transition-all duration-300 ease-smooth ${
+                className={`h-10 whitespace-nowrap rounded-full px-3 text-[12px] font-bold uppercase tracking-[0.08em] transition-all duration-300 ease-smooth sm:h-8 sm:px-4 ${
                   brand === b.id ? "bg-ink-50 text-ink-900" : "text-ink-400 hover:text-ink-50"
                 }`}
               >
@@ -103,18 +103,20 @@ export default function Catalog() {
             ))}
           </div>
 
-          <span className="mx-1 h-6 w-px shrink-0 bg-white/10" />
+          <span className="mx-1 hidden h-6 w-px shrink-0 bg-white/10 sm:block" />
 
-          {STRAINS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStrain(s)}
-              aria-pressed={strain === s}
-              className={`filter-pill shrink-0 ${strain === s ? "filter-pill-active" : ""}`}
-            >
-              {s === "all" ? t("cat.strainAll") : STRAIN_LABEL[s]}
-            </button>
-          ))}
+          <div className="grid grid-cols-4 gap-1.5 sm:flex sm:gap-2">
+            {STRAINS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStrain(s)}
+                aria-pressed={strain === s}
+                className={`filter-pill h-10 justify-center px-2 text-[11.5px] sm:h-9 sm:px-4 sm:text-[12.5px] ${strain === s ? "filter-pill-active" : ""}`}
+              >
+                {s === "all" ? t("cat.strainAll") : STRAIN_LABEL[s]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
