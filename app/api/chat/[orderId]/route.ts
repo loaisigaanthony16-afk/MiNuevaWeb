@@ -8,6 +8,7 @@ import {
   touchSeen,
   unreadCount,
 } from "@/lib/chat-server";
+import { notifyClientMessage } from "@/lib/notify-email";
 
 /**
  * Chat del pedido, lado cliente. Requiere el token secreto del pedido.
@@ -65,8 +66,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ ord
     const order = await authorizeClient(orderId, body.token ?? "");
     if (!order) return NextResponse.json({ error: "closed" }, { status: 410 });
     if (order.status !== "paid") return NextResponse.json({ error: "unpaid" }, { status: 409 });
+    // Un correo por tanda: si el comercio ya tenía mensajes sin leer de
+    // este pedido, no se le vuelve a avisar hasta que los lea.
+    const pendingBefore = await unreadCount(orderId, "shop", order.shop_seen_at);
     const message = await addMessage(orderId, "client", text);
     await touchSeen(orderId, "client");
+    if (pendingBefore === 0) await notifyClientMessage(orderId);
     return NextResponse.json({ message }, { headers: NO_STORE });
   } catch (err) {
     console.error("Error enviando al chat:", err instanceof Error ? err.message : "desconocido");

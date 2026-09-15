@@ -9,6 +9,7 @@
 // =====================================================================
 
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
+import { notifyPaidOrder } from "@/lib/notify-email";
 import type { PricedOrder } from "@/lib/pricing";
 
 export type OrderStatus =
@@ -39,9 +40,10 @@ interface OrderRow {
   total_usd: number;
   paid_at: string | null;
   stripe_session_id: string | null;
+  items: { name: string; qty: number }[];
 }
 
-const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id";
+const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id,items";
 
 /** Guarda el pedido recién creado. Devuelve false si la base no está lista. */
 export async function createOrder(
@@ -131,6 +133,12 @@ export async function applyPayment(update: PaymentUpdate): Promise<void> {
       ...(status === "paid" && !current.paid_at ? { paid_at: new Date().toISOString() } : {}),
     },
   });
+
+  // Aviso al comercio solo la primera vez que el pedido queda pagado
+  // (los eventos repetidos de Stripe no vuelven a escribir).
+  if (status === "paid" && current.status !== "paid") {
+    await notifyPaidOrder({ orderId: update.orderId, totalUsd: current.total_usd, items: current.items ?? [] });
+  }
 }
 
 /** Estado de un pedido según la base. */
