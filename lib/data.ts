@@ -118,22 +118,3 @@ export function getProductBySlug(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
 }
 
-// ---------------------------------------------------------------- packs
-// Precio por unidad según cuántas lleva en total la bolsa. Vale para
-// cualquier combinación de sabores. El servidor cobra con esta misma tabla.
-export const PACK_TIERS: { units: number; unitPrice: number }[] = [
-  { units: 1, unitPrice: UNIT_PRICE },
-  { units: 2, unitPrice: 50 },
-  { units: 3, unitPrice: 48 },
-];
-
-export function unitPriceFor(totalUnits: number): number {
-  let price = UNIT_PRICE;
-  for (const tier of PACK_TIERS) if (totalUnits >= tier.units) price = tier.unitPrice;
-  return price;
-}
-
-/** Siguiente escalón de precio, para sugerir "agregá uno más". */
-export function nextTier(totalUnits: number): { units: number; unitPrice: number } | null {
-  return PACK_TIERS.find((t) => t.units > totalUnits) ?? null;
-}

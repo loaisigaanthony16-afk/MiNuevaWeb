@@ -18,6 +18,7 @@ export interface ChatState {
   fulfillmentAt: string | null;
   items: { id: number | null; name: string; qty: number }[];
   referralCode: string | null;
+  loyalty: { purchases: number; credits: number } | null;
   messages: ChatMessage[];
   unread: number;
 }
@@ -42,6 +43,7 @@ export async function fetchChat(orderId: string, token: string, after = 0, seen 
         fulfillmentAt: data.fulfillmentAt ?? null,
         items: data.items ?? [],
         referralCode: data.referralCode ?? null,
+        loyalty: data.loyalty ?? null,
         messages: data.messages ?? [],
         unread: data.unread ?? 0,
       },

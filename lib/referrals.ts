@@ -1,11 +1,15 @@
 // =====================================================================
-// Referidos: cada pedido pagado genera un código. Quien lo usa recibe la
-// entrega gratis (una vez por dispositivo); el dueño acumula un crédito
-// por cada uso y lo canjea escribiendo su propio código.
+// Cliente frecuente: cada pedido pagado genera (o suma a) un código de 6
+// letras. El cliente lo escribe al pagar y cada 3 compras gana un cupón
+// de $10 que se descuenta en la siguiente compra donde lo use.
+//
+// Sin cuenta: el código es la única identidad. Se guarda en el dispositivo
+// y también se muestra en la página del pedido.
 // =====================================================================
 
 import crypto from "node:crypto";
 import { db } from "@/lib/supabase-server";
+import { LOYALTY_COUPON_USD, LOYALTY_EVERY } from "@/lib/loyalty";
 
 if (typeof window !== "undefined") {
   throw new Error("lib/referrals.ts es solo para el servidor");
@@ -14,15 +18,14 @@ if (typeof window !== "undefined") {
 export interface Referral {
   code: string;
   owner_order_id: string;
+  /** Cupones de $10 disponibles. */
   credits: number;
-  uses: number;
+  /** Compras acumuladas con este código. */
+  purchases: number;
 }
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-export function isCode(v: unknown): v is string {
-  return typeof v === "string" && /^[A-Z0-9]{6}$/.test(v);
-}
+const SELECT = "select=code,owner_order_id,credits,purchases";
 
 export function normalizeCode(v: unknown): string {
   return String(v ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
@@ -33,72 +36,66 @@ function newCode(): string {
   return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join("");
 }
 
-/** Código del pedido (lo crea si no existe). */
+/** Código del pedido (lo crea si no existe; la primera compra ya cuenta). */
 export async function ensureCode(orderId: string): Promise<string> {
-  const rows = await db<Referral[]>(`referrals?owner_order_id=eq.${encodeURIComponent(orderId)}&select=code,owner_order_id,credits,uses`);
+  const rows = await db<Referral[]>(`referrals?owner_order_id=eq.${encodeURIComponent(orderId)}&${SELECT}`);
   if (rows[0]) return rows[0].code;
   for (let i = 0; i < 5; i++) {
     const code = newCode();
     try {
-      await db("referrals", { method: "POST", prefer: "return=minimal", body: { code, owner_order_id: orderId } });
+      await db("referrals", { method: "POST", prefer: "return=minimal", body: { code, owner_order_id: orderId, purchases: 1 } });
       await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, { method: "PATCH", prefer: "return=minimal", body: { referral_code: code } });
       return code;
     } catch {
       /* colisión: se intenta otro */
     }
   }
-  throw new Error("No se pudo crear el código de referido");
+  throw new Error("No se pudo crear el código de cliente");
 }
 
 export async function getReferral(code: string): Promise<Referral | null> {
-  const rows = await db<Referral[]>(`referrals?code=eq.${encodeURIComponent(code)}&select=code,owner_order_id,credits,uses`);
+  const rows = await db<Referral[]>(`referrals?code=eq.${encodeURIComponent(code)}&${SELECT}`);
   return rows[0] ?? null;
 }
 
 export type CodeCheck =
-  | { ok: true; kind: "friend" | "credit"; code: string }
-  | { ok: false; reason: "invalid" | "used" | "no_credit" };
+  | { ok: true; kind: "credit" | "count"; code: string; purchases: number; credits: number; discountUsd: number }
+  | { ok: false; reason: "invalid" };
 
 /**
- * ¿Este código da entrega gratis a este dispositivo?
- * - Código ajeno: sí, si el dispositivo nunca canjeó uno.
- * - Código propio (guardado en el dispositivo): sí, si tiene créditos.
+ * Qué pasa si usa este código ahora: descuento de $10 si tiene cupón
+ * (`credit`), o solo suma la compra al contador (`count`).
  */
-export async function checkCode(code: string, deviceId: string, ownCodes: string[]): Promise<CodeCheck> {
+export async function checkCode(code: string): Promise<CodeCheck> {
   const ref = await getReferral(code);
   if (!ref) return { ok: false, reason: "invalid" };
-  // El dueño solo puede canjear créditos, nunca "referirse" a sí mismo.
-  if (ownCodes.includes(code)) {
-    return ref.credits > 0 ? { ok: true, kind: "credit", code } : { ok: false, reason: "no_credit" };
-  }
-  const used = await db<{ device_id: string }[]>(`referral_uses?device_id=eq.${encodeURIComponent(deviceId)}&select=device_id`);
-  if (used.length) return { ok: false, reason: "used" };
-  return { ok: true, kind: "friend", code };
+  const hasCoupon = ref.credits > 0;
+  return {
+    ok: true,
+    kind: hasCoupon ? "credit" : "count",
+    code,
+    purchases: ref.purchases,
+    credits: ref.credits,
+    discountUsd: hasCoupon ? LOYALTY_COUPON_USD : 0,
+  };
 }
 
 /** Se aplica al confirmarse el pago del pedido que usó el código. */
-export async function redeem(orderId: string, code: string, deviceId: string | null, kind: "friend" | "credit"): Promise<void> {
+export async function redeem(orderId: string, code: string, kind: "credit" | "count"): Promise<void> {
   const ref = await getReferral(code);
   if (!ref) return;
-  if (kind === "credit") {
-    await db(`referrals?code=eq.${encodeURIComponent(code)}`, {
-      method: "PATCH",
-      prefer: "return=minimal",
-      body: { credits: Math.max(0, ref.credits - 1) },
-    });
-    return;
-  }
-  if (deviceId) {
-    try {
-      await db("referral_uses", { method: "POST", prefer: "return=minimal", body: { device_id: deviceId, code, order_id: orderId } });
-    } catch {
-      /* ya canjeó con otro pedido: no se duplica el crédito */
-      return;
-    }
-  }
+  const purchases = ref.purchases + 1;
+  let credits = kind === "credit" ? Math.max(0, ref.credits - 1) : ref.credits;
+  if (purchases % LOYALTY_EVERY === 0) credits += 1;
   await db(`referrals?code=eq.${encodeURIComponent(code)}`, {
     method: "PATCH",
     prefer: "return=minimal",
-    body: { credits: ref.credits + 1, uses: ref.uses + 1 },
+    body: { purchases, credits },
+  });
+  // El nuevo pedido queda ligado al mismo código: no se crea otro.
+  await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, {
+    method: "PATCH",
+    prefer: "return=minimal",
+    body: { referral_code: code },
   });
 }

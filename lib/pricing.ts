@@ -6,7 +6,7 @@
 // cualquiera podría editar la petición y pagar lo que quisiera.
 // =====================================================================
 
-import { getProduct, unitPriceFor } from "@/lib/data";
+import { getProduct } from "@/lib/data";
 import { deliveryFor } from "@/lib/checkout-util";
 
 /** Lo único que aceptamos del cliente. */
@@ -27,6 +27,8 @@ export interface PricedOrder {
   lines: PricedLine[];
   subtotalUsd: number;
   shippingUsd: number;
+  /** Cupón de cliente frecuente aplicado (0 si no hay). */
+  discountUsd: number;
   totalUsd: number;
   /** Total en la unidad mínima de la moneda (centavos). */
   amountInCents: number;
@@ -42,7 +44,7 @@ export class PricingError extends Error {}
  * Convierte la bolsa del cliente en un cobro verificado.
  * Lanza `PricingError` si la bolsa está vacía o trae datos inválidos.
  */
-export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}): PricedOrder {
+export function priceOrder(input: unknown, opts: { discountUsd?: number } = {}): PricedOrder {
   if (!Array.isArray(input) || input.length === 0) {
     throw new PricingError("La bolsa está vacía.");
   }
@@ -51,10 +53,6 @@ export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}
   }
 
   const lines: PricedLine[] = [];
-
-  // Packs: el precio por unidad baja según el total de unidades de la bolsa.
-  const totalUnits = (input as CartLineInput[]).reduce((a, r) => a + (Math.floor(Number(r?.qty)) || 0), 0);
-  const unitPrice = unitPriceFor(totalUnits);
 
   for (const raw of input as CartLineInput[]) {
     const id = Number(raw?.id);
@@ -77,15 +75,17 @@ export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}
       id: product.id,
       name: product.name,
       qty,
-      unitPriceUsd: unitPrice,
-      lineTotalUsd: round2(unitPrice * qty),
+      unitPriceUsd: product.price,
+      lineTotalUsd: round2(product.price * qty),
     });
   }
 
   const subtotalUsd = round2(lines.reduce((acc, l) => acc + l.lineTotalUsd, 0));
-  // Entrega fija en Estelí, sumada a cada pedido (gratis con código de referido válido).
-  const shippingUsd = opts.freeDelivery ? 0 : round2(deliveryFor(subtotalUsd));
-  const totalUsd = round2(subtotalUsd + shippingUsd);
+  // Entrega fija en Estelí, sumada a cada pedido.
+  const shippingUsd = round2(deliveryFor(subtotalUsd));
+  // El cupón nunca supera lo que hay que pagar.
+  const discountUsd = round2(Math.min(Math.max(0, opts.discountUsd ?? 0), subtotalUsd + shippingUsd));
+  const totalUsd = round2(subtotalUsd + shippingUsd - discountUsd);
 
   if (totalUsd <= 0) {
     throw new PricingError("Total inválido.");
@@ -95,6 +95,7 @@ export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}
     lines,
     subtotalUsd,
     shippingUsd,
+    discountUsd,
     totalUsd,
     // A la unidad mínima de la moneda: 10.00 USD → 1000.
     amountInCents: Math.round(totalUsd * 100),

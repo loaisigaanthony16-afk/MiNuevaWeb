@@ -23,12 +23,8 @@ import { ordersDbConfigured } from "@/lib/supabase-server";
 
 interface Body {
   items?: { id: number; qty: number }[];
-  /** Código de referido (opcional). */
+  /** Código de cliente frecuente (opcional). */
   code?: string;
-  /** Identificador anónimo del dispositivo, para el canje único. */
-  device?: string;
-  /** Códigos propios guardados en el dispositivo (para canjear créditos). */
-  own?: string[];
 }
 
 export async function POST(request: Request) {
@@ -59,26 +55,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Referido: entrega gratis si el código vale para este dispositivo.
+    // Código de cliente: suma la compra y, si tiene cupón, descuenta $10.
     let referral: ReferralUse | null = null;
+    let discountUsd = 0;
     const code = normalizeCode(body.code);
-    const device = typeof body.device === "string" && /^[a-f0-9]{32}$/.test(body.device) ? body.device : null;
     if (code.length === 6 && ordersDbConfigured()) {
-      const own = Array.isArray(body.own) ? body.own.map(normalizeCode).filter((c) => c.length === 6) : [];
-      const check = await checkCode(code, device ?? "sin-dispositivo", own);
-      if (!check.ok) {
-        const msg =
-          check.reason === "used"
-            ? "Este dispositivo ya usó un código de amigo."
-            : check.reason === "no_credit"
-              ? "Tu código todavía no tiene créditos."
-              : "Código no válido.";
-        return NextResponse.json({ error: msg }, { status: 400 });
-      }
-      referral = { code, kind: check.kind, device };
+      const check = await checkCode(code);
+      if (!check.ok) return NextResponse.json({ error: "Código no válido." }, { status: 400 });
+      referral = { code, kind: check.kind };
+      discountUsd = check.discountUsd;
     }
 
-    const order = priceOrder(body.items, { freeDelivery: referral !== null });
+    const order = priceOrder(body.items, { discountUsd });
+
+    // El cupón va a Stripe como descuento real (un cupón de un solo uso).
+    const coupon =
+      order.discountUsd > 0
+        ? await stripe().coupons.create({
+            amount_off: toCents(order.discountUsd),
+            currency: "usd",
+            duration: "once",
+            name: "Cupón cliente frecuente",
+            max_redemptions: 1,
+          })
+        : null;
     const orderId = newOrderId();
     const base = siteOrigin(request);
     const embedded = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -115,6 +115,7 @@ export async function POST(request: Request) {
             ]
           : []),
       ],
+      ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
       ...(embedded
         ? { ui_mode: "embedded_page" as const, return_url: returnUrl, redirect_on_completion: "if_required" as const }
         : { success_url: returnUrl, cancel_url: `${base}/?canceled=true` }),
@@ -139,6 +140,7 @@ export async function POST(request: Request) {
       chatToken: tracked ? chatToken : null,
       subtotalUsd: order.subtotalUsd,
       deliveryUsd: order.shippingUsd,
+      discountUsd: order.discountUsd,
       totalUsd: order.totalUsd,
       referralApplied: referral !== null,
     });

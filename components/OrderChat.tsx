@@ -7,7 +7,8 @@ import { Bell, BellRing, Check, Copy, Loader2, Lock, PackageCheck, RotateCcw, Se
 import { askNotificationPermission, fetchChat, notify, sendChat, type ChatMessage } from "@/lib/chat-client";
 import { clearPendingOrder } from "@/lib/pending-order";
 import { currentPushState, enableOrderPush, type PushState } from "@/lib/push-client";
-import { rememberOwnCode } from "@/lib/referral-client";
+import { rememberOwnCode, saveRefCode } from "@/lib/referral-client";
+import { LOYALTY_COUPON_USD, LOYALTY_EVERY, purchasesToNext } from "@/lib/loyalty";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
@@ -44,6 +45,7 @@ export default function OrderChat({
   const [fulfillment, setFulfillment] = useState<Fulfillment>("recibido");
   const [items, setItems] = useState<{ id: number | null; name: string; qty: number }[]>([]);
   const [code, setCode] = useState<string | null>(null);
+  const [loyalty, setLoyalty] = useState<{ purchases: number; credits: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [push, setPush] = useState<PushState>("unsupported");
   const [draft, setDraft] = useState("");
@@ -83,7 +85,9 @@ export default function OrderChat({
     if (data.referralCode) {
       setCode(data.referralCode);
       rememberOwnCode(data.referralCode);
+      saveRefCode(data.referralCode);
     }
+    if (data.loyalty) setLoyalty(data.loyalty);
     if (data.messages.length) {
       lastId.current = data.messages[data.messages.length - 1].id;
       append(data.messages);
@@ -296,7 +300,7 @@ export default function OrderChat({
         </div>
       )}
 
-      {/* Código de amigo */}
+      {/* Código de cliente frecuente */}
       {code && (state === "open" || delivered) && (
         <div className="rise mt-4 rounded-2xl border border-gold-400/25 bg-gold-400/[0.04] p-4 text-center" style={{ "--i": 2 } as React.CSSProperties}>
           <p className="text-[10.5px] font-semibold uppercase tracking-wide3 text-gold-300">{t("chat.refTitle")}</p>
@@ -304,7 +308,26 @@ export default function OrderChat({
             {code}
             {copied ? <Check className="h-4 w-4 text-hybrid" /> : <Copy className="h-4 w-4 text-ink-500" />}
           </button>
-          <p className="mx-auto mt-1.5 max-w-xs text-[12px] leading-relaxed text-ink-400">{t("chat.refBody")}</p>
+          <p className="mx-auto mt-1.5 max-w-xs text-[12px] leading-relaxed text-ink-400">
+            {t("chat.refBody").replace("{n}", String(LOYALTY_EVERY)).replace("{usd}", String(LOYALTY_COUPON_USD))}
+          </p>
+          {loyalty && (
+            <div className="mx-auto mt-3 max-w-xs">
+              <div className="flex justify-center gap-1.5">
+                {Array.from({ length: LOYALTY_EVERY }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`h-2 w-8 rounded-full ${i < (loyalty.purchases % LOYALTY_EVERY === 0 ? LOYALTY_EVERY : loyalty.purchases % LOYALTY_EVERY) ? "bg-gold-400" : "bg-white/10"}`}
+                  />
+                ))}
+              </div>
+              <p className="mt-2 text-[12px] text-ink-300">
+                {loyalty.credits > 0
+                  ? t("chat.refCoupon").replace("{usd}", String(LOYALTY_COUPON_USD))
+                  : t("chat.refLeft").replace("{left}", String(purchasesToNext(loyalty.purchases)))}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

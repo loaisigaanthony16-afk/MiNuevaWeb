@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getProduct, unitPriceFor } from "@/lib/data";
+import { getProduct } from "@/lib/data";
 import { deliveryFor } from "@/lib/checkout-util";
 
 export interface CartItem {
@@ -24,8 +24,6 @@ interface Store {
   count: number;
   items: CartItem[];
   subtotal: number;
-  /** Precio por unidad vigente según el total de unidades (packs). */
-  unitPrice: number;
   shipping: number;
   total: number;
   add: (id: number) => void;
@@ -124,9 +122,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     const count = items.reduce((acc, it) => acc + it.qty, 0);
-    // Packs: mismo cálculo que el servidor (lib/pricing.ts).
-    const unitPrice = unitPriceFor(count);
-    const subtotal = count * unitPrice;
+    const subtotal = items.reduce((acc, it) => acc + it.price * it.qty, 0);
     const shipping = deliveryFor(subtotal);
 
     return {
@@ -134,7 +130,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       count,
       items,
       subtotal,
-      unitPrice,
       shipping,
       total: subtotal + shipping,
       add,

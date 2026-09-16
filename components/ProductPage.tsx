@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, BellRing, Check, Plus, ShoppingBag } from "lucide-react";
-import { getBrand, products, STRAIN_EFFECT, STRAIN_LABEL, PACK_TIERS, type Product } from "@/lib/data";
+import { ArrowLeft, Bell, BellRing, Check, Gift, Plus, ShoppingBag } from "lucide-react";
+import { getBrand, products, STRAIN_EFFECT, STRAIN_LABEL, type Product } from "@/lib/data";
+import { LOYALTY_COUPON_USD, LOYALTY_EVERY } from "@/lib/loyalty";
 import { REELS } from "@/lib/reels";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
@@ -129,20 +130,17 @@ export default function ProductPage({ product: p }: { product: Product }) {
             </p>
           )}
 
-          {/* Packs */}
-          <div className="rise mt-6 rounded-2xl border border-[#262626] bg-white/[0.02] p-4" style={{ "--i": 7 } as React.CSSProperties}>
-            <p className="text-[10.5px] font-semibold uppercase tracking-wide3 text-ink-500">{t("cat.packTitle")}</p>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {PACK_TIERS.map((tier, i) => (
-                <div key={tier.units} className={`rounded-xl border px-3 py-2.5 text-center ${i === PACK_TIERS.length - 1 ? "border-gold-400/40 bg-gold-400/[0.06]" : "border-white/8"}`}>
-                  <p className="font-display text-[18px] font-bold leading-none text-ink-50">${tier.unitPrice}</p>
-                  <p className="mt-1 text-[10.5px] uppercase tracking-wide2 text-ink-500">
-                    {tier.units === 1 ? "1 unidad" : tier.units === 2 ? "2 unidades" : "3 o más"}
-                  </p>
-                </div>
-              ))}
+          {/* Cliente frecuente */}
+          <div className="rise mt-6 flex items-start gap-3 rounded-2xl border border-gold-400/25 bg-gold-400/[0.04] p-4" style={{ "--i": 7 } as React.CSSProperties}>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900">
+              <Gift className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-[13.5px] font-semibold text-ink-50">{t("cart.couponTitle")}</p>
+              <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-400">
+                {t("cart.couponBody").replace("{n}", String(LOYALTY_EVERY)).replace("{usd}", String(LOYALTY_COUPON_USD))}
+              </p>
             </div>
-            <p className="mt-2 text-[12px] text-ink-500">{t("cat.packBody")}</p>
           </div>
 
           {/* Precio + CTA (escritorio) */}

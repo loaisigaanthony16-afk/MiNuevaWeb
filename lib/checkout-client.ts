@@ -6,8 +6,7 @@ import { getProduct } from "@/lib/data";
 import type { CartItem } from "@/lib/store";
 import type { DeliveryInfo } from "@/lib/delivery";
 import { buildDeliveryMessage } from "@/lib/delivery-message";
-import { deviceId } from "@/lib/community";
-import { loadOwnCodes, loadRefCode } from "@/lib/referral-client";
+import { loadRefCode } from "@/lib/referral-client";
 
 export type OrderStatusValue =
   | "pending"
@@ -32,6 +31,7 @@ export interface InitResponse {
   chatToken: string | null;
   totalUsd: number;
   deliveryUsd: number;
+  discountUsd: number;
   referralApplied: boolean;
 }
 
@@ -49,8 +49,6 @@ export async function initCheckout(items: CartItem[]): Promise<InitResponse> {
       body: JSON.stringify({
         items: items.map((it) => ({ id: it.id, qty: it.qty })),
         code: loadRefCode() || undefined,
-        device: deviceId(),
-        own: loadOwnCodes(),
       }),
     });
   } catch {

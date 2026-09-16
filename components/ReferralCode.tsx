@@ -1,29 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Loader2, Tag, X } from "lucide-react";
+import { Check, Gift, Loader2, X } from "lucide-react";
 import { useT } from "@/components/locale-context";
-import { deviceId } from "@/lib/community";
-import { checkRefCode, loadRefCode, saveRefCode, type CheckResult } from "@/lib/referral-client";
+import { checkRefCode, loadRefCode, myCode, saveRefCode, type CheckResult } from "@/lib/referral-client";
+import { LOYALTY_COUPON_USD, LOYALTY_EVERY, purchasesToNext } from "@/lib/loyalty";
 
 /**
- * Campo "Código de amigo" de la bolsa. Valida contra el servidor y deja el
- * código guardado para que el checkout lo mande. `onChange(true)` avisa
- * que la entrega sale gratis, para el resumen de la bolsa.
+ * Cupón / código de cliente en la bolsa. Siempre visible y grande: el
+ * cliente tiene que saber dónde va. Si ya tiene código en este
+ * dispositivo, se rellena solo. `onChange(descuento)` avisa a la bolsa.
  */
-export default function ReferralCode({ onChange }: { onChange: (free: boolean) => void }) {
+export default function ReferralCode({ onChange }: { onChange: (discountUsd: number) => void }) {
   const t = useT();
-  const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<CheckResult | null>(null);
 
-  // Código guardado de una visita anterior: se revalida solo.
+  // Código guardado (el último usado o el propio): se valida solo.
   useEffect(() => {
-    const saved = loadRefCode();
+    const saved = loadRefCode() || myCode();
     if (!saved) return;
     setCode(saved);
-    setOpen(true);
     void apply(saved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -32,15 +30,15 @@ export default function ReferralCode({ onChange }: { onChange: (free: boolean) =
     const clean = value.trim().toUpperCase();
     if (clean.length !== 6) return;
     setBusy(true);
-    const res = await checkRefCode(clean, deviceId());
+    const res = await checkRefCode(clean);
     setBusy(false);
     setResult(res);
     if (res.ok) {
       saveRefCode(clean);
-      onChange(true);
+      onChange(res.discountUsd);
     } else {
       saveRefCode("");
-      onChange(false);
+      onChange(0);
     }
   }
 
@@ -48,38 +46,31 @@ export default function ReferralCode({ onChange }: { onChange: (free: boolean) =
     setCode("");
     setResult(null);
     saveRefCode("");
-    onChange(false);
+    onChange(0);
   }
 
-  if (!open) {
-    return (
-      <button onClick={() => setOpen(true)} className="mt-3 flex items-center gap-1.5 text-[12px] text-ink-400 transition hover:text-gold-300">
-        <Tag className="h-3.5 w-3.5" />
-        {t("cart.code")}
-      </button>
-    );
-  }
-
-  const msg =
-    result &&
-    (result.ok
-      ? result.kind === "credit"
-        ? t("cart.codeCredit")
-        : t("cart.codeOk")
-      : result.reason === "used"
-        ? t("cart.codeUsed")
-        : result.reason === "no_credit"
-          ? t("cart.codeNoCredit")
-          : t("cart.codeInvalid"));
+  const applied = result?.ok ?? false;
 
   return (
-    <div className="mt-3">
+    <div className={`mt-4 rounded-2xl border p-4 transition-colors ${applied ? "border-gold-400/50 bg-gold-400/[0.07]" : "border-gold-400/25 bg-gold-400/[0.04]"}`}>
+      <div className="flex items-start gap-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900">
+          <Gift className="h-4 w-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13.5px] font-semibold text-ink-50">{t("cart.couponTitle")}</p>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-ink-400">
+            {t("cart.couponBody").replace("{n}", String(LOYALTY_EVERY)).replace("{usd}", String(LOYALTY_COUPON_USD))}
+          </p>
+        </div>
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
           void apply();
         }}
-        className="flex gap-2"
+        className="mt-3 flex gap-2"
       >
         <input
           value={code}
@@ -87,28 +78,37 @@ export default function ReferralCode({ onChange }: { onChange: (free: boolean) =
             setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6));
             setResult(null);
           }}
-          placeholder={t("cart.code")}
+          placeholder={t("cart.couponPlaceholder")}
           maxLength={6}
           autoCapitalize="characters"
           spellCheck={false}
-          className={`field h-11 font-mono text-[14px] tracking-[0.2em] ${result && !result.ok ? "field-error" : result?.ok ? "border-hybrid/60" : ""}`}
+          aria-label={t("cart.couponTitle")}
+          className={`field h-12 font-mono text-[16px] tracking-[0.25em] ${result && !result.ok ? "field-error" : applied ? "border-gold-400/70" : ""}`}
         />
-        {result?.ok ? (
-          <button type="button" onClick={clear} aria-label="Quitar" className="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] border border-white/10 text-ink-400 hover:text-ink-50">
+        {applied ? (
+          <button type="button" onClick={clear} aria-label="Quitar" className="grid h-12 w-12 shrink-0 place-items-center rounded-[10px] border border-white/10 text-ink-400 hover:text-ink-50">
             <X className="h-4 w-4" />
           </button>
         ) : (
-          <button type="submit" disabled={code.length !== 6 || busy} className="btn-ghost h-11 min-h-0 shrink-0 px-4 text-[12px] disabled:opacity-40">
+          <button type="submit" disabled={code.length !== 6 || busy} className="btn-gold h-12 min-h-0 shrink-0 px-5 text-[12px] disabled:opacity-40">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("cart.codeApply")}
           </button>
         )}
       </form>
-      {msg && (
-        <p className={`mt-1.5 flex items-center gap-1.5 text-[12px] ${result?.ok ? "text-hybrid" : "text-red-400"}`}>
-          {result?.ok && <Check className="h-3.5 w-3.5" />}
-          {msg}
+
+      {result && !result.ok && <p className="mt-2 text-[12px] text-red-400">{t("cart.codeInvalid")}</p>}
+      {result?.ok && (
+        <p className={`mt-2 flex items-center gap-1.5 text-[12.5px] font-semibold ${result.kind === "credit" ? "text-hybrid" : "text-gold-200"}`}>
+          <Check className="h-3.5 w-3.5" />
+          {result.kind === "credit"
+            ? t("cart.couponApplied").replace("{usd}", String(result.discountUsd))
+            : t("cart.couponProgress")
+                .replace("{done}", String(result.purchases % LOYALTY_EVERY === 0 ? 0 : result.purchases % LOYALTY_EVERY))
+                .replace("{n}", String(LOYALTY_EVERY))
+                .replace("{left}", String(purchasesToNext(result.purchases)))}
         </p>
       )}
+      {!result && !code && <p className="mt-2 text-[11.5px] text-ink-500">{t("cart.couponHint")}</p>}
     </div>
   );
 }

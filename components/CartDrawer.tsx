@@ -7,12 +7,11 @@ import {
   Lock,
   MapPin,
   Minus,
-  Package,
   Plus,
   ShoppingBag,
   X,
 } from "lucide-react";
-import { getBrand, getProduct, nextTier, STRAIN_LABEL } from "@/lib/data";
+import { getBrand, getProduct, STRAIN_LABEL } from "@/lib/data";
 import { deliversToday } from "@/lib/delivery-window";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
@@ -31,17 +30,16 @@ import ReferralCode from "@/components/ReferralCode";
 export default function CartDrawer() {
   const t = useT();
   const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } = useUi();
-  const { items, subtotal, total, count, unitPrice, changeQty, remove, clear } = useStore();
-  const tier = nextTier(count);
-  const today = deliversToday();
+  const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
   const [confirmClear, setConfirmClear] = useState(false);
-  const [freeDelivery, setFreeDelivery] = useState(false);
+  const [coupon, setCoupon] = useState(0);
 
   if (!drawerOpen) return null;
 
   const ready = isDeliveryComplete(delivery);
-  // Con código de amigo válido la entrega no se cobra (lo confirma el servidor).
-  const payable = freeDelivery ? subtotal : total;
+  const today = deliversToday();
+  // Cupón de cliente frecuente (lo confirma el servidor al cobrar).
+  const payable = Math.max(0, total - coupon);
 
   // Precio de lista y ahorro, solo para mostrar: el cobro usa el precio
   // con descuento que calcula el servidor.
@@ -135,7 +133,7 @@ export default function CartDrawer() {
                           </p>
                         </div>
                         <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-50">
-                          {formatUSD(unitPrice * item.qty)}
+                          {formatUSD(item.price * item.qty)}
                         </p>
                       </div>
 
@@ -172,15 +170,6 @@ export default function CartDrawer() {
                 );
               })}
 
-              {/* Packs: un empujón para la siguiente unidad */}
-              <li className="px-2 pt-2">
-                <p className={`flex items-center gap-2 rounded-[10px] px-3.5 py-2.5 text-[12.5px] ${tier ? "border border-gold-400/25 bg-gold-400/[0.06] text-gold-100" : "border border-hybrid/30 bg-hybrid/10 text-hybrid"}`}>
-                  <Package className="h-3.5 w-3.5 shrink-0" />
-                  {tier
-                    ? t("cart.packNext").replace("{n}", String(tier.units - count)).replace("{p}", String(tier.unitPrice))
-                    : t("cart.packOn").replace("{p}", String(unitPrice))}
-                </p>
-              </li>
               <li className="px-2 pt-1 text-right">
                 <button
                   onClick={handleClear}
@@ -221,6 +210,9 @@ export default function CartDrawer() {
                 </span>
               </button>
 
+              {/* Cupón de cliente frecuente: grande y a la vista */}
+              <ReferralCode onChange={setCoupon} />
+
               {/* Totales */}
               <dl className="mt-5 space-y-2 text-[13.5px]">
                 <div className="flex justify-between">
@@ -235,17 +227,14 @@ export default function CartDrawer() {
                 )}
                 <div className="flex justify-between">
                   <dt className="text-ink-400">{t("cart.delivery")}</dt>
-                  <dd className={`tabular-nums ${freeDelivery ? "text-hybrid" : "text-ink-100"}`}>
-                    {freeDelivery ? (
-                      <>
-                        <span className="mr-2 text-ink-600 line-through">C$ {DELIVERY_FEE_NIO}</span>
-                        {t("cart.free")}
-                      </>
-                    ) : (
-                      <>C$ {DELIVERY_FEE_NIO}</>
-                    )}
-                  </dd>
+                  <dd className="tabular-nums text-ink-100">C$ {DELIVERY_FEE_NIO}</dd>
                 </div>
+                {coupon > 0 && (
+                  <div className="flex justify-between">
+                    <dt className="text-hybrid">{t("cart.couponLine")}</dt>
+                    <dd className="font-semibold tabular-nums text-hybrid">-{formatUSD(coupon)}</dd>
+                  </div>
+                )}
                 <div className="flex items-baseline justify-between border-t border-white/8 pt-3">
                   <dt className="text-[14px] font-semibold text-ink-50">{t("cart.total")}</dt>
                   <dd className="text-right">
@@ -258,8 +247,6 @@ export default function CartDrawer() {
                   </dd>
                 </div>
               </dl>
-
-              <ReferralCode onChange={setFreeDelivery} />
 
               <p className="mt-3 flex items-center gap-2 text-[12px] text-ink-400">
                 <Clock className={`h-3.5 w-3.5 shrink-0 ${today ? "text-hybrid" : "text-ink-500"}`} />

@@ -10,6 +10,7 @@ import {
   unreadCount,
 } from "@/lib/chat-server";
 import { notifyClientMessage } from "@/lib/notify-email";
+import { getReferral } from "@/lib/referrals";
 import { pushShop } from "@/lib/push-server";
 import { allow } from "@/lib/rate-limit";
 
@@ -43,6 +44,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orde
     }
     const unread = await unreadCount(orderId, "client", order.client_seen_at);
     if (url.searchParams.get("seen") === "1") await touchSeen(orderId, "client");
+    const loyalty = order.referral_code ? await getReferral(order.referral_code).catch(() => null) : null;
     return NextResponse.json(
       {
         status: order.status,
@@ -51,6 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orde
         fulfillmentAt: order.fulfillment_at,
         items: (order.items ?? []).map((i) => ({ id: i.id ?? null, name: i.name, qty: i.qty })),
         referralCode: order.referral_code,
+        loyalty: loyalty ? { purchases: loyalty.purchases, credits: loyalty.credits } : null,
         messages,
         unread,
       },

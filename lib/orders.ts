@@ -50,11 +50,11 @@ interface OrderRow {
 
 const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id,items,referral_used";
 
-/** Código de referido que usó el pedido, guardado como JSON en `referral_used`. */
+/** Código de cliente que usó el pedido, guardado como JSON en `referral_used`. */
 export interface ReferralUse {
   code: string;
-  kind: "friend" | "credit";
-  device: string | null;
+  /** `credit`: descontó un cupón · `count`: solo suma la compra. */
+  kind: "credit" | "count";
 }
 
 /** Guarda el pedido recién creado. Devuelve false si la base no está lista. */
@@ -167,12 +167,15 @@ async function onPaid(order: OrderRow): Promise<void> {
   };
   await safe("Bienvenida del chat", () => ensureWelcome(order.order_id));
   await safe("Stock", () => decrementStock(items.filter((i) => typeof i.id === "number").map((i) => ({ id: i.id as number, qty: i.qty }))));
-  await safe("Código de referido", () => ensureCode(order.order_id));
+  // Con código: la compra suma a ese código. Sin código: primera compra,
+  // se crea uno nuevo.
   if (order.referral_used) {
-    await safe("Canje de referido", async () => {
+    await safe("Cliente frecuente", async () => {
       const use = JSON.parse(order.referral_used as string) as ReferralUse;
-      await redeem(order.order_id, use.code, use.device, use.kind);
+      await redeem(order.order_id, use.code, use.kind);
     });
+  } else {
+    await safe("Código de cliente", () => ensureCode(order.order_id));
   }
   const summary = items.map((i) => `${i.qty}× ${i.name}`).join(", ");
   await notifyPaidOrder({ orderId: order.order_id, totalUsd: order.total_usd, items });

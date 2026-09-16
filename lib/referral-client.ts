@@ -1,6 +1,6 @@
 // =====================================================================
-// Referidos, lado navegador: códigos propios guardados en el dispositivo y
-// el código de amigo escrito en la bolsa.
+// Cliente frecuente, lado navegador: el código propio guardado en el
+// dispositivo y el que se escribe en la bolsa.
 // =====================================================================
 
 const OWN_KEY = "vibeMyCodes";
@@ -13,6 +13,12 @@ export function loadOwnCodes(): string[] {
   } catch {
     return [];
   }
+}
+
+/** El código más reciente del cliente en este dispositivo. */
+export function myCode(): string {
+  const all = loadOwnCodes();
+  return all[all.length - 1] ?? "";
 }
 
 export function rememberOwnCode(code: string): void {
@@ -42,14 +48,16 @@ export function saveRefCode(code: string): void {
   }
 }
 
-export type CheckResult = { ok: true; kind: "friend" | "credit"; savesNio: number } | { ok: false; reason: "invalid" | "used" | "no_credit" };
+export type CheckResult =
+  | { ok: true; kind: "credit" | "count"; purchases: number; credits: number; discountUsd: number }
+  | { ok: false; reason: "invalid" };
 
-export async function checkRefCode(code: string, device: string): Promise<CheckResult> {
+export async function checkRefCode(code: string): Promise<CheckResult> {
   try {
     const res = await fetch("/api/referral/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, device, own: loadOwnCodes() }),
+      body: JSON.stringify({ code }),
     });
     return (await res.json()) as CheckResult;
   } catch {
