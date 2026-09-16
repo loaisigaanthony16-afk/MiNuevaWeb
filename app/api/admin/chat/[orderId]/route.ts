@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isOrderId } from "@/lib/orders";
 import { addMessage, chatConfigured, getChatOrder, isAdmin, listMessages, touchSeen } from "@/lib/chat-server";
+import { pushClient } from "@/lib/push-server";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
@@ -24,7 +25,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ orde
     const messages = await listMessages(orderId, after);
     await touchSeen(orderId, "shop");
     return NextResponse.json(
-      { status: order.status, delivered: Boolean(order.delivered_at), items: order.items, totalUsd: Number(order.total_usd), messages },
+      {
+        status: order.status,
+        delivered: Boolean(order.delivered_at),
+        fulfillment: order.fulfillment,
+        items: order.items,
+        totalUsd: Number(order.total_usd),
+        referralCode: order.referral_code,
+        messages,
+      },
       { headers: NO_STORE }
     );
   } catch (err) {
@@ -52,6 +61,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ord
     if (!order || order.delivered_at) return NextResponse.json({ error: "closed" }, { status: 410 });
     const message = await addMessage(orderId, "shop", text);
     await touchSeen(orderId, "shop");
+    await pushClient(orderId, "Vibe 505", "Tenés una respuesta en el chat de tu pedido.");
     return NextResponse.json({ message }, { headers: NO_STORE });
   } catch (err) {
     console.error("Error respondiendo (panel):", err instanceof Error ? err.message : "desconocido");

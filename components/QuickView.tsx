@@ -9,6 +9,7 @@ import { formatNIO } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
 import { flyToCart } from "@/lib/fly";
+import { isSoldOut, useShopInfo } from "@/hooks/useShopInfo";
 
 const STRAIN_BG: Record<string, string> = {
   sativa: "bg-sativa text-ink-900",
@@ -22,6 +23,7 @@ export default function QuickView() {
   const { add } = useStore();
   const [added, setAdded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const info = useShopInfo();
 
   useEffect(() => {
     setAdded(false);
@@ -29,6 +31,8 @@ export default function QuickView() {
 
   if (!p) return null;
   const brand = getBrand(p.brand);
+  const soldOut = isSoldOut(info, p.id);
+  const week = info.week[p.id] ?? 0;
 
   function handleAdd() {
     if (!p) return;
@@ -97,6 +101,12 @@ export default function QuickView() {
             </dl>
 
             <p className="mt-5 text-[13.5px] leading-relaxed text-ink-400">{brand.description}</p>
+            {week > 0 && (
+              <p className="mt-3 flex items-center gap-2 text-[12.5px] text-gold-300">
+                <span className="co-live h-1.5 w-1.5 rounded-full bg-gold-400" />
+                {week} {t("cat.week")} · Estelí
+              </p>
+            )}
 
             {/* Precio y CTA */}
             <div className="mt-auto border-t border-white/8 pt-5">
@@ -107,26 +117,30 @@ export default function QuickView() {
                     {formatNIO(p.price)} · {t("quick.delivery")}
                   </p>
                 </div>
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                  <button
-                    onClick={handleAdd}
-                    className={`btn w-full sm:w-auto ${added ? "bg-hybrid text-white" : "btn-ghost"}`}
-                  >
-                    {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                    {added ? t("quick.added") : t("cat.add")}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!p) return;
-                      add(p.id);
-                      closeQuick();
-                      openDrawer();
-                    }}
-                    className="btn-gold w-full sm:w-auto"
-                  >
-                    {t("cat.buyNow")}
-                  </button>
-                </div>
+                {soldOut ? (
+                  <span className="btn w-full cursor-not-allowed border border-white/10 text-ink-500 sm:w-auto">{t("cat.soldOut")}</span>
+                ) : (
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                    <button
+                      onClick={handleAdd}
+                      className={`btn w-full sm:w-auto ${added ? "bg-hybrid text-white" : "btn-ghost"}`}
+                    >
+                      {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {added ? t("quick.added") : t("cat.add")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!p) return;
+                        add(p.id);
+                        closeQuick();
+                        openDrawer();
+                      }}
+                      className="btn-gold w-full sm:w-auto"
+                    >
+                      {t("cat.buyNow")}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { priceOrder, PricingError } from "@/lib/pricing";
 import { DELIVERY_FEE_NIO, DELIVERY_ZONE } from "@/lib/checkout-util";
-import { createOrder, newOrderId } from "@/lib/orders";
+import { createOrder, newOrderId, type ReferralUse } from "@/lib/orders";
 import { stripe, stripeConfigured, toCents } from "@/lib/stripe-server";
 import { newChatToken } from "@/lib/chat-server";
 import { isAllowedOrigin, siteOrigin } from "@/lib/site";
+import { allow, clientIp } from "@/lib/rate-limit";
+import { firstShort } from "@/lib/stock";
+import { checkCode, normalizeCode } from "@/lib/referrals";
+import { getProduct } from "@/lib/data";
+import { ordersDbConfigured } from "@/lib/supabase-server";
 
 /**
  * Inicia el cobro con Stripe Checkout.
@@ -18,6 +23,12 @@ import { isAllowedOrigin, siteOrigin } from "@/lib/site";
 
 interface Body {
   items?: { id: number; qty: number }[];
+  /** Código de referido (opcional). */
+  code?: string;
+  /** Identificador anónimo del dispositivo, para el canje único. */
+  device?: string;
+  /** Códigos propios guardados en el dispositivo (para canjear créditos). */
+  own?: string[];
 }
 
 export async function POST(request: Request) {
@@ -26,6 +37,9 @@ export async function POST(request: Request) {
   }
   if (!stripeConfigured()) {
     return NextResponse.json({ error: "Pagos no configurados." }, { status: 503 });
+  }
+  if (!allow(`init:${clientIp(request)}`, 8, 10 * 60 * 1000)) {
+    return NextResponse.json({ error: "Demasiados intentos. Esperá unos minutos." }, { status: 429 });
   }
 
   let body: Body;
@@ -36,7 +50,35 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = priceOrder(body.items);
+    // Stock: si algo no alcanza, se avisa antes de cobrar.
+    const short = ordersDbConfigured() ? await firstShort(priceOrder(body.items).lines) : null;
+    if (short !== null) {
+      return NextResponse.json(
+        { error: `${getProduct(short)?.name ?? "Un producto"} ya no tiene existencias.`, soldOut: short },
+        { status: 409 }
+      );
+    }
+
+    // Referido: entrega gratis si el código vale para este dispositivo.
+    let referral: ReferralUse | null = null;
+    const code = normalizeCode(body.code);
+    const device = typeof body.device === "string" && /^[a-f0-9]{32}$/.test(body.device) ? body.device : null;
+    if (code.length === 6 && ordersDbConfigured()) {
+      const own = Array.isArray(body.own) ? body.own.map(normalizeCode).filter((c) => c.length === 6) : [];
+      const check = await checkCode(code, device ?? "sin-dispositivo", own);
+      if (!check.ok) {
+        const msg =
+          check.reason === "used"
+            ? "Este dispositivo ya usó un código de amigo."
+            : check.reason === "no_credit"
+              ? "Tu código todavía no tiene créditos."
+              : "Código no válido.";
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+      referral = { code, kind: check.kind, device };
+    }
+
+    const order = priceOrder(body.items, { freeDelivery: referral !== null });
     const orderId = newOrderId();
     const base = siteOrigin(request);
     const embedded = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -44,6 +86,8 @@ export async function POST(request: Request) {
 
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
+      // Solo tarjeta como tipo: Apple Pay y Google Pay aparecen solos dentro
+      // de "card" cuando están activos en el panel de Stripe.
       payment_method_types: ["card"],
       client_reference_id: orderId,
       metadata: { order_id: orderId },
@@ -55,17 +99,21 @@ export async function POST(request: Request) {
           price_data: {
             currency: "usd",
             unit_amount: toCents(l.unitPriceUsd),
-            product_data: { name: l.name, description: "2000 mg" },
+            product_data: { name: l.name },
           },
         })),
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: toCents(order.shippingUsd),
-            product_data: { name: `Entrega en ${DELIVERY_ZONE} (C$${DELIVERY_FEE_NIO})` },
-          },
-        },
+        ...(order.shippingUsd > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: "usd",
+                  unit_amount: toCents(order.shippingUsd),
+                  product_data: { name: `Entrega en ${DELIVERY_ZONE} (C$${DELIVERY_FEE_NIO})` },
+                },
+              },
+            ]
+          : []),
       ],
       ...(embedded
         ? { ui_mode: "embedded_page" as const, return_url: returnUrl, redirect_on_completion: "if_required" as const }
@@ -80,7 +128,7 @@ export async function POST(request: Request) {
 
     // Secreto del chat del pedido: solo lo conoce este navegador.
     const chatToken = newChatToken();
-    const tracked = await createOrder(orderId, order, session.id, chatToken);
+    const tracked = await createOrder(orderId, order, session.id, chatToken, referral);
 
     return NextResponse.json({
       orderId,
@@ -92,6 +140,7 @@ export async function POST(request: Request) {
       subtotalUsd: order.subtotalUsd,
       deliveryUsd: order.shippingUsd,
       totalUsd: order.totalUsd,
+      referralApplied: referral !== null,
     });
   } catch (err) {
     if (err instanceof PricingError) {

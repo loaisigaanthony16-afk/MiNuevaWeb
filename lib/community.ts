@@ -45,7 +45,7 @@ export const OPINION_ERRORS = [
 const DEVICE_KEY = "vibeDevice";
 
 /** Identificador anónimo de este navegador; sostiene el límite diario. */
-function deviceId(): string {
+export function deviceId(): string {
   try {
     let id = window.localStorage.getItem(DEVICE_KEY);
     if (!id || id.length < 16) {

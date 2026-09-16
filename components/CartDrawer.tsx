@@ -23,16 +23,20 @@ import {
 } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import CardLogos from "@/components/CardLogos";
+import ReferralCode from "@/components/ReferralCode";
 
 export default function CartDrawer() {
   const t = useT();
   const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } = useUi();
   const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
   const [confirmClear, setConfirmClear] = useState(false);
+  const [freeDelivery, setFreeDelivery] = useState(false);
 
   if (!drawerOpen) return null;
 
   const ready = isDeliveryComplete(delivery);
+  // Con código de amigo válido la entrega no se cobra (lo confirma el servidor).
+  const payable = freeDelivery ? subtotal : total;
 
   // Precio de lista y ahorro, solo para mostrar: el cobro usa el precio
   // con descuento que calcula el servidor.
@@ -217,27 +221,38 @@ export default function CartDrawer() {
                 )}
                 <div className="flex justify-between">
                   <dt className="text-ink-400">{t("cart.delivery")}</dt>
-                  <dd className="tabular-nums text-ink-100">C$ {DELIVERY_FEE_NIO}</dd>
+                  <dd className={`tabular-nums ${freeDelivery ? "text-hybrid" : "text-ink-100"}`}>
+                    {freeDelivery ? (
+                      <>
+                        <span className="mr-2 text-ink-600 line-through">C$ {DELIVERY_FEE_NIO}</span>
+                        {t("cart.free")}
+                      </>
+                    ) : (
+                      <>C$ {DELIVERY_FEE_NIO}</>
+                    )}
+                  </dd>
                 </div>
                 <div className="flex items-baseline justify-between border-t border-white/8 pt-3">
                   <dt className="text-[14px] font-semibold text-ink-50">{t("cart.total")}</dt>
                   <dd className="text-right">
                     <span className="block font-display text-[26px] font-semibold leading-none tabular-nums text-ink-50">
-                      {formatUSD(total)}
+                      {formatUSD(payable)}
                     </span>
                     <span className="mt-1 block text-[12px] tabular-nums text-ink-500">
-                      {formatNIO(total)}
+                      {formatNIO(payable)}
                     </span>
                   </dd>
                 </div>
               </dl>
+
+              <ReferralCode onChange={setFreeDelivery} />
 
               <button
                 onClick={goToCheckout}
                 className="btn-gold mt-5 w-full"
               >
                 <CreditCard className="h-4 w-4" />
-                {!ready ? t("cart.needAddress") : `${t("cart.pay")} ${formatUSD(total)}`}
+                {!ready ? t("cart.needAddress") : `${t("cart.pay")} ${formatUSD(payable)}`}
               </button>
 
               <div className="mt-3 flex flex-col items-center gap-2">

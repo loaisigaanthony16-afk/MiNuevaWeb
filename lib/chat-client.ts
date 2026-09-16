@@ -2,6 +2,8 @@
 // Chat del pedido, lado navegador.
 // =====================================================================
 
+import type { Fulfillment } from "@/lib/fulfillment";
+
 export interface ChatMessage {
   id: number;
   sender: "client" | "shop";
@@ -12,6 +14,10 @@ export interface ChatMessage {
 export interface ChatState {
   status: string;
   delivered: boolean;
+  fulfillment: Fulfillment;
+  fulfillmentAt: string | null;
+  items: { id: number | null; name: string; qty: number }[];
+  referralCode: string | null;
   messages: ChatMessage[];
   unread: number;
 }
@@ -26,7 +32,20 @@ export async function fetchChat(orderId: string, token: string, after = 0, seen 
     // disponible) o un 5xx son pasajeros y no deben borrar el aviso.
     if (res.status === 410) return { ok: false, reason: "closed" };
     if (!res.ok) return { ok: false, reason: "error" };
-    return { ok: true, data: (await res.json()) as ChatState };
+    const data = (await res.json()) as Partial<ChatState>;
+    return {
+      ok: true,
+      data: {
+        status: data.status ?? "pending",
+        delivered: Boolean(data.delivered),
+        fulfillment: data.fulfillment ?? "recibido",
+        fulfillmentAt: data.fulfillmentAt ?? null,
+        items: data.items ?? [],
+        referralCode: data.referralCode ?? null,
+        messages: data.messages ?? [],
+        unread: data.unread ?? 0,
+      },
+    };
   } catch {
     return { ok: false, reason: "error" };
   }
@@ -51,7 +70,7 @@ export function notify(title: string, body: string): void {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     if (document.visibilityState === "visible") return;
-    new Notification(title, { body, icon: "/favicon.ico" });
+    new Notification(title, { body, icon: "/icon-192.png" });
   } catch {
     /* noop */
   }

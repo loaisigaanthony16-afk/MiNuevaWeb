@@ -50,6 +50,12 @@ export default function Footer() {
                   {t("foot.opinions")}
                 </a>
               </li>
+              <li>
+                <Link href="/seguir" className={link}>{t("foot.track")}</Link>
+              </li>
+              <li>
+                <Link href="/nosotros" className={link}>{t("foot.about")}</Link>
+              </li>
             </ul>
           </div>
 

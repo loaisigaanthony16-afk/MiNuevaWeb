@@ -14,6 +14,7 @@ export async function GET(request: Request) {
         totalUsd: Number(o.total_usd),
         items: o.items,
         createdAt: o.created_at,
+        fulfillment: o.fulfillment,
         unread: await unreadCount(o.order_id, "shop", o.shop_seen_at),
       }))
     );

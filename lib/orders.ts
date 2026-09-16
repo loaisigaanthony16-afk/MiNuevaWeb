@@ -11,6 +11,9 @@
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import { notifyPaidOrder } from "@/lib/notify-email";
 import { ensureWelcome } from "@/lib/chat-server";
+import { pushShop } from "@/lib/push-server";
+import { decrementStock } from "@/lib/stock";
+import { ensureCode, redeem } from "@/lib/referrals";
 import type { PricedOrder } from "@/lib/pricing";
 
 export type OrderStatus =
@@ -41,17 +44,26 @@ interface OrderRow {
   total_usd: number;
   paid_at: string | null;
   stripe_session_id: string | null;
-  items: { name: string; qty: number }[];
+  items: { id?: number; name: string; qty: number }[];
+  referral_used: string | null;
 }
 
-const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id,items";
+const SELECT = "select=order_id,status,total_usd,paid_at,stripe_session_id,items,referral_used";
+
+/** Código de referido que usó el pedido, guardado como JSON en `referral_used`. */
+export interface ReferralUse {
+  code: string;
+  kind: "friend" | "credit";
+  device: string | null;
+}
 
 /** Guarda el pedido recién creado. Devuelve false si la base no está lista. */
 export async function createOrder(
   orderId: string,
   order: PricedOrder,
   stripeSessionId: string,
-  chatToken: string
+  chatToken: string,
+  referral: ReferralUse | null = null
 ): Promise<boolean> {
   if (!ordersDbConfigured()) return false;
   try {
@@ -67,6 +79,7 @@ export async function createOrder(
         total_usd: order.totalUsd,
         stripe_session_id: stripeSessionId,
         chat_token: chatToken,
+        referral_used: referral ? JSON.stringify(referral) : null,
       },
     });
     return true;
@@ -131,20 +144,39 @@ export async function applyPayment(update: PaymentUpdate): Promise<void> {
     body: {
       status,
       stripe_payment_intent: update.paymentIntent,
-      ...(status === "paid" && !current.paid_at ? { paid_at: new Date().toISOString() } : {}),
+      ...(status === "paid" && !current.paid_at ? { paid_at: new Date().toISOString(), fulfillment_at: new Date().toISOString() } : {}),
     },
   });
 
-  // Aviso al comercio solo la primera vez que el pedido queda pagado
-  // (los eventos repetidos de Stripe no vuelven a escribir).
+  // Solo la primera vez que el pedido queda pagado (los eventos repetidos
+  // de Stripe no vuelven a escribir).
   if (status === "paid" && current.status !== "paid") {
-    try {
-      await ensureWelcome(update.orderId);
-    } catch (err) {
-      console.error("No se pudo dejar la bienvenida en el chat:", err instanceof Error ? err.message : "desconocido");
-    }
-    await notifyPaidOrder({ orderId: update.orderId, totalUsd: current.total_usd, items: current.items ?? [] });
+    await onPaid(current);
   }
+}
+
+/** Efectos de un pago confirmado: cada uno falla por su cuenta sin frenar al resto. */
+async function onPaid(order: OrderRow): Promise<void> {
+  const items = order.items ?? [];
+  const safe = async (label: string, fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+    } catch (err) {
+      console.error(`${label} falló:`, err instanceof Error ? err.message : "desconocido");
+    }
+  };
+  await safe("Bienvenida del chat", () => ensureWelcome(order.order_id));
+  await safe("Stock", () => decrementStock(items.filter((i) => typeof i.id === "number").map((i) => ({ id: i.id as number, qty: i.qty }))));
+  await safe("Código de referido", () => ensureCode(order.order_id));
+  if (order.referral_used) {
+    await safe("Canje de referido", async () => {
+      const use = JSON.parse(order.referral_used as string) as ReferralUse;
+      await redeem(order.order_id, use.code, use.device, use.kind);
+    });
+  }
+  const summary = items.map((i) => `${i.qty}× ${i.name}`).join(", ");
+  await notifyPaidOrder({ orderId: order.order_id, totalUsd: order.total_usd, items });
+  await pushShop(`Nuevo pedido · ${order.order_id}`, `${summary} · $${Number(order.total_usd).toFixed(2)}`);
 }
 
 /** Estado de un pedido según la base. */

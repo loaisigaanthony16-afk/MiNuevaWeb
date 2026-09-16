@@ -11,6 +11,9 @@ import AddressModal from "@/components/AddressModal";
 import QuickView from "@/components/QuickView";
 import CartDrawer from "@/components/CartDrawer";
 import CheckoutModal from "@/components/CheckoutModal";
+import AbandonedCartToast from "@/components/AbandonedCartToast";
+import PwaSetup from "@/components/PwaSetup";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({
@@ -23,6 +26,9 @@ export const metadata: Metadata = {
   title: "Vibe 505 · Vapes premium con entrega en Estelí",
   description:
     "Muha Meds y Packwoods. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Vibe 505" },
 };
 
 export const viewport: Viewport = {
@@ -63,9 +69,12 @@ export default function RootLayout({
               <AgeGate />
               <OrderStatus />
               <PendingOrderBanner />
+              <AbandonedCartToast />
+              <PwaSetup />
             </UIContextProvider>
           </StoreProvider>
         </LocaleProvider>
+        <Analytics />
       </body>
     </html>
   );

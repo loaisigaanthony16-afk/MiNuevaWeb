@@ -42,7 +42,7 @@ export class PricingError extends Error {}
  * Convierte la bolsa del cliente en un cobro verificado.
  * Lanza `PricingError` si la bolsa está vacía o trae datos inválidos.
  */
-export function priceOrder(input: unknown): PricedOrder {
+export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}): PricedOrder {
   if (!Array.isArray(input) || input.length === 0) {
     throw new PricingError("La bolsa está vacía.");
   }
@@ -79,8 +79,8 @@ export function priceOrder(input: unknown): PricedOrder {
   }
 
   const subtotalUsd = round2(lines.reduce((acc, l) => acc + l.lineTotalUsd, 0));
-  // Entrega fija en Estelí, sumada a cada pedido.
-  const shippingUsd = round2(deliveryFor(subtotalUsd));
+  // Entrega fija en Estelí, sumada a cada pedido (gratis con código de referido válido).
+  const shippingUsd = opts.freeDelivery ? 0 : round2(deliveryFor(subtotalUsd));
   const totalUsd = round2(subtotalUsd + shippingUsd);
 
   if (totalUsd <= 0) {

@@ -874,6 +874,10 @@ html[data-age="ok"] .gate {
   animation: rise 0.6s var(--ease) both;
   animation-delay: calc(var(--i, 0) * 60ms);
 }
+/* Paso actual del seguimiento: halo dorado suave. */
+.step-active {
+  animation: pillPing 2.2s ease-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   .rise,
   .check-ring,

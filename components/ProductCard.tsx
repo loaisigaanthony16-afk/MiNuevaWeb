@@ -9,6 +9,7 @@ import { formatNIO } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
 import { flyToCart } from "@/lib/fly";
+import { isSoldOut, useShopInfo } from "@/hooks/useShopInfo";
 
 const STRAIN_BG: Record<Product["strain"], string> = {
   sativa: "bg-sativa text-ink-900",
@@ -30,6 +31,10 @@ export default function ProductCard({
   const [bounceKey, setBounceKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const info = useShopInfo();
+  const soldOut = isSoldOut(info, product.id);
+  const left = info.stock[product.id];
+  const week = info.week[product.id] ?? 0;
 
   // Si la imagen ya estaba en caché, onLoad puede dispararse antes de que
   // React lo enganche: confirmamos el estado tras el montaje.
@@ -88,6 +93,16 @@ export default function ProductCard({
             }`}
           />
           <span className="sheen" aria-hidden />
+          {soldOut && (
+            <span className="absolute left-2.5 top-2.5 rounded-full bg-ink-900/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-200 ring-1 ring-white/15">
+              {t("cat.soldOut")}
+            </span>
+          )}
+          {!soldOut && left !== undefined && left <= 3 && (
+            <span className="absolute left-2.5 top-2.5 rounded-full bg-red-500/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white">
+              {t("cat.lastUnits")}
+            </span>
+          )}
         </div>
 
         {/* Info */}
@@ -102,6 +117,12 @@ export default function ProductCard({
             <span className={`tag ${STRAIN_BG[product.strain]}`}>{STRAIN_LABEL[product.strain]}</span>
             <span className="text-[11.5px] text-ink-400">{product.flavor}</span>
           </div>
+          {week > 0 && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-gold-300/90">
+              <span className="co-live h-1.5 w-1.5 rounded-full bg-gold-400" />
+              {week} {t("cat.week")}
+            </p>
+          )}
         </div>
       </div>
 
@@ -114,15 +135,18 @@ export default function ProductCard({
         <button
           key={bounceKey}
           onClick={handleAdd}
-          aria-label={`${t("cat.add")} ${product.name}`}
-          className={`add-bounce mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full text-[12.5px] font-bold uppercase tracking-[0.08em] transition-all duration-300 ease-smooth active:scale-[0.97] ${
-            added
-              ? "bg-hybrid text-white"
-              : "bg-gold-400 text-ink-900 hover:bg-gold-300"
+          disabled={soldOut}
+          aria-label={`${soldOut ? t("cat.soldOut") : t("cat.add")} ${product.name}`}
+          className={`add-bounce mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full text-[12.5px] font-bold uppercase tracking-[0.08em] transition-all duration-300 ease-smooth active:scale-[0.97] disabled:cursor-not-allowed ${
+            soldOut
+              ? "border border-white/10 text-ink-500"
+              : added
+                ? "bg-hybrid text-white"
+                : "bg-gold-400 text-ink-900 hover:bg-gold-300"
           }`}
         >
-          {added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {added ? t("quick.added") : t("cat.add")}
+          {soldOut ? null : added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {soldOut ? t("cat.soldOut") : added ? t("quick.added") : t("cat.add")}
         </button>
       </div>
     </article>

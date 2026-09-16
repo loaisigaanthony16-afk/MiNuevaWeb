@@ -11,6 +11,7 @@
 
 import crypto from "node:crypto";
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
+import { FULFILLMENT_NOTICE, type Fulfillment } from "@/lib/fulfillment";
 
 if (typeof window !== "undefined") {
   throw new Error("lib/chat-server.ts es solo para el servidor");
@@ -33,12 +34,16 @@ export interface ChatOrder {
   shop_seen_at: string | null;
   client_seen_at: string | null;
   total_usd: number;
-  items: { name: string; qty: number }[];
+  items: { id?: number; name: string; qty: number }[];
   created_at: string;
+  fulfillment: Fulfillment;
+  fulfillment_at: string | null;
+  referral_code: string | null;
+  paid_at: string | null;
 }
 
 const ORDER_SELECT =
-  "select=order_id,status,chat_token,delivered_at,shop_seen_at,client_seen_at,total_usd,items,created_at";
+  "select=order_id,status,chat_token,delivered_at,shop_seen_at,client_seen_at,total_usd,items,created_at,fulfillment,fulfillment_at,referral_code,paid_at";
 
 // ---------------------------------------------------------------- cifrado
 function key(): Buffer {
@@ -152,19 +157,52 @@ export async function unreadCount(orderId: string, forWho: Sender, seenAt: strin
   return rows.length;
 }
 
-/** Entregado: se borran los mensajes y se cierra el chat. */
+/**
+ * Entregado: se borran los mensajes y se cierra el chat. El token queda
+ * para que el cliente vea "entregado" y pueda volver a pedir lo mismo.
+ */
 export async function markDelivered(orderId: string): Promise<void> {
   await db(`messages?order_id=eq.${encodeURIComponent(orderId)}`, { method: "DELETE", prefer: "return=minimal" });
   await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, {
     method: "PATCH",
     prefer: "return=minimal",
-    body: { delivered_at: new Date().toISOString(), chat_token: null },
+    body: { delivered_at: new Date().toISOString(), fulfillment: "entregado", fulfillment_at: new Date().toISOString() },
   });
+}
+
+/** Cambia el estado de entrega y deja constancia en el chat. */
+export async function setFulfillment(orderId: string, f: Fulfillment): Promise<void> {
+  if (f === "entregado") {
+    await markDelivered(orderId);
+    return;
+  }
+  await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, {
+    method: "PATCH",
+    prefer: "return=minimal",
+    body: { fulfillment: f, fulfillment_at: new Date().toISOString() },
+  });
+  await addMessage(orderId, "shop", FULFILLMENT_NOTICE[f]);
 }
 
 /** Pedidos pagados con chat abierto, los más nuevos primero. */
 export async function listOpenOrders(): Promise<ChatOrder[]> {
   return db<ChatOrder[]>(`orders?status=eq.paid&delivered_at=is.null&order=created_at.desc&limit=200&${ORDER_SELECT}`);
+}
+
+export interface HistoryRow {
+  order_id: string;
+  items: { name: string; qty: number }[];
+  total_usd: number;
+  paid_at: string;
+  delivered_at: string | null;
+  fulfillment: Fulfillment;
+}
+
+/** Ventas (pedidos pagados), sin datos personales. */
+export async function listHistory(limit = 500): Promise<HistoryRow[]> {
+  return db<HistoryRow[]>(
+    `orders?status=in.(paid,refunded)&order=paid_at.desc&limit=${limit}&select=order_id,items,total_usd,paid_at,delivered_at,fulfillment`
+  );
 }
 
 // ---------------------------------------------------------------- admin

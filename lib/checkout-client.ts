@@ -6,6 +6,8 @@ import { getProduct } from "@/lib/data";
 import type { CartItem } from "@/lib/store";
 import type { DeliveryInfo } from "@/lib/delivery";
 import { buildDeliveryMessage } from "@/lib/delivery-message";
+import { deviceId } from "@/lib/community";
+import { loadOwnCodes, loadRefCode } from "@/lib/referral-client";
 
 export type OrderStatusValue =
   | "pending"
@@ -29,6 +31,8 @@ export interface InitResponse {
   /** Token secreto del chat del pedido (null si no hay base). */
   chatToken: string | null;
   totalUsd: number;
+  deliveryUsd: number;
+  referralApplied: boolean;
 }
 
 export class CheckoutError extends Error {}
@@ -40,8 +44,14 @@ export async function initCheckout(items: CartItem[]): Promise<InitResponse> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // Solo id y cantidad: el precio lo pone el servidor y la dirección
-      // se queda en este dispositivo.
-      body: JSON.stringify({ items: items.map((it) => ({ id: it.id, qty: it.qty })) }),
+      // se queda en este dispositivo. El código de referido y el id anónimo
+      // del dispositivo van para validar la entrega gratis.
+      body: JSON.stringify({
+        items: items.map((it) => ({ id: it.id, qty: it.qty })),
+        code: loadRefCode() || undefined,
+        device: deviceId(),
+        own: loadOwnCodes(),
+      }),
     });
   } catch {
     throw new CheckoutError("network");

@@ -7,6 +7,7 @@ import { PENDING_EVENT, clearPendingOrder, loadPendingOrder, type PendingOrder }
 import { fetchChat, notify } from "@/lib/chat-client";
 import { useT } from "@/components/locale-context";
 import { useUi } from "@/components/ui-context";
+import { FULFILLMENT_LABEL, type Fulfillment } from "@/lib/fulfillment";
 
 const POLL_MS = 15000;
 
@@ -24,6 +25,7 @@ export default function PendingOrderBanner() {
   const { checkoutOpen } = useUi();
   const [pending, setPending] = useState<PendingOrder | null>(null);
   const [unread, setUnread] = useState(0);
+  const [fulfillment, setFulfillment] = useState<Fulfillment>("recibido");
 
   const refresh = useCallback(() => setPending(loadPendingOrder()), []);
 
@@ -52,6 +54,7 @@ export default function PendingOrderBanner() {
         return;
       }
       setUnread(res.data.unread);
+      setFulfillment(res.data.fulfillment);
       if (res.data.unread > last) notify("Vibe 505", t("pending.newMessage"));
       last = res.data.unread;
     };
@@ -85,7 +88,7 @@ export default function PendingOrderBanner() {
               {paid ? `${t("pending.pill")} · ${pending.ref}` : t("pending.titleStarted")}
             </span>
             <span className={`block truncate text-[11.5px] ${unread > 0 ? "font-semibold text-gold-300" : "text-ink-400"}`}>
-              {paid ? (unread > 0 ? t("pending.pillNew") : t("pending.pillHint")) : t("pending.bodyStarted")}
+              {paid ? (unread > 0 ? t("pending.pillNew") : `${FULFILLMENT_LABEL[fulfillment]} · ${t("pending.pillHint")}`) : t("pending.bodyStarted")}
             </span>
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-ink-400 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-gold-300" />

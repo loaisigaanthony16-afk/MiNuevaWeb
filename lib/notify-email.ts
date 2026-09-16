@@ -75,6 +75,15 @@ export async function notifyPaidOrder(order: {
   }
 }
 
+/** Alerta técnica (vigilancia del webhook, etc.). */
+export async function notifyAlert(subject: string, text: string): Promise<void> {
+  try {
+    await send(`⚠ ${subject}`, [esc(text), `Panel: <a href="${panel()}">${panel()}</a>`]);
+  } catch (err) {
+    console.error("No se pudo enviar la alerta:", err instanceof Error ? err.message : "desconocido");
+  }
+}
+
 /** Mensaje nuevo de un cliente. No incluye el texto: se lee en el panel. */
 export async function notifyClientMessage(orderId: string): Promise<void> {
   try {
