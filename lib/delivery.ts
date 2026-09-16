@@ -13,7 +13,9 @@ export interface DeliveryInfo {
   phone: string; // contacto para coordinar la entrega
   region: string; // zona de entrega: por ahora siempre Estelí
   address: string; // dirección exacta
-  notes: string; // referencias, horario preferido
+  notes: string; // referencias
+  /** Franja preferida: manana | tarde | noche | "" (cualquiera). */
+  slot: string;
 }
 
 export const EMPTY_DELIVERY: DeliveryInfo = {
@@ -22,6 +24,7 @@ export const EMPTY_DELIVERY: DeliveryInfo = {
   region: DELIVERY_ZONE,
   address: "",
   notes: "",
+  slot: "",
 };
 
 export const DELIVERY_KEY = "vibeDelivery";

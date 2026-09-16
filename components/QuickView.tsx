@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Check, Plus, X } from "lucide-react";
+import { haptic } from "@/lib/haptic";
 import { getBrand, STRAIN_EFFECT, STRAIN_LABEL } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
@@ -37,6 +39,7 @@ export default function QuickView() {
   function handleAdd() {
     if (!p) return;
     add(p.id);
+    haptic();
     flyToCart(imgRef.current);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
@@ -101,6 +104,9 @@ export default function QuickView() {
             </dl>
 
             <p className="mt-5 text-[13.5px] leading-relaxed text-ink-400">{brand.description}</p>
+            <Link href={`/p/${p.slug}`} onClick={closeQuick} className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold uppercase tracking-wide2 text-gold-300 hover:text-gold-200">
+              {t("cat.viewFull")} <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
             {week > 0 && (
               <p className="mt-3 flex items-center gap-2 text-[12.5px] text-gold-300">
                 <span className="co-live h-1.5 w-1.5 rounded-full bg-gold-400" />

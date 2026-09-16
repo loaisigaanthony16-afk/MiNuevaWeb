@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { deliversToday } from "@/lib/delivery-window";
 import { ArrowRight, ShieldCheck, ShoppingBag } from "lucide-react";
 import EmberBackdrop from "@/components/EmberBackdrop";
 import PriceTag from "@/components/PriceTag";
@@ -21,6 +22,15 @@ const SLOTS = [
   { cls: "left-1/2 top-[10%] h-[66%] -translate-x-1/2 z-20", rot: "0deg", depth: 26, float: "float-a", delay: 200 },
   { cls: "-right-[4%] top-[32%] h-[46%] z-10", rot: "12deg", depth: 18, float: "float-c", delay: 500 },
 ];
+
+/** "Te llega hoy" según la hora de Nicaragua; se calcula tras montar. */
+function DeliveryToday() {
+  const t = useT();
+  const [today, setToday] = useState<boolean | null>(null);
+  useEffect(() => setToday(deliversToday()), []);
+  if (today === null) return null;
+  return <span className="block text-hybrid">{today ? t("cart.today") : t("cart.tomorrow")}</span>;
+}
 
 export default function Hero() {
   const t = useT();
@@ -78,7 +88,10 @@ export default function Hero() {
 
           <div className="mt-9 flex flex-wrap items-end gap-x-5 gap-y-2 animate-rise [animation-delay:480ms]">
             <PriceTag price={UNIT_PRICE} listPrice={LIST_PRICE} />
-            <span className="pb-1 text-[12.5px] text-ink-400">{t("ann.delivery")}</span>
+            <span className="pb-1 text-[12.5px] text-ink-400">
+              {t("ann.delivery")}
+              <DeliveryToday />
+            </span>
           </div>
         </div>
 

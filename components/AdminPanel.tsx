@@ -271,6 +271,22 @@ export default function AdminPanel() {
                       <PackageCheck className="h-4 w-4" /> Entregado
                     </button>
                   </div>
+                  {/* Dirección del cliente (del primer mensaje): copiar y abrir en Maps */}
+                  {(() => {
+                    const first = messages.find((m) => m.sender === "client" && /Direcci[oó]n:/.test(m.body));
+                    const addr = first?.body.match(/Direcci[oó]n:\s*(.+)/)?.[1]?.trim();
+                    const phone = first?.body.match(/Tel[eé]fono:\s*(.+)/)?.[1]?.trim();
+                    if (!addr) return null;
+                    const q = encodeURIComponent(`${addr}, Estelí, Nicaragua`);
+                    return (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
+                        <span className="truncate text-ink-300">{addr}</span>
+                        <button onClick={() => void navigator.clipboard?.writeText(addr)} className="rounded-full border border-white/12 px-3 py-1 text-ink-300 hover:text-ink-50">Copiar</button>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${q}`} target="_blank" rel="noreferrer" className="rounded-full border border-white/12 px-3 py-1 text-ink-300 hover:text-ink-50">Abrir en Maps</a>
+                        {phone && <a href={`tel:${phone.replace(/\s/g, "")}`} className="rounded-full border border-white/12 px-3 py-1 text-ink-300 hover:text-ink-50">Llamar</a>}
+                      </div>
+                    );
+                  })()}
                   {/* Estado de entrega: un botón por paso */}
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {FULFILLMENT_STEPS.filter((s) => s !== "entregado").map((s) => {

@@ -2,15 +2,18 @@
 
 import {
   ChevronRight,
+  Clock,
   CreditCard,
   Lock,
   MapPin,
   Minus,
+  Package,
   Plus,
   ShoppingBag,
   X,
 } from "lucide-react";
-import { getBrand, getProduct, STRAIN_LABEL } from "@/lib/data";
+import { getBrand, getProduct, nextTier, STRAIN_LABEL } from "@/lib/data";
+import { deliversToday } from "@/lib/delivery-window";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
@@ -28,7 +31,9 @@ import ReferralCode from "@/components/ReferralCode";
 export default function CartDrawer() {
   const t = useT();
   const { drawerOpen, closeDrawer, openAddress, openCheckout, delivery } = useUi();
-  const { items, subtotal, total, count, changeQty, remove, clear } = useStore();
+  const { items, subtotal, total, count, unitPrice, changeQty, remove, clear } = useStore();
+  const tier = nextTier(count);
+  const today = deliversToday();
   const [confirmClear, setConfirmClear] = useState(false);
   const [freeDelivery, setFreeDelivery] = useState(false);
 
@@ -130,7 +135,7 @@ export default function CartDrawer() {
                           </p>
                         </div>
                         <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-50">
-                          {formatUSD(item.price * item.qty)}
+                          {formatUSD(unitPrice * item.qty)}
                         </p>
                       </div>
 
@@ -167,6 +172,15 @@ export default function CartDrawer() {
                 );
               })}
 
+              {/* Packs: un empujón para la siguiente unidad */}
+              <li className="px-2 pt-2">
+                <p className={`flex items-center gap-2 rounded-[10px] px-3.5 py-2.5 text-[12.5px] ${tier ? "border border-gold-400/25 bg-gold-400/[0.06] text-gold-100" : "border border-hybrid/30 bg-hybrid/10 text-hybrid"}`}>
+                  <Package className="h-3.5 w-3.5 shrink-0" />
+                  {tier
+                    ? t("cart.packNext").replace("{n}", String(tier.units - count)).replace("{p}", String(tier.unitPrice))
+                    : t("cart.packOn").replace("{p}", String(unitPrice))}
+                </p>
+              </li>
               <li className="px-2 pt-1 text-right">
                 <button
                   onClick={handleClear}
@@ -246,6 +260,11 @@ export default function CartDrawer() {
               </dl>
 
               <ReferralCode onChange={setFreeDelivery} />
+
+              <p className="mt-3 flex items-center gap-2 text-[12px] text-ink-400">
+                <Clock className={`h-3.5 w-3.5 shrink-0 ${today ? "text-hybrid" : "text-ink-500"}`} />
+                {today ? t("cart.today") : t("cart.tomorrow")}
+              </p>
 
               <button
                 onClick={goToCheckout}

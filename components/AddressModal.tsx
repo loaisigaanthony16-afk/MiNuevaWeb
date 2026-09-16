@@ -10,6 +10,7 @@ import {
   type DeliveryInfo,
 } from "@/lib/delivery";
 import { useT } from "@/components/locale-context";
+import { SLOTS } from "@/lib/delivery-window";
 
 export default function AddressModal() {
   const t = useT();
@@ -147,6 +148,26 @@ export default function AddressModal() {
               aria-describedby={errors.address ? "address-error" : undefined}
             />
             {errors.address && <Err id="address-error" msg={errors.address} />}
+          </div>
+
+          <div className="mt-5">
+            <p className="label">{t("addr.slot")}</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[{ id: "", label: t("addr.slotAny"), hours: "" }, ...SLOTS].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => update("slot", s.id)}
+                  aria-pressed={form.slot === s.id}
+                  className={`rounded-[10px] border px-2 py-2.5 text-center transition ${
+                    form.slot === s.id ? "border-gold-400 bg-gold-400/10 text-ink-50" : "border-white/10 text-ink-400 hover:border-white/25"
+                  }`}
+                >
+                  <span className="block text-[12px] font-semibold">{s.label}</span>
+                  {s.hours && <span className="block text-[10px] text-ink-500">{s.hours}</span>}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-5">

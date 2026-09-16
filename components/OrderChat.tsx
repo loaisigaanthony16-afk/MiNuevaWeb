@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Bell, BellRing, Check, Copy, Loader2, Lock, PackageCheck, RotateCcw, Send } from "lucide-react";
 import { askNotificationPermission, fetchChat, notify, sendChat, type ChatMessage } from "@/lib/chat-client";
 import { clearPendingOrder } from "@/lib/pending-order";
@@ -238,6 +239,9 @@ export default function OrderChat({
                   {t("chat.reorder")}
                 </button>
               )}
+              <Link href="/#opiniones" className="mt-3 inline-block text-[13px] text-gold-300 underline-offset-4 hover:underline">
+                {t("chat.review")} →
+              </Link>
             </div>
           )}
         </div>

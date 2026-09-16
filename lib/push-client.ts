@@ -67,6 +67,22 @@ export async function enableOrderPush(orderId: string, token: string): Promise<b
   }
 }
 
+/** "Avisame cuando vuelva" para un producto agotado. */
+export async function enableRestockPush(productId: number): Promise<boolean> {
+  const sub = await subscribePush();
+  if (!sub) return false;
+  try {
+    const res = await fetch("/api/push/restock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, subscription: sub }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /** Comercio: activa los avisos del panel. */
 export async function enableShopPush(adminKey: string): Promise<boolean> {
   const sub = await subscribePush();

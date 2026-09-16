@@ -9,22 +9,29 @@ import Community from "@/components/Community";
 import Footer from "@/components/Footer";
 import FloatingActions from "@/components/FloatingActions";
 
-// Orden de la portada: qué es y qué garantiza, por dónde entrar
-// (colecciones), el catálogo, cómo se compra sin dar tu nombre y lo que
-// opina la gente que ya compró.
+// Orden de la portada: qué es y qué garantiza, el catálogo, por dónde
+// explorar (colecciones), cómo se compra sin dar tu nombre y lo que opina
+// la gente que ya compró. En el teléfono el catálogo va antes que las
+// colecciones para llegar al primer producto con menos scroll.
 export default function HomePage() {
   return (
-    <main id="top">
+    <main id="top" className="flex flex-col">
       <AnnouncementBar />
       <Navbar />
       <Hero />
       <ServiceBar />
-      <Collections />
-      <Catalog />
-      <HowItWorks />
-      <Community />
-      <Footer />
-      <FloatingActions />
+      <div className="max-md:order-2">
+        <Collections />
+      </div>
+      <div className="max-md:order-1">
+        <Catalog />
+      </div>
+      <div className="max-md:order-3">
+        <HowItWorks />
+        <Community />
+        <Footer />
+        <FloatingActions />
+      </div>
     </main>
   );
 }

@@ -6,6 +6,7 @@
 
 import type { DeliveryInfo } from "@/lib/delivery";
 import { DELIVERY_FEE_NIO } from "@/lib/checkout-util";
+import { slotLabel } from "@/lib/delivery-window";
 
 export interface OrderLineText {
   qty: number;
@@ -30,6 +31,7 @@ export function buildDeliveryMessage(params: {
     delivery ? `Ciudad: ${delivery.region}` : "",
     delivery ? `Dirección: ${delivery.address}` : "",
     delivery?.notes ? `Referencias: ${delivery.notes}` : "",
+    delivery?.slot ? `Franja preferida: ${slotLabel(delivery.slot)}` : "",
   ]
     .filter((line) => line !== "")
     .join("\n");

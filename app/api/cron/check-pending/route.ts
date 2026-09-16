@@ -3,6 +3,7 @@ import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import { stripe, stripeConfigured } from "@/lib/stripe-server";
 import { applyPayment } from "@/lib/orders";
 import { notifyAlert } from "@/lib/notify-email";
+import { pushClient } from "@/lib/push-server";
 
 /**
  * Vigilancia del webhook. Revisa los pedidos que llevan más de 30 min en
@@ -54,5 +55,26 @@ export async function GET(request: Request) {
       `Estos pedidos estaban pagados en Stripe pero seguían pendientes en la base (el webhook no llegó): ${fixed.join(", ")}. Ya quedaron como pagados y con el chat abierto. Revisá en Stripe → Developers → Webhooks que el endpoint esté activo.`
     );
   }
-  return NextResponse.json({ ok: true, checked: rows.length, fixed, expired });
+  // Recompra: a los ~20 días de la entrega, un aviso push (una sola vez).
+  const reminded: string[] = [];
+  try {
+    const from = new Date(Date.now() - 23 * 24 * 3600 * 1000).toISOString();
+    const to = new Date(Date.now() - 18 * 24 * 3600 * 1000).toISOString();
+    const due = await db<{ order_id: string }[]>(
+      `orders?status=eq.paid&delivered_at=gte.${encodeURIComponent(from)}&delivered_at=lte.${encodeURIComponent(to)}&reminded_at=is.null&select=order_id&limit=200`
+    );
+    for (const o of due) {
+      await pushClient(o.order_id, "¿Se te está acabando?", "Volvé a pedir lo mismo en un toque desde tu pedido.");
+      await db(`orders?order_id=eq.${encodeURIComponent(o.order_id)}`, {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: { reminded_at: new Date().toISOString() },
+      });
+      reminded.push(o.order_id);
+    }
+  } catch (err) {
+    console.error("Cron: recordatorios de recompra:", err instanceof Error ? err.message : "");
+  }
+
+  return NextResponse.json({ ok: true, checked: rows.length, fixed, expired, reminded });
 }

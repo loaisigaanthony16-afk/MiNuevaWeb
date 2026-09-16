@@ -6,7 +6,7 @@
 // cualquiera podría editar la petición y pagar lo que quisiera.
 // =====================================================================
 
-import { getProduct } from "@/lib/data";
+import { getProduct, unitPriceFor } from "@/lib/data";
 import { deliveryFor } from "@/lib/checkout-util";
 
 /** Lo único que aceptamos del cliente. */
@@ -52,6 +52,10 @@ export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}
 
   const lines: PricedLine[] = [];
 
+  // Packs: el precio por unidad baja según el total de unidades de la bolsa.
+  const totalUnits = (input as CartLineInput[]).reduce((a, r) => a + (Math.floor(Number(r?.qty)) || 0), 0);
+  const unitPrice = unitPriceFor(totalUnits);
+
   for (const raw of input as CartLineInput[]) {
     const id = Number(raw?.id);
     const qty = Math.floor(Number(raw?.qty));
@@ -73,8 +77,8 @@ export function priceOrder(input: unknown, opts: { freeDelivery?: boolean } = {}
       id: product.id,
       name: product.name,
       qty,
-      unitPriceUsd: product.price,
-      lineTotalUsd: round2(product.price * qty),
+      unitPriceUsd: unitPrice,
+      lineTotalUsd: round2(unitPrice * qty),
     });
   }
 

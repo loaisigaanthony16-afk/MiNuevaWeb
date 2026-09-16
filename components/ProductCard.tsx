@@ -10,6 +10,7 @@ import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
 import { flyToCart } from "@/lib/fly";
 import { isSoldOut, useShopInfo } from "@/hooks/useShopInfo";
+import { haptic } from "@/lib/haptic";
 
 const STRAIN_BG: Record<Product["strain"], string> = {
   sativa: "bg-sativa text-ink-900",
@@ -51,6 +52,7 @@ export default function ProductCard({
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
     add(product.id);
+    haptic();
     flyToCart(imgRef.current);
     setBounceKey((k) => k + 1);
     setAdded(true);
