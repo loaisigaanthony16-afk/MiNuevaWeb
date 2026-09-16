@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import OrderChat from "@/components/OrderChat";
-import { loadPendingOrder } from "@/lib/pending-order";
+import { loadPendingOrder, savePendingOrder } from "@/lib/pending-order";
 import { useT } from "@/components/locale-context";
 
 /**
@@ -21,6 +21,11 @@ export default function OrderChatPage() {
     const order = p.get("order");
     const token = p.get("t");
     if (order && token) {
+      // Abierto desde un enlace: queda guardado en este dispositivo para
+      // que el aviso de mensajes nuevos funcione en todo el sitio, y el
+      // token sale de la barra de direcciones.
+      savePendingOrder({ stage: "pagado", ref: order, token, message: "" });
+      window.history.replaceState(null, "", "/pedido");
       setCreds({ orderId: order, token, message: "" });
       return;
     }
