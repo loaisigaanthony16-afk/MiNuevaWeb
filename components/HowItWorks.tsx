@@ -56,20 +56,20 @@ export default function HowItWorks() {
   return (
     <section id="como-funciona" className="scroll-mt-[var(--nav-min)] border-t border-white/8 py-24">
       <style>{`
-        ol[data-active-step="1"] > li:nth-child(-n+1) .step-icon,
-        ol[data-active-step="2"] > li:nth-child(-n+2) .step-icon,
-        ol[data-active-step="3"] > li:nth-child(-n+3) .step-icon,
-        ol[data-active-step="4"] > li:nth-child(-n+4) .step-icon {
+        ol[data-active-step="1"] > li:nth-of-type(-n+1) .step-icon,
+        ol[data-active-step="2"] > li:nth-of-type(-n+2) .step-icon,
+        ol[data-active-step="3"] > li:nth-of-type(-n+3) .step-icon,
+        ol[data-active-step="4"] > li:nth-of-type(-n+4) .step-icon {
           transform: scale(1);
           border-color: #facc15;
           background-color: #facc15;
           color: #0f0f0f;
           box-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
         }
-        ol[data-active-step="1"] > li:nth-child(-n+1) .step-content,
-        ol[data-active-step="2"] > li:nth-child(-n+2) .step-content,
-        ol[data-active-step="3"] > li:nth-child(-n+3) .step-content,
-        ol[data-active-step="4"] > li:nth-child(-n+4) .step-content {
+        ol[data-active-step="1"] > li:nth-of-type(-n+1) .step-content,
+        ol[data-active-step="2"] > li:nth-of-type(-n+2) .step-content,
+        ol[data-active-step="3"] > li:nth-of-type(-n+3) .step-content,
+        ol[data-active-step="4"] > li:nth-of-type(-n+4) .step-content {
           opacity: 1;
         }
       `}</style>
