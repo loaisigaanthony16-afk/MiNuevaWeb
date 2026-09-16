@@ -163,8 +163,8 @@ export default function AdminPanel() {
         {error && <p className="px-2 py-2 text-[12.5px] text-red-400">{error}</p>}
         {orders && orders.length === 0 && <p className="px-2 py-6 text-center text-[13px] text-ink-500">Sin pedidos pendientes.</p>}
         <ul className="mt-1 space-y-1">
-          {orders?.map((o) => (
-            <li key={o.orderId}>
+          {orders?.map((o, i) => (
+            <li key={o.orderId} className="row-in" style={{ "--i": i } as React.CSSProperties}>
               <button
                 onClick={() => setActive(o.orderId)}
                 className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition ${active === o.orderId ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"}`}
@@ -176,7 +176,7 @@ export default function AdminPanel() {
                   </span>
                 </span>
                 {o.unread > 0 && (
-                  <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-gold-400 px-1.5 text-[11px] font-bold text-ink-900">{o.unread}</span>
+                  <span key={o.unread} className="badge-pop grid h-5 min-w-[20px] place-items-center rounded-full bg-gold-400 px-1.5 text-[11px] font-bold text-ink-900">{o.unread}</span>
                 )}
               </button>
             </li>
@@ -202,7 +202,7 @@ export default function AdminPanel() {
             </div>
             <div ref={listRef} className="no-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
               {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.sender === "shop" ? "justify-end" : "justify-start"}`}>
+                <div key={m.id} className={`bubble-in flex ${m.sender === "shop" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[85%] whitespace-pre-line break-words rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${m.sender === "shop" ? "bg-gold-400 text-ink-900" : "bg-white/[0.06] text-ink-100"}`}>
                     {m.body}
                     <span className={`mt-1 block text-[10px] ${m.sender === "shop" ? "text-ink-900/60" : "text-ink-500"}`}>
@@ -227,7 +227,7 @@ export default function AdminPanel() {
                 placeholder="Responder…"
                 className="field h-auto max-h-32 min-h-[44px] resize-none py-2.5 text-[14px]"
               />
-              <button type="submit" disabled={!draft.trim() || busy} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 disabled:opacity-40">
+              <button type="submit" disabled={!draft.trim() || busy} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 transition hover:bg-gold-300 disabled:opacity-40 ${busy ? "send-pop" : ""}`}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </form>

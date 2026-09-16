@@ -792,6 +792,109 @@ html[data-age="ok"] .gate {
 }
 
 /* ============================================================
+   PEDIDO Y CHAT (motion)
+   Cada bloque entra escalonado según --i; el check se dibuja y la
+   referencia recibe una línea dorada que se traza debajo.
+   ============================================================ */
+.rise {
+  animation: rise 0.75s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.check-ring {
+  animation: checkRing 0.8s var(--ease) both;
+  animation-delay: 120ms;
+  box-shadow: 0 0 0 0 rgba(46, 158, 107, 0.55);
+}
+@keyframes checkRing {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); box-shadow: 0 0 0 16px rgba(46, 158, 107, 0); }
+}
+.check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkDraw 0.45s var(--ease) both;
+  animation-delay: 420ms;
+}
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+.ref-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(220, 193, 131, 0.8), transparent);
+  transform-origin: center;
+  animation: gateLine 1s var(--ease) both;
+  animation-delay: 500ms;
+}
+.chat-card {
+  animation: chatCard 0.9s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes chatCard {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); border-color: rgba(201, 167, 88, 0.45); }
+  60% { border-color: rgba(201, 167, 88, 0.45); }
+  to { opacity: 1; transform: none; border-color: #262626; }
+}
+/* Los mensajes que ya estaban entran uno detrás de otro. */
+.bubble-in {
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.badge-pop {
+  animation: badgePop 0.5s var(--ease) both;
+}
+@keyframes badgePop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.pill-ping {
+  animation: pillPing 2.2s ease-out infinite;
+}
+@keyframes pillPing {
+  0% { box-shadow: 0 0 0 0 rgba(201, 167, 88, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(201, 167, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 167, 88, 0); }
+}
+.send-pop {
+  animation: addBounce 0.45s var(--ease);
+}
+.delivered-pop {
+  animation: deliveredPop 0.8s var(--ease) both;
+}
+@keyframes deliveredPop {
+  0% { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(2deg); }
+  100% { transform: none; }
+}
+.row-in {
+  animation: rise 0.6s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .check-ring,
+  .ref-line,
+  .chat-card,
+  .badge-pop,
+  .pill-ping,
+  .send-pop,
+  .delivered-pop,
+  .row-in {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .check-draw {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+}
+
+/* ============================================================
    ACCESIBILIDAD
    ============================================================ */
 @media (forced-colors: active) {

@@ -50,17 +50,22 @@ export default function OrderChatPage() {
       )}
 
       {creds && creds !== "none" && (
-        <div className="modal-pop text-center">
-          <p className="kicker justify-center">{t("order.kicker")}</p>
-          <p className="mt-3 font-display text-[30px] font-bold tracking-tight text-gold-gradient">{creds.orderId}</p>
-          <p className="mt-1 flex items-center justify-center gap-2 text-[12.5px] text-ink-400">
+        <div className="text-center">
+          <p className="kicker rise justify-center" style={{ "--i": 0 } as React.CSSProperties}>{t("order.kicker")}</p>
+          <div className="rise mt-3" style={{ "--i": 1 } as React.CSSProperties}>
+            <p className="font-display text-[30px] font-bold tracking-tight text-gold-gradient">{creds.orderId}</p>
+            <span className="ref-line mx-auto mt-2 block w-24" />
+          </div>
+          <p className="rise mt-3 flex items-center justify-center gap-2 text-[12.5px] text-ink-400" style={{ "--i": 2 } as React.CSSProperties}>
             <span className="co-live h-1.5 w-1.5 rounded-full bg-hybrid" />
             {t("order.status")}
           </p>
-          <div className="mt-6">
+          <div className="chat-card mt-6" style={{ "--i": 3 } as React.CSSProperties}>
             <OrderChat orderId={creds.orderId} token={creds.token} firstMessage={creds.message} />
           </div>
-          <Link href="/" className="btn-ghost mt-6 w-full">{t("order.done")}</Link>
+          <Link href="/" className="btn-ghost rise mt-6 w-full" style={{ "--i": 5 } as React.CSSProperties}>
+            {t("order.done")}
+          </Link>
         </div>
       )}
     </section>

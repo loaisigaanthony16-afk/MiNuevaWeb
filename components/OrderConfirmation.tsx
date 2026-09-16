@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
@@ -140,25 +140,42 @@ export default function OrderConfirmation() {
         {view === "paid" && (
           <>
             <div className="mt-8 flex items-center justify-center gap-2.5">
-              <span className="co-success grid h-7 w-7 place-items-center rounded-full bg-hybrid text-white">
-                <Check className="h-4 w-4" strokeWidth={3} />
+              <span className="check-ring grid h-7 w-7 place-items-center rounded-full bg-hybrid text-white">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path className="check-draw" d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
               </span>
-              <h1 className="font-display text-[13px] font-bold uppercase tracking-[0.16em] text-ink-50">{t("order.okTitle")}</h1>
+              <h1 className="rise font-display text-[13px] font-bold uppercase tracking-[0.16em] text-ink-50" style={{ "--i": 1 } as React.CSSProperties}>
+                {t("order.okTitle")}
+              </h1>
             </div>
-            {orderId && <p className="mt-4 font-display text-[30px] font-bold tracking-tight text-gold-gradient">{orderId}</p>}
-            <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-ink-400">{t("order.okBody")}</p>
+            {orderId && (
+              <div className="rise mt-4" style={{ "--i": 2 } as React.CSSProperties}>
+                <p className="font-display text-[30px] font-bold tracking-tight text-gold-gradient">{orderId}</p>
+                <span className="ref-line mx-auto mt-2 block w-24" />
+              </div>
+            )}
+            <p className="rise mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-ink-400" style={{ "--i": 3 } as React.CSSProperties}>
+              {t("order.okBody")}
+            </p>
 
             {chat ? (
-              <div className="mt-7">
+              <div className="chat-card mt-7" style={{ "--i": 4 } as React.CSSProperties}>
                 <OrderChat orderId={orderId!} token={chat.token} firstMessage={chat.message} />
               </div>
             ) : (
-              <p className="mt-7 rounded-2xl border border-[#262626] px-5 py-4 text-[13px] leading-relaxed text-ink-400">{t("chat.noToken")}</p>
+              <p className="rise mt-7 rounded-2xl border border-[#262626] px-5 py-4 text-[13px] leading-relaxed text-ink-400" style={{ "--i": 4 } as React.CSSProperties}>
+                {t("chat.noToken")}
+              </p>
             )}
 
-            <p className="mx-auto mt-5 max-w-sm text-[12.5px] leading-relaxed text-ink-500">{t("order.chatHint")}</p>
+            <p className="rise mx-auto mt-5 max-w-sm text-[12.5px] leading-relaxed text-ink-500" style={{ "--i": 6 } as React.CSSProperties}>
+              {t("order.chatHint")}
+            </p>
 
-            <Link href="/" className="btn-ghost mt-6 w-full">{t("order.done")}</Link>
+            <Link href="/" className="btn-ghost rise mt-6 w-full" style={{ "--i": 7 } as React.CSSProperties}>
+              {t("order.done")}
+            </Link>
           </>
         )}
       </div>

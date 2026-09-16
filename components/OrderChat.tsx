@@ -34,6 +34,8 @@ export default function OrderChat({
   const lastId = useRef(0);
   const seeded = useRef(false);
   const hasClientMsg = useRef(false);
+  // Cuántos mensajes llegaron en la primera carga: esos entran escalonados.
+  const initialCount = useRef<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const scrollDown = () => {
@@ -58,6 +60,7 @@ export default function OrderChat({
       return;
     }
     const { data } = res;
+    if (initialCount.current === null) initialCount.current = data.messages.length;
     if (data.messages.length) {
       lastId.current = data.messages[data.messages.length - 1].id;
       append(data.messages);
@@ -146,8 +149,12 @@ export default function OrderChat({
         {state !== "loading" && state !== "error" && messages.length === 0 && (
           <p className="py-8 text-center text-[13px] text-ink-500">{t("chat.empty")}</p>
         )}
-        {messages.map((m) => (
-          <div key={m.id} className={`bubble-in flex ${m.sender === "client" ? "justify-end" : "justify-start"}`}>
+        {messages.map((m, i) => (
+          <div
+            key={m.id}
+            className={`bubble-in flex ${m.sender === "client" ? "justify-end" : "justify-start"}`}
+            style={{ "--i": i < (initialCount.current ?? 0) ? i : 0 } as React.CSSProperties}
+          >
             <div
               className={`max-w-[85%] whitespace-pre-line break-words rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
                 m.sender === "client" ? "rounded-br-md bg-gold-400 text-ink-900" : "rounded-bl-md bg-white/[0.06] text-ink-100"
@@ -163,7 +170,7 @@ export default function OrderChat({
         ))}
         {state === "delivered" && (
           <div className="bubble-in mt-4 rounded-2xl border border-hybrid/30 bg-hybrid/10 p-4 text-center">
-            <PackageCheck className="mx-auto h-6 w-6 text-hybrid" />
+            <PackageCheck className="delivered-pop mx-auto h-6 w-6 text-hybrid" />
             <p className="mt-2 text-[14px] font-semibold text-ink-50">{t("chat.deliveredTitle")}</p>
             <p className="mt-1 text-[12.5px] text-ink-400">{t("chat.deliveredBody")}</p>
           </div>
@@ -190,7 +197,7 @@ export default function OrderChat({
             type="submit"
             disabled={!draft.trim() || sending}
             aria-label={t("chat.send")}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 transition hover:bg-gold-300 disabled:opacity-40"
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 transition hover:bg-gold-300 disabled:opacity-40 ${sending ? "send-pop" : ""}`}
           >
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>

@@ -69,10 +69,13 @@ export default function PendingOrderBanner() {
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center p-3 sm:justify-end sm:p-5">
       <div className="bar-in pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-full border border-gold-400/40 bg-ink-900/95 p-1.5 pr-2 shadow-pop backdrop-blur sm:w-auto">
         <button onClick={() => router.push("/pedido")} className="group flex min-w-0 flex-1 items-center gap-3 rounded-full py-1 pl-1 pr-2 text-left">
-          <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900">
+          <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 ${unread > 0 ? "pill-ping" : ""}`}>
             <MessageCircle className="h-[18px] w-[18px]" />
             {unread > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-ink-900">
+              <span
+                key={unread}
+                className="badge-pop absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-ink-900"
+              >
                 {unread}
               </span>
             )}
