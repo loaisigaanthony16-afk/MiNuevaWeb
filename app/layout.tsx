@@ -12,6 +12,7 @@ import QuickView from "@/components/QuickView";
 import CartDrawer from "@/components/CartDrawer";
 import CheckoutModal from "@/components/CheckoutModal";
 import AbandonedCartToast from "@/components/AbandonedCartToast";
+import PromoPopup from "@/components/PromoPopup";
 import PwaSetup from "@/components/PwaSetup";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -70,6 +71,7 @@ export default function RootLayout({
               <OrderStatus />
               <PendingOrderBanner />
               <AbandonedCartToast />
+              <PromoPopup />
               <PwaSetup />
             </UIContextProvider>
           </StoreProvider>
