@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore, useState } from "react";
-import SmokeBackdrop from "@/components/SmokeBackdrop";
+import EmberBackdrop from "@/components/EmberBackdrop";
 import Wordmark from "@/components/Wordmark";
 import { useT } from "@/components/locale-context";
 // La clave cambió al pasar de 18+ a 21+: quien confirmó 18 vuelve a confirmar.
@@ -60,7 +60,7 @@ export default function AgeGate() {
 
   return (
     <div className="gate" role="dialog" aria-modal="true" aria-label="Verificación de edad">
-      <SmokeBackdrop />
+      <EmberBackdrop />
       <div className="pointer-events-none absolute inset-0 aurora" aria-hidden />
 
       <div className="gate-content container-page max-w-xl text-center">

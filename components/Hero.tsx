@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { ArrowRight, ShieldCheck, ShoppingBag } from "lucide-react";
-import SmokeBackdrop from "@/components/SmokeBackdrop";
+import EmberBackdrop from "@/components/EmberBackdrop";
 import PriceTag from "@/components/PriceTag";
 import { useT } from "@/components/locale-context";
 import { LIST_PRICE, products, UNIT_PRICE } from "@/lib/data";
@@ -42,7 +42,7 @@ export default function Hero() {
       className="relative isolate overflow-hidden"
       onPointerMove={onPointerMove}
     >
-      <SmokeBackdrop />
+      <EmberBackdrop />
       <div className="pointer-events-none absolute inset-0 z-[1] aurora" aria-hidden />
 
       <div className="container-page relative z-10 grid items-center gap-4 pb-10 pt-12 sm:pt-20 lg:min-h-[620px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pb-20">
