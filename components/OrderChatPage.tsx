@@ -34,11 +34,13 @@ export default function OrderChatPage() {
   }, []);
 
   return (
-    <section className="container-page max-w-lg py-10 sm:py-14">
-      <div className="mb-6 flex justify-center">
+    <section className="container-page max-w-lg py-8 sm:py-14">
+      <div className="mb-7 flex justify-center">
         <Wordmark />
       </div>
+
       {creds === null && <p className="text-center text-[13px] text-ink-500">…</p>}
+
       {creds === "none" && (
         <div className="rounded-[20px] border border-[#262626] p-8 text-center">
           <p className="font-display text-[20px] font-semibold uppercase text-ink-50">{t("chat.noneTitle")}</p>
@@ -46,7 +48,21 @@ export default function OrderChatPage() {
           <Link href="/" className="btn-gold mt-6">{t("order.retry")}</Link>
         </div>
       )}
-      {creds && creds !== "none" && <OrderChat orderId={creds.orderId} token={creds.token} firstMessage={creds.message} />}
+
+      {creds && creds !== "none" && (
+        <div className="modal-pop text-center">
+          <p className="kicker justify-center">{t("order.kicker")}</p>
+          <p className="mt-3 font-display text-[30px] font-bold tracking-tight text-gold-gradient">{creds.orderId}</p>
+          <p className="mt-1 flex items-center justify-center gap-2 text-[12.5px] text-ink-400">
+            <span className="co-live h-1.5 w-1.5 rounded-full bg-hybrid" />
+            {t("order.status")}
+          </p>
+          <div className="mt-6">
+            <OrderChat orderId={creds.orderId} token={creds.token} firstMessage={creds.message} />
+          </div>
+          <Link href="/" className="btn-ghost mt-6 w-full">{t("order.done")}</Link>
+        </div>
+      )}
     </section>
   );
 }

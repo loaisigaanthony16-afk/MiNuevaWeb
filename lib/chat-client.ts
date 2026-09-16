@@ -22,7 +22,9 @@ export async function fetchChat(orderId: string, token: string, after = 0, seen 
   try {
     const q = new URLSearchParams({ token, after: String(after), ...(seen ? { seen: "1" } : {}) });
     const res = await fetch(`/api/chat/${encodeURIComponent(orderId)}?${q}`, { cache: "no-store" });
-    if (res.status === 410 || res.status === 404) return { ok: false, reason: "closed" };
+    // Solo el 410 cierra el pedido en este dispositivo: un 404 (base no
+    // disponible) o un 5xx son pasajeros y no deben borrar el aviso.
+    if (res.status === 410) return { ok: false, reason: "closed" };
     if (!res.ok) return { ok: false, reason: "error" };
     return { ok: true, data: (await res.json()) as ChatState };
   } catch {

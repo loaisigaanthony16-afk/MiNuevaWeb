@@ -10,6 +10,7 @@
 
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import { notifyPaidOrder } from "@/lib/notify-email";
+import { ensureWelcome } from "@/lib/chat-server";
 import type { PricedOrder } from "@/lib/pricing";
 
 export type OrderStatus =
@@ -137,6 +138,11 @@ export async function applyPayment(update: PaymentUpdate): Promise<void> {
   // Aviso al comercio solo la primera vez que el pedido queda pagado
   // (los eventos repetidos de Stripe no vuelven a escribir).
   if (status === "paid" && current.status !== "paid") {
+    try {
+      await ensureWelcome(update.orderId);
+    } catch (err) {
+      console.error("No se pudo dejar la bienvenida en el chat:", err instanceof Error ? err.message : "desconocido");
+    }
     await notifyPaidOrder({ orderId: update.orderId, totalUsd: current.total_usd, items: current.items ?? [] });
   }
 }

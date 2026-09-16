@@ -33,12 +33,21 @@ export default function OrderChat({
   const [sending, setSending] = useState(false);
   const lastId = useRef(0);
   const seeded = useRef(false);
+  const hasClientMsg = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const scrollDown = () => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   };
+
+  // Sin repetidos aunque dos consultas se crucen (o el modo estricto
+  // de desarrollo monte el componente dos veces).
+  const append = (incoming: ChatMessage[]) =>
+    setMessages((prev) => {
+      const seen = new Set(prev.map((m) => m.id));
+      return [...prev, ...incoming.filter((m) => !seen.has(m.id))];
+    });
 
   const poll = useCallback(async () => {
     const seen = document.visibilityState === "visible";
@@ -51,7 +60,8 @@ export default function OrderChat({
     const { data } = res;
     if (data.messages.length) {
       lastId.current = data.messages[data.messages.length - 1].id;
-      setMessages((prev) => [...prev, ...data.messages]);
+      append(data.messages);
+      if (data.messages.some((m) => m.sender === "client")) hasClientMsg.current = true;
       const fromShop = data.messages.filter((m) => m.sender === "shop");
       if (fromShop.length && seeded.current) {
         notify("Vibe 505", fromShop[fromShop.length - 1].body.slice(0, 120));
@@ -65,14 +75,17 @@ export default function OrderChat({
     }
     setState("open");
 
-    // Primer mensaje: los datos de entrega, una sola vez.
-    if (!seeded.current) {
+    // Datos de entrega: se mandan solos una vez, apenas el pago figura
+    // confirmado y si el cliente todavía no escribió nada (la bienvenida
+    // del comercio puede estar ya en el chat).
+    if (!seeded.current && data.status === "paid") {
       seeded.current = true;
-      if (firstMessage && lastId.current === 0 && data.status === "paid") {
+      if (firstMessage && !hasClientMsg.current) {
         const sent = await sendChat(orderId, token, firstMessage);
         if (sent) {
-          lastId.current = sent.id;
-          setMessages((prev) => [...prev, sent]);
+          hasClientMsg.current = true;
+          lastId.current = Math.max(lastId.current, sent.id);
+          append([sent]);
           setTimeout(scrollDown, 50);
         }
       }
@@ -102,13 +115,13 @@ export default function OrderChat({
     setSending(false);
     if (!sent) return;
     lastId.current = Math.max(lastId.current, sent.id);
-    setMessages((prev) => [...prev, sent]);
+    append([sent]);
     setDraft("");
     setTimeout(scrollDown, 50);
   }
 
   return (
-    <div className="flex h-[min(70dvh,620px)] flex-col overflow-hidden rounded-[20px] border border-[#262626] bg-[#0A0A0A] text-left">
+    <div className="flex h-[min(64dvh,600px)] flex-col overflow-hidden rounded-[20px] border border-[#262626] bg-[#0A0A0A] text-left">
       <div className="flex items-center justify-between border-b border-[#262626] px-4 py-3">
         <div>
           <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide2 text-gold-300">

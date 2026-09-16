@@ -98,8 +98,8 @@ export default function OrderConfirmation() {
   }, [view, orderId, hydrated, deliveryLoaded, items, delivery, clear]);
 
   return (
-    <section className="container-page grid min-h-[70vh] place-items-center py-14">
-      <div className="modal-pop w-full max-w-xl rounded-[24px] border border-[#262626] bg-[#0A0A0A] p-8 text-center sm:p-10">
+    <section className="container-page grid min-h-[70vh] place-items-center py-8 sm:py-14">
+      <div className="modal-pop w-full max-w-lg text-center sm:rounded-[24px] sm:border sm:border-[#262626] sm:bg-[#0A0A0A] sm:p-10">
         <div className="flex justify-center">
           <Wordmark />
         </div>
@@ -139,41 +139,26 @@ export default function OrderConfirmation() {
 
         {view === "paid" && (
           <>
-            <span className="co-success mx-auto mt-10 grid h-16 w-16 place-items-center rounded-full bg-hybrid text-white">
-              <Check className="h-8 w-8" strokeWidth={3} />
-            </span>
-            <h1 className="mt-6 font-display text-[26px] font-semibold uppercase tracking-tightest text-ink-50">{t("order.okTitle")}</h1>
-            <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-ink-400">{t("order.okBody")}</p>
-
-            {orderId && (
-              <div className="mt-7 rounded-2xl border border-[#262626] bg-white/[0.02] px-5 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wide3 text-ink-500">{t("order.ref")}</p>
-                <p className="mt-2 font-display text-[22px] font-bold tracking-tight text-gold-gradient">{orderId}</p>
-              </div>
-            )}
-
-            <p className="mt-6 rounded-xl border border-gold-400/35 bg-gold-400/[0.06] px-4 py-3 text-[12.5px] font-semibold leading-relaxed text-gold-100">
-              {t("order.required")}
-            </p>
+            <div className="mt-8 flex items-center justify-center gap-2.5">
+              <span className="co-success grid h-7 w-7 place-items-center rounded-full bg-hybrid text-white">
+                <Check className="h-4 w-4" strokeWidth={3} />
+              </span>
+              <h1 className="font-display text-[13px] font-bold uppercase tracking-[0.16em] text-ink-50">{t("order.okTitle")}</h1>
+            </div>
+            {orderId && <p className="mt-4 font-display text-[30px] font-bold tracking-tight text-gold-gradient">{orderId}</p>}
+            <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-ink-400">{t("order.okBody")}</p>
 
             {chat ? (
-              <div className="mt-4">
+              <div className="mt-7">
                 <OrderChat orderId={orderId!} token={chat.token} firstMessage={chat.message} />
               </div>
             ) : (
-              <p className="mt-4 text-[13px] leading-relaxed text-ink-400">{t("chat.noToken")}</p>
+              <p className="mt-7 rounded-2xl border border-[#262626] px-5 py-4 text-[13px] leading-relaxed text-ink-400">{t("chat.noToken")}</p>
             )}
 
-            <ol className="mt-7 space-y-3 text-left text-[13.5px] leading-relaxed text-ink-400">
-              {[t("order.step1"), t("order.step2"), t("order.step3")].map((line, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className="font-display text-[12px] font-bold tabular-nums text-gold-300">0{i + 1}</span>
-                  {line}
-                </li>
-              ))}
-            </ol>
+            <p className="mx-auto mt-5 max-w-sm text-[12.5px] leading-relaxed text-ink-500">{t("order.chatHint")}</p>
 
-            <Link href="/" className="btn-ghost mt-8 w-full">{t("order.done")}</Link>
+            <Link href="/" className="btn-ghost mt-6 w-full">{t("order.done")}</Link>
           </>
         )}
       </div>

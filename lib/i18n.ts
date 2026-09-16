@@ -271,7 +271,7 @@ const es = {
   // --- Cierre del pedido ---
   "order.okTitle": "Pago confirmado",
   "order.okBody":
-    "Listo. Ya estamos preparando tu pedido en empaque neutro.",
+    "Ya recibimos tu orden. La entrega la coordinamos acá abajo.",
   "order.noTitle": "Pago cancelado",
   "order.noBody":
     "No se cobró nada. Tu bolsa quedó intacta por si querés retomar.",
@@ -308,6 +308,13 @@ const es = {
   "chat.noneBody": "El chat se abre en el navegador donde pagaste. Si ya lo entregamos, la conversación se borró.",
   "chat.noToken": "Abrí este pedido desde el navegador donde pagaste para ver el chat.",
   "pending.newMessage": "Tenés un mensaje nuevo de Vibe 505",
+  "pending.pill": "Tu pedido",
+  "pending.pillHint": "Tocá para seguirlo",
+  "pending.pillNew": "Mensaje nuevo",
+  "order.chatHint":
+    "Podés cerrar esta página cuando quieras: tu pedido queda guardado en este dispositivo y volvés al chat desde el aviso «Tu pedido» en la tienda.",
+  "order.status": "En coordinación",
+  "order.kicker": "Tu pedido",
 
   // --- Pie ---
   "foot.brands": "Marcas",
@@ -570,7 +577,7 @@ const en: Partial<Record<Key, string>> = {
   "co.missingBody": "Check the link or go back to the shop. If you already paid, open your order from the browser you paid with.",
 
   "order.okTitle": "Payment confirmed",
-  "order.okBody": "Done. We're preparing your order in plain packaging.",
+  "order.okBody": "We got your order. Delivery is arranged right below.",
   "order.noTitle": "Payment canceled",
   "order.noBody": "Nothing was charged. Your bag is untouched if you want to resume.",
   "order.ref": "Your reference",
@@ -604,6 +611,13 @@ const en: Partial<Record<Key, string>> = {
   "chat.noneBody": "The chat opens in the browser you paid with. If we already delivered, the conversation was deleted.",
   "chat.noToken": "Open this order from the browser you paid with to see the chat.",
   "pending.newMessage": "You have a new message from Vibe 505",
+  "pending.pill": "Your order",
+  "pending.pillHint": "Tap to follow it",
+  "pending.pillNew": "New message",
+  "order.chatHint":
+    "You can close this page anytime: your order stays saved on this device and you get back to the chat from the “Your order” notice in the shop.",
+  "order.status": "Being arranged",
+  "order.kicker": "Your order",
   "foot.brands": "Brands",
   "foot.shop": "Shop",
   "foot.info": "Information",

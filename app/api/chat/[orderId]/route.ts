@@ -4,6 +4,7 @@ import {
   addMessage,
   authorizeClient,
   chatConfigured,
+  ensureWelcome,
   listMessages,
   touchSeen,
   unreadCount,
@@ -35,7 +36,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ orde
       const closed = /^[a-f0-9]{48}$/.test(token) ? null : null;
       return NextResponse.json({ error: "closed", closed }, { status: 410, headers: NO_STORE });
     }
-    const messages = await listMessages(orderId, after);
+    let messages = await listMessages(orderId, after);
+    // Pagado y sin mensajes: el webhook aún no dejó la bienvenida.
+    if (after === 0 && messages.length === 0 && order.status === "paid" && (await ensureWelcome(orderId))) {
+      messages = await listMessages(orderId, 0);
+    }
     const unread = await unreadCount(orderId, "client", order.client_seen_at);
     if (url.searchParams.get("seen") === "1") await touchSeen(orderId, "client");
     return NextResponse.json(

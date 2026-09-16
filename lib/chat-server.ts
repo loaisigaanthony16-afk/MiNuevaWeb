@@ -114,6 +114,25 @@ export async function addMessage(orderId: string, sender: Sender, body: string):
   return { id: rows[0].id, sender, body: text, at: rows[0].created_at };
 }
 
+/** Primer mensaje del comercio, apenas se confirma el pago. */
+export function welcomeText(orderId: string): string {
+  return (
+    `¡Gracias por tu compra! Ya recibimos tu orden ${orderId}.\n\n` +
+    "Solo necesitamos un poco más de información sobre la entrega: confirmanos que la dirección y el teléfono estén bien y a qué hora te queda mejor recibirlo."
+  );
+}
+
+/**
+ * Deja el mensaje de bienvenida si el chat está vacío. Se llama al
+ * confirmarse el pago y, por si el webhook llegó tarde, al abrir el chat.
+ */
+export async function ensureWelcome(orderId: string): Promise<boolean> {
+  const rows = await db<{ id: number }[]>(`messages?order_id=eq.${encodeURIComponent(orderId)}&select=id&limit=1`);
+  if (rows.length) return false;
+  await addMessage(orderId, "shop", welcomeText(orderId));
+  return true;
+}
+
 export async function touchSeen(orderId: string, who: Sender): Promise<void> {
   const col = who === "shop" ? "shop_seen_at" : "client_seen_at";
   await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, {
