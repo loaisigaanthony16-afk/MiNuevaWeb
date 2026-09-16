@@ -12,6 +12,7 @@
 import crypto from "node:crypto";
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import { FULFILLMENT_NOTICE, type Fulfillment } from "@/lib/fulfillment";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 if (typeof window !== "undefined") {
   throw new Error("lib/chat-server.ts es solo para el servidor");
@@ -209,5 +210,11 @@ export async function listHistory(limit = 500): Promise<HistoryRow[]> {
 export function isAdmin(request: Request): boolean {
   const expected = process.env.ADMIN_KEY;
   const given = request.headers.get("x-admin-key") ?? "";
-  return Boolean(expected) && expected!.length >= 8 && safeEqual(given, expected!);
+  // Freno contra adivinar la clave: cada intento fallido gasta 8 turnos
+  // del cupo por IP (40 por minuto), así 5 fallos bloquean un minuto.
+  const key = `admin:${clientIp(request)}`;
+  if (!allow(key, 40, 60 * 1000)) return false;
+  const ok = Boolean(expected) && expected!.length >= 8 && safeEqual(given, expected!);
+  if (!ok) for (let i = 0; i < 7; i++) allow(key, 40, 60 * 1000);
+  return ok;
 }
