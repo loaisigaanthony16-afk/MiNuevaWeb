@@ -111,9 +111,11 @@ export default function CartDrawer() {
           </div>
         ) : (
           <>
-            {/* Artículos. `min-h-0` deja que la lista se encoja y el pie
-                nunca tape productos. */}
-            <ul className="no-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-4">
+            {/* Todo el contenido (artículos, dirección, cupón y totales)
+                desplaza junto: los productos siempre se ven completos. Solo
+                el botón de pagar queda fijo abajo. */}
+            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+            <ul className="space-y-2">
               {items.map((item) => {
                 const p = getProduct(item.id);
                 if (!p) return null;
@@ -180,8 +182,7 @@ export default function CartDrawer() {
               </li>
             </ul>
 
-            {/* Pie */}
-            <div className="shrink-0 border-t border-white/8 bg-ink-900 p-4 pb-6 sm:p-6 sm:pb-6">
+            <div className="mt-3 border-t border-white/8 pt-4">
               {/* Dirección */}
               <button
                 onClick={openAddress}
@@ -252,18 +253,21 @@ export default function CartDrawer() {
                 <Clock className={`h-3.5 w-3.5 shrink-0 ${today ? "text-hybrid" : "text-ink-500"}`} />
                 {today ? t("cart.today") : t("cart.tomorrow")}
               </p>
+            </div>
+            </div>
 
+            {/* Pie fijo: solo el botón de pagar */}
+            <div className="shrink-0 border-t border-white/8 bg-ink-900 px-4 pb-5 pt-3 sm:px-6">
               <button
                 onClick={goToCheckout}
-                className="btn-gold mt-5 w-full"
+                className="btn-gold w-full"
               >
                 <CreditCard className="h-4 w-4" />
                 {!ready ? t("cart.needAddress") : `${t("cart.pay")} ${formatUSD(payable)}`}
               </button>
-
-              <div className="mt-3 flex flex-col items-center gap-2">
+              <div className="mt-2.5 flex items-center justify-center gap-3">
                 <CardLogos />
-                <p className="flex items-center gap-1.5 text-[11.5px] text-ink-500">
+                <p className="flex items-center gap-1.5 text-[11px] text-ink-500">
                   <Lock className="h-3 w-3" />
                   {t("cart.secure")}
                 </p>
