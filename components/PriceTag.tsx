@@ -70,7 +70,7 @@ export function usePromoClock(): string {
   return format(ms);
 }
 
-/** Precio con descuento: final en blanco, lista tachada y "-$5" en rojo con reloj. */
+/** Precio con descuento: final en blanco, lista tachada y el descuento en rojo con reloj. */
 export default function PriceTag({
   price,
   listPrice,

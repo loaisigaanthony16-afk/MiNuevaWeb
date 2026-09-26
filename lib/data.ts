@@ -1,18 +1,20 @@
 // =====================================================================
 // Catálogo Vibe 505.
 //
-// Todos los equipos son de 2000 mg y cuestan lo mismo: $60 de lista con
-// $5 de descuento, así que se cobran $55. Nombre, cepa y
+// Todos los equipos son de 2000 mg y cuestan lo mismo: $55 de lista con
+// $10 de descuento, así que se cobran $45. Nombre, cepa y
 // descriptores de sabor salen de lo impreso en cada caja; las fotos son
 // recortes de la fotografía del inventario real (public/catalogo).
 // =====================================================================
 
 export type Strain = "sativa" | "indica" | "hybrid";
-export type BrandId = "muha" | "packwoods";
+export type BrandId = "muha" | "muhav2" | "packwoods";
 
 export interface Brand {
   id: BrandId;
   name: string;
+  /** Nombre corto para el filtro en el teléfono. */
+  short: string;
   kicker: string;
   description: string;
 }
@@ -33,9 +35,9 @@ export interface Product {
 }
 
 /** Precio de lista (USD), el que aparece tachado. */
-export const LIST_PRICE = 60;
+export const LIST_PRICE = 55;
 /** Descuento vigente por equipo (USD). */
-export const DISCOUNT_USD = 5;
+export const DISCOUNT_USD = 10;
 /** Precio que se cobra (USD): lista menos descuento. */
 export const UNIT_PRICE = LIST_PRICE - DISCOUNT_USD;
 
@@ -56,13 +58,22 @@ export const BRANDS: Brand[] = [
   {
     id: "muha",
     name: "Muha Meds",
+    short: "Muha",
     kicker: "All-in-one",
     description:
       "Desechable recargable, listo para usar. Cerámica y batería que duran hasta el final.",
   },
   {
+    id: "muhav2",
+    name: "Muha Meds V2",
+    short: "V2",
+    kicker: "Dos sabores",
+    description: "Edición V2 de 2000 mg con dos sabores en la misma caja.",
+  },
+  {
     id: "packwoods",
     name: "Packwoods",
+    short: "Packwoods",
     kicker: "Desechable",
     description:
       "Sabores intensos de postre y fruta en un equipo compacto.",
@@ -94,6 +105,18 @@ const ROWS: Row[] = [
   ["Unicorn Sherbet", "unicorn-sherbet", "packwoods", "indica", "Fresa y kiwi"],
   ["Banana Flambé", "banana-flambe", "packwoods", "indica", "Banano caramelizado"],
   ["Jelly Dulce", "jelly-dulce", "packwoods", "indica", "Uva y jalea"],
+
+  // Muha Meds V2 · 2000 mg, dos sabores por caja. Los sabores salen de
+  // los logos impresos; Aqua y Holo no traen logo legible en la foto y van
+  // por el color de la caja hasta confirmarlos.
+  ["Galactic Diesel + Pineapple Paradise", "v2-galactic-pineapple", "muhav2", "sativa", "Intenso y tropical"],
+  ["Runtz + Horchata", "v2-runtz-horchata", "muhav2", "hybrid", "Dulce y cremoso"],
+  ["Blue Slushie + Habibi", "v2-blue-slushie-habibi", "muhav2", "indica", "Helado y floral"],
+  ["Watermelon Moonshine + Frozen Pomegranate", "v2-watermelon-pomegranate", "muhav2", "hybrid", "Sandía y granada"],
+  ["Rainbow Belts Dúo", "v2-rainbow-belts", "muhav2", "hybrid", "Ácido y dulce"],
+  ["Dúo V2 Aqua", "v2-aqua", "muhav2", "sativa", "Dos sabores en una caja"],
+  ["Dúo V2 Holo", "v2-holo", "muhav2", "hybrid", "Dos sabores en una caja"],
+  ["Pineapple Paradise + Bubblegum Burst", "v2-pineapple-bubblegum", "muhav2", "hybrid", "Tropical y chicle"],
 ];
 
 // Los ids arrancan en 101 para no chocar con bolsas guardadas del

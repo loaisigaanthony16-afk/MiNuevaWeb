@@ -38,13 +38,15 @@ export default function Collections() {
         </div>
 
         {/* Marcas */}
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {BRANDS.map((brand, i) => (
             <BrandCard
               key={brand.id}
               brand={brand}
               items={products.filter((p) => p.brand === brand.id)}
               index={i}
+              // Con un número impar de marcas, la última ocupa toda la fila en tableta.
+              wide={BRANDS.length % 2 === 1 && i === BRANDS.length - 1}
             />
           ))}
         </div>
@@ -58,10 +60,12 @@ function BrandCard({
   brand,
   items,
   index,
+  wide = false,
 }: {
   brand: Brand;
   items: Product[];
   index: number;
+  wide?: boolean;
 }) {
   const t = useT();
   const { browse } = useUi();
@@ -69,7 +73,10 @@ function BrandCard({
   const fan = items.slice(0, 3);
 
   return (
-    <div className="reveal" style={{ transitionDelay: `${index * 110}ms` }}>
+    <div
+      className={`reveal ${wide ? "sm:col-span-2 lg:col-span-1" : ""}`}
+      style={{ transitionDelay: `${index * 110}ms` }}
+    >
       <a
         href="#catalogo"
         ref={tilt.ref}

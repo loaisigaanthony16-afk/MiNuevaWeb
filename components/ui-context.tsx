@@ -227,7 +227,7 @@ function SearchParamsSync() {
     if (!ui || !searchParams) return;
     const marca = searchParams.get("marca");
     const q = searchParams.get("q");
-    if (marca === "muha" || marca === "packwoods") ui.setCatalogBrand(marca);
+    if (marca === "muha" || marca === "muhav2" || marca === "packwoods") ui.setCatalogBrand(marca);
     if (typeof q === "string") ui.setSearch(q);
   }, [searchParams, ui]);
 

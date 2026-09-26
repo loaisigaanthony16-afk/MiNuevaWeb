@@ -45,7 +45,7 @@ const es = {
 
   // --- Barra de anuncios ---
   "ann.delivery": "Entrega en Estelí · C$150",
-  "ann.price": "Todos los vapes a $55 (antes $60)",
+  "ann.price": "Todos los vapes a $45 (antes $55)",
   "ann.discount": "Descuento activo",
   "ann.whatsapp": "Chat cifrado con tu pedido",
   "ann.neutral": "Empaque neutro y sellado",
@@ -98,7 +98,7 @@ const es = {
   "reels.tapSound": "Tocá para activar el sonido",
   "reels.quiz": "¿Qué perfil buscás?",
   "reels.voted": "¡Voto guardado! Gracias",
-  "reels.seeAll": "Ver los 14 sabores",
+  "reels.seeAll": "Ver los 22 sabores",
   "reels.keys": "↑ ↓ cambiar · Espacio pausa · Doble clic me gusta · Esc cerrar",
 
   // --- Catálogo ---
@@ -418,7 +418,7 @@ const en: Partial<Record<Key, string>> = {
   "hero.allAt": "All at",
 
   "ann.delivery": "Delivery in Estelí · C$150",
-  "ann.price": "Every vape $55 (was $60)",
+  "ann.price": "Every vape $45 (was $55)",
   "ann.discount": "Discount active",
   "ann.whatsapp": "Encrypted chat with your order",
   "ann.neutral": "Plain, sealed packaging",
@@ -466,7 +466,7 @@ const en: Partial<Record<Key, string>> = {
   "reels.tapSound": "Tap to turn on sound",
   "reels.quiz": "Which profile are you after?",
   "reels.voted": "Vote saved! Thanks",
-  "reels.seeAll": "See all 14 flavors",
+  "reels.seeAll": "See all 22 flavors",
   "reels.keys": "↑ ↓ switch · Space pause · Double-click like · Esc close",
 
   "cat.kicker": "Catalog",

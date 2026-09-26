@@ -87,23 +87,24 @@ export default function Catalog() {
 
       {/* Filtros */}
       <div className="sticky top-[var(--nav-h)] z-30 mt-10 border-y border-white/8 glass transition-[top] duration-500 ease-smooth">
-        <div className="container-page flex flex-col gap-2 py-3 sm:flex-row sm:items-center">
-          <div className="grid grid-cols-3 gap-1 rounded-full border border-white/10 p-1 sm:flex sm:shrink-0">
-            {[{ id: "all" as const, name: t("cat.brandAll") }, ...BRANDS].map((b) => (
+        <div className="container-page flex flex-col gap-2 py-3 lg:flex-row lg:items-center">
+          <div className="grid grid-cols-4 gap-1 rounded-full border border-white/10 p-1 sm:flex sm:w-fit sm:shrink-0">
+            {[{ id: "all" as const, name: t("cat.brandAll"), short: t("cat.brandAll") }, ...BRANDS].map((b) => (
               <button
                 key={b.id}
                 onClick={() => setBrand(b.id)}
                 aria-pressed={brand === b.id}
-                className={`h-10 whitespace-nowrap rounded-full px-3 text-[12px] font-bold uppercase tracking-[0.08em] transition-all duration-300 ease-smooth sm:h-8 sm:px-4 ${
+                className={`h-10 whitespace-nowrap rounded-full px-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-all duration-300 ease-smooth sm:h-8 sm:px-4 sm:text-[12px] sm:tracking-[0.08em] ${
                   brand === b.id ? "bg-ink-50 text-ink-900" : "text-ink-400 hover:text-ink-50"
                 }`}
               >
-                {b.name}
+                <span className="sm:hidden">{b.short}</span>
+                <span className="hidden sm:inline">{b.name}</span>
               </button>
             ))}
           </div>
 
-          <span className="mx-1 hidden h-6 w-px shrink-0 bg-white/10 sm:block" />
+          <span className="mx-1 hidden h-6 w-px shrink-0 bg-white/10 lg:block" />
 
           <div className="grid grid-cols-4 gap-1.5 sm:flex sm:gap-2">
             {STRAINS.map((s) => (
