@@ -15,10 +15,13 @@ export async function GET(request: Request) {
       paidAt: r.paid_at,
       deliveredAt: r.delivered_at,
       fulfillment: r.fulfillment,
+      refunded: r.status === "refunded",
     }));
     // Totales por mes (YYYY-MM), para la cabecera del panel.
     const months: Record<string, { count: number; totalUsd: number; units: number }> = {};
+    // Los reembolsos se listan, pero no suman como venta.
     for (const s of sales) {
+      if (s.refunded) continue;
       const key = (s.paidAt ?? "").slice(0, 7);
       const m = (months[key] ??= { count: 0, totalUsd: 0, units: 0 });
       m.count += 1;

@@ -27,6 +27,7 @@ interface Sale {
   paidAt: string;
   deliveredAt: string | null;
   fulfillment: Fulfillment;
+  refunded?: boolean;
 }
 
 type Tab = "pedidos" | "ventas" | "stock";
@@ -48,6 +49,9 @@ export default function AdminPanel() {
   const [busy, setBusy] = useState(false);
   const [push, setPush] = useState<PushState>("unsupported");
   const lastId = useRef(0);
+  // Chat abierto ahora: las respuestas de uno anterior que lleguen tarde
+  // se descartan para no mezclar mensajes (ni direcciones) de pedidos.
+  const activeRef = useRef<string | null>(null);
   const knownUnread = useRef<Record<string, number>>({});
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -96,8 +100,9 @@ export default function AdminPanel() {
   const loadChat = useCallback(async () => {
     if (!key || !active) return;
     const res = await fetch(`/api/admin/chat/${active}?after=${lastId.current}`, { headers: headers(), cache: "no-store" });
-    if (!res.ok) return;
+    if (!res.ok || activeRef.current !== active) return;
     const data = (await res.json()) as { messages: ChatMessage[] };
+    if (activeRef.current !== active) return;
     if (data.messages.length) {
       lastId.current = data.messages[data.messages.length - 1].id;
       append(data.messages);
@@ -110,13 +115,21 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!key) return;
     askNotificationPermission();
-    void currentPushState().then(setPush);
+    void currentPushState().then((state) => {
+      setPush(state);
+      // Si este navegador ya tenía avisos (por ejemplo de un pedido de
+      // prueba), se asegura también la suscripción del comercio.
+      if (state === "on") void enableShopPush(key);
+    });
     void loadOrders();
     const id = setInterval(loadOrders, POLL_MS);
     return () => clearInterval(id);
   }, [key, loadOrders]);
 
   useEffect(() => {
+    activeRef.current = active;
+    // Un borrador a medio escribir no pasa de un cliente a otro.
+    setDraft("");
     if (!active) return;
     lastId.current = 0;
     setMessages([]);
@@ -138,14 +151,20 @@ export default function AdminPanel() {
   async function reply(e: React.FormEvent) {
     e.preventDefault();
     if (!active || !draft.trim() || busy) return;
+    const target = active;
     setBusy(true);
-    const res = await fetch(`/api/admin/chat/${active}`, { method: "POST", headers: headers(), body: JSON.stringify({ body: draft.trim() }) });
+    const res = await fetch(`/api/admin/chat/${target}`, { method: "POST", headers: headers(), body: JSON.stringify({ body: draft.trim() }) });
     setBusy(false);
-    if (!res.ok) return;
+    if (!res.ok) {
+      setError(res.status === 410 ? "Este pedido ya está cerrado." : "No se pudo enviar. Probá de nuevo.");
+      return;
+    }
     const { message } = (await res.json()) as { message: ChatMessage };
+    setError(null);
+    setDraft("");
+    if (activeRef.current !== target) return;
     lastId.current = Math.max(lastId.current, message.id);
     append([message]);
-    setDraft("");
   }
 
   async function setStatus(f: Fulfillment) {
@@ -334,6 +353,7 @@ export default function AdminPanel() {
                     rows={1}
                     maxLength={1200}
                     placeholder="Responder…"
+                    aria-label="Responder al cliente"
                     className="field h-auto max-h-32 min-h-[44px] resize-none py-2.5 text-[14px]"
                   />
                   <button type="submit" disabled={!draft.trim() || busy} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 transition hover:bg-gold-300 disabled:opacity-40 ${busy ? "send-pop" : ""}`}>
@@ -416,7 +436,11 @@ function SalesTab({ headers }: { headers: () => Record<string, string> }) {
                   <td className="px-4 py-3 text-right tabular-nums text-ink-50">${s.totalUsd.toFixed(2)}</td>
                   <td className="px-4 py-3 text-ink-400">{new Date(s.paidAt).toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <span className={s.fulfillment === "entregado" ? "text-hybrid" : "text-gold-300"}>{FULFILLMENT_LABEL[s.fulfillment ?? "recibido"]}</span>
+                    {s.refunded ? (
+                      <span className="text-red-400">Reembolsado</span>
+                    ) : (
+                      <span className={s.fulfillment === "entregado" ? "text-hybrid" : "text-gold-300"}>{FULFILLMENT_LABEL[s.fulfillment ?? "recibido"]}</span>
+                    )}
                   </td>
                 </tr>
               ))}

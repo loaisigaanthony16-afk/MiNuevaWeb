@@ -1,14 +1,11 @@
 "use client";
 
-import { Gift, Lock, MapPin, MessageCircle, Tag, Timer } from "lucide-react";
+import { Gift, MapPin, Tag } from "lucide-react";
 import { useT } from "@/components/locale-context";
 
 const ITEMS = [
   { key: "ann.price", icon: Tag },
   { key: "ann.delivery", icon: MapPin },
-  { key: "ann.discount", icon: Timer },
-  { key: "ann.whatsapp", icon: MessageCircle },
-  { key: "ann.neutral", icon: Lock },
   { key: "ann.coupon", icon: Gift },
 ] as const;
 

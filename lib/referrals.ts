@@ -80,17 +80,30 @@ export async function checkCode(code: string): Promise<CodeCheck> {
   };
 }
 
-/** Se aplica al confirmarse el pago del pedido que usó el código. */
-export async function redeem(orderId: string, code: string, kind: "credit" | "count"): Promise<void> {
-  const ref = await getReferral(code);
-  if (!ref) return;
-  const purchases = ref.purchases + 1;
-  let credits = kind === "credit" ? Math.max(0, ref.credits - 1) : ref.credits;
-  if (purchases % LOYALTY_EVERY === 0) credits += 1;
-  await db(`referrals?code=eq.${encodeURIComponent(code)}`, {
-    method: "PATCH",
+/**
+ * Reserva un cupón al iniciar el cobro. Es una sola operación en la base:
+ * dos compras a la vez con el mismo código no pueden gastar el mismo cupón.
+ */
+export async function takeCredit(code: string): Promise<boolean> {
+  const taken = await db<boolean>("rpc/referral_take_credit", { method: "POST", body: { p_code: code } });
+  return taken === true;
+}
+
+/** Devuelve el cupón reservado si el pago no se completó. */
+export async function returnCredit(code: string): Promise<void> {
+  await db("rpc/referral_return_credit", { method: "POST", prefer: "return=minimal", body: { p_code: code } });
+}
+
+/**
+ * Se aplica al confirmarse el pago del pedido que usó el código: suma la
+ * compra (y un cupón cada LOYALTY_EVERY). El cupón usado ya se descontó al
+ * iniciar el cobro.
+ */
+export async function redeem(orderId: string, code: string): Promise<void> {
+  await db("rpc/referral_add_purchase", {
+    method: "POST",
     prefer: "return=minimal",
-    body: { purchases, credits },
+    body: { p_code: code, p_every: LOYALTY_EVERY },
   });
   // El nuevo pedido queda ligado al mismo código: no se crea otro.
   await db(`orders?order_id=eq.${encodeURIComponent(orderId)}`, {

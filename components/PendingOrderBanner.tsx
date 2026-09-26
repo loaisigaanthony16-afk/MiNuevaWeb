@@ -46,11 +46,11 @@ export default function PendingOrderBanner() {
     const tick = async () => {
       const res = await fetchChat(pending.ref, pending.token, 0, false);
       if (!res.ok) {
-        if (res.reason === "closed") clearPendingOrder();
+        if (res.reason === "closed") clearPendingOrder(pending.ref);
         return;
       }
       if (res.data.delivered) {
-        clearPendingOrder();
+        clearPendingOrder(pending.ref);
         return;
       }
       setUnread(res.data.unread);
@@ -71,7 +71,7 @@ export default function PendingOrderBanner() {
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center p-3 sm:justify-end sm:p-5">
       <div className="bar-in pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-full border border-gold-400/40 bg-ink-900/95 p-1.5 pr-2 shadow-pop backdrop-blur sm:w-auto">
-        <button onClick={() => router.push("/pedido")} className="group flex min-w-0 flex-1 items-center gap-3 rounded-full py-1 pl-1 pr-2 text-left">
+        <button onClick={() => router.push(paid ? "/pedido" : `/order-success?order_id=${encodeURIComponent(pending.ref)}`)} className="group flex min-w-0 flex-1 items-center gap-3 rounded-full py-1 pl-1 pr-2 text-left">
           <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-400 text-ink-900 ${unread > 0 ? "pill-ping" : ""}`}>
             <MessageCircle className="h-[18px] w-[18px]" />
             {unread > 0 && (
@@ -95,7 +95,7 @@ export default function PendingOrderBanner() {
         </button>
         {!paid && (
           <button
-            onClick={clearPendingOrder}
+            onClick={() => clearPendingOrder(pending.ref)}
             aria-label={t("pending.discard")}
             title={t("pending.discard")}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-500 transition hover:bg-white/5 hover:text-ink-100"

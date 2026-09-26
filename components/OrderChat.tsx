@@ -75,7 +75,7 @@ export default function OrderChat({
     const res = await fetchChat(orderId, token, lastId.current, seen);
     if (!res.ok) {
       setState((s) => (res.reason === "closed" ? (s === "open" || s === "loading" ? "delivered" : s) : s === "loading" ? "error" : s));
-      if (res.reason === "closed") clearPendingOrder();
+      if (res.reason === "closed") clearPendingOrder(orderId);
       return;
     }
     const { data } = res;
@@ -100,7 +100,7 @@ export default function OrderChat({
     }
     if (data.delivered) {
       setState("delivered");
-      clearPendingOrder();
+      clearPendingOrder(orderId);
       return;
     }
     setState("open");
@@ -124,7 +124,12 @@ export default function OrderChat({
 
   useEffect(() => {
     askNotificationPermission();
-    void currentPushState().then(setPush);
+    void currentPushState().then((state) => {
+      setPush(state);
+      // Avisos ya activos en este navegador (de otro pedido): se suman a
+      // este sin volver a preguntar.
+      if (state === "on") void enableOrderPush(orderId, token);
+    });
     void poll();
     const id = setInterval(poll, POLL_MS);
     const onVisible = () => {
@@ -264,6 +269,7 @@ export default function OrderChat({
               rows={1}
               maxLength={1200}
               placeholder={t("chat.placeholder")}
+              aria-label={t("chat.placeholder")}
               className="field h-auto max-h-32 min-h-[44px] resize-none py-2.5 text-[14px]"
             />
             <button

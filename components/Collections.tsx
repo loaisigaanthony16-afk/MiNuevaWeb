@@ -32,9 +32,6 @@ export default function Collections() {
           <h2 className="mt-5 font-display text-[clamp(2.1rem,5.6vw,4rem)] font-medium uppercase leading-[0.98] tracking-tightest">
             <span className="text-ink-50">{t("col.title")}</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-ink-400">
-            {t("col.body")}
-          </p>
         </div>
 
         {/* Marcas */}

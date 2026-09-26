@@ -22,6 +22,12 @@ export function allow(key: string, limit: number, windowMs: number): boolean {
   return b.count <= limit;
 }
 
+/** Cuántas veces se contó `key` en su ventana vigente, sin sumar otra. */
+export function peek(key: string): number {
+  const b = buckets.get(key);
+  return b && b.reset >= Date.now() ? b.count : 0;
+}
+
 export function clientIp(request: Request): string {
   return (
     request.headers.get("x-real-ip") ??

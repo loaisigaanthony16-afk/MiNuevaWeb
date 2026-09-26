@@ -17,7 +17,7 @@ import { allow } from "@/lib/rate-limit";
 /**
  * Chat del pedido, lado cliente. Requiere el token secreto del pedido.
  *
- * GET  ?token=&after=  -> mensajes nuevos + estado del chat y de la entrega
+ * GET  ?after= (token en x-chat-token) -> mensajes nuevos + estado del chat y de la entrega
  * POST { token, body } -> envía un mensaje (solo con el pago confirmado)
  */
 
@@ -26,7 +26,8 @@ const NO_STORE = { "Cache-Control": "no-store" };
 export async function GET(request: Request, { params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
   const url = new URL(request.url);
-  const token = url.searchParams.get("token") ?? "";
+  // Cabecera; la URL solo por compatibilidad con pestañas ya abiertas.
+  const token = request.headers.get("x-chat-token") ?? url.searchParams.get("token") ?? "";
   const after = Number(url.searchParams.get("after") ?? 0) || 0;
   if (!isOrderId(orderId) || !chatConfigured()) {
     return NextResponse.json({ error: "not_found" }, { status: 404, headers: NO_STORE });

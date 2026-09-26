@@ -12,7 +12,7 @@
 import crypto from "node:crypto";
 import { db, ordersDbConfigured } from "@/lib/supabase-server";
 import { FULFILLMENT_NOTICE, type Fulfillment } from "@/lib/fulfillment";
-import { allow, clientIp } from "@/lib/rate-limit";
+import { allow, clientIp, peek } from "@/lib/rate-limit";
 
 if (typeof window !== "undefined") {
   throw new Error("lib/chat-server.ts es solo para el servidor");
@@ -133,8 +133,14 @@ export function welcomeText(orderId: string): string {
  * confirmarse el pago y, por si el webhook llegó tarde, al abrir el chat.
  */
 export async function ensureWelcome(orderId: string): Promise<boolean> {
-  const rows = await db<{ id: number }[]>(`messages?order_id=eq.${encodeURIComponent(orderId)}&select=id&limit=1`);
-  if (rows.length) return false;
+  // Se reclama en una sola operación: si el webhook y el chat (o dos
+  // consultas del chat) llegan a la vez, solo uno encuentra
+  // `welcomed_at` vacío y deja el mensaje.
+  const claimed = await db<{ order_id: string }[]>(
+    `orders?order_id=eq.${encodeURIComponent(orderId)}&welcomed_at=is.null&select=order_id`,
+    { method: "PATCH", prefer: "return=representation", body: { welcomed_at: new Date().toISOString() } }
+  );
+  if (!claimed?.length) return false;
   await addMessage(orderId, "shop", welcomeText(orderId));
   return true;
 }
@@ -192,6 +198,7 @@ export async function listOpenOrders(): Promise<ChatOrder[]> {
 
 export interface HistoryRow {
   order_id: string;
+  status: string;
   items: { name: string; qty: number }[];
   total_usd: number;
   paid_at: string;
@@ -202,7 +209,7 @@ export interface HistoryRow {
 /** Ventas (pedidos pagados), sin datos personales. */
 export async function listHistory(limit = 500): Promise<HistoryRow[]> {
   return db<HistoryRow[]>(
-    `orders?status=in.(paid,refunded)&order=paid_at.desc&limit=${limit}&select=order_id,items,total_usd,paid_at,delivered_at,fulfillment`
+    `orders?status=in.(paid,refunded)&order=paid_at.desc&limit=${limit}&select=order_id,status,items,total_usd,paid_at,delivered_at,fulfillment`
   );
 }
 
@@ -210,11 +217,12 @@ export async function listHistory(limit = 500): Promise<HistoryRow[]> {
 export function isAdmin(request: Request): boolean {
   const expected = process.env.ADMIN_KEY;
   const given = request.headers.get("x-admin-key") ?? "";
-  // Freno contra adivinar la clave: cada intento fallido gasta 8 turnos
-  // del cupo por IP (40 por minuto), así 5 fallos bloquean un minuto.
-  const key = `admin:${clientIp(request)}`;
-  if (!allow(key, 40, 60 * 1000)) return false;
+  // Freno contra adivinar la clave: solo cuentan los intentos fallidos.
+  // Con 5 fallos en un minuto esa IP queda bloqueada un minuto; el uso
+  // normal del panel (varias consultas por minuto) no gasta nada.
+  const failKey = `admin-fail:${clientIp(request)}`;
+  if (peek(failKey) >= 5) return false;
   const ok = Boolean(expected) && expected!.length >= 8 && safeEqual(given, expected!);
-  if (!ok) for (let i = 0; i < 7; i++) allow(key, 40, 60 * 1000);
+  if (!ok) allow(failKey, 5, 60 * 1000);
   return ok;
 }

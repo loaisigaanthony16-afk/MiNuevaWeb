@@ -56,34 +56,20 @@ export async function saveSubscription(
   orderId: string | null,
   productId: number | null = null
 ): Promise<void> {
-  // Un mismo navegador puede pedir aviso de varios productos: el endpoint
-  // se repite con distinto producto, así que ahí no se fusiona.
-  if (role === "restock") {
-    const existing = await db<{ id: number }[]>(
-      `push_subscriptions?role=eq.restock&product_id=eq.${productId}&endpoint=eq.${encodeURIComponent(sub.endpoint)}&select=id`
-    );
-    if (existing.length) return;
-    // El endpoint es único en la tabla: si ya está con otro rol/producto,
-    // se guarda con sufijo lógico usando la misma fila (mismo navegador).
-    try {
-      await db("push_subscriptions", {
-        method: "POST",
-        prefer: "return=minimal",
-        body: { role, product_id: productId, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
-      });
-    } catch {
-      await db(`push_subscriptions?endpoint=eq.${encodeURIComponent(sub.endpoint)}`, {
-        method: "PATCH",
-        prefer: "return=minimal",
-        body: { product_id: productId },
-      });
-    }
-    return;
-  }
-  await db("push_subscriptions?on_conflict=endpoint", {
+  // Una fila por navegador y destino (comercio, cada pedido, cada
+  // reposición): activar avisos de un pedido nuevo no apaga los del
+  // anterior ni convierte al comercio en cliente. Repetir es inofensivo.
+  await db("push_subscriptions?on_conflict=endpoint,role,order_id,product_id", {
     method: "POST",
     prefer: "resolution=merge-duplicates,return=minimal",
-    body: { role, order_id: orderId, product_id: productId, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
+    body: {
+      role,
+      order_id: role === "client" ? orderId : null,
+      product_id: role === "restock" ? productId : null,
+      endpoint: sub.endpoint,
+      p256dh: sub.keys.p256dh,
+      auth: sub.keys.auth,
+    },
   });
 }
 
@@ -93,7 +79,6 @@ export async function pushRestock(productId: number, name: string): Promise<void
     const rows = await db<Row[]>(`push_subscriptions?product_id=eq.${productId}&select=id,endpoint,p256dh,auth`);
     await sendAll(rows, { title: `${name} volvió`, body: "Ya está disponible otra vez. Pedilo antes de que se agote.", url: `/`, tag: `restock-${productId}` });
     await db(`push_subscriptions?product_id=eq.${productId}&role=eq.restock`, { method: "DELETE", prefer: "return=minimal" });
-    await db(`push_subscriptions?product_id=eq.${productId}&role=neq.restock`, { method: "PATCH", prefer: "return=minimal", body: { product_id: null } });
   } catch (err) {
     console.error("Push de reposición falló:", err instanceof Error ? err.message : "desconocido");
   }

@@ -7,7 +7,7 @@ import { newChatToken } from "@/lib/chat-server";
 import { isAllowedOrigin, siteOrigin } from "@/lib/site";
 import { allow, clientIp } from "@/lib/rate-limit";
 import { firstShort } from "@/lib/stock";
-import { checkCode, normalizeCode } from "@/lib/referrals";
+import { checkCode, normalizeCode, returnCredit, takeCredit } from "@/lib/referrals";
 import { getProduct } from "@/lib/data";
 import { ordersDbConfigured } from "@/lib/supabase-server";
 
@@ -45,6 +45,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Petición inválida." }, { status: 400 });
   }
 
+  // Cupón reservado en esta petición: se devuelve si el cobro no arranca.
+  let creditTaken: string | null = null;
+  const giveBack = async () => {
+    if (!creditTaken) return;
+    const code = creditTaken;
+    creditTaken = null;
+    await returnCredit(code).catch(() => undefined);
+  };
+
   try {
     // Stock: si algo no alcanza, se avisa antes de cobrar.
     const short = ordersDbConfigured() ? await firstShort(priceOrder(body.items).lines) : null;
@@ -62,8 +71,15 @@ export async function POST(request: Request) {
     if (code.length === 6 && ordersDbConfigured()) {
       const check = await checkCode(code);
       if (!check.ok) return NextResponse.json({ error: "Código no válido." }, { status: 400 });
-      referral = { code, kind: check.kind };
-      discountUsd = check.discountUsd;
+      let kind = check.kind;
+      // El cupón se reserva ya: si otra compra lo gastó un instante antes,
+      // esta solo suma la compra, sin descuento.
+      if (kind === "credit") {
+        if (await takeCredit(code)) creditTaken = code;
+        else kind = "count";
+      }
+      referral = { code, kind };
+      discountUsd = kind === "credit" ? check.discountUsd : 0;
     }
 
     const order = priceOrder(body.items, { discountUsd });
@@ -124,12 +140,21 @@ export async function POST(request: Request) {
     // Defensa: el total de Stripe debe coincidir con el calculado acá.
     if (session.amount_total !== toCents(order.totalUsd)) {
       console.error("Total de Stripe distinto al del pedido:", orderId);
+      await stripe().checkout.sessions.expire(session.id).catch(() => undefined);
+      await giveBack();
       return NextResponse.json({ error: "No se pudo iniciar el pago." }, { status: 500 });
     }
 
     // Secreto del chat del pedido: solo lo conoce este navegador.
     const chatToken = newChatToken();
     const tracked = await createOrder(orderId, order, session.id, chatToken, referral);
+    // Con base configurada, un pedido sin registrar sería un cobro que el
+    // comercio no ve (sin chat ni aviso): mejor no dejar pagar.
+    if (ordersDbConfigured() && !tracked) {
+      await stripe().checkout.sessions.expire(session.id).catch(() => undefined);
+      await giveBack();
+      return NextResponse.json({ error: "No se pudo iniciar el pago." }, { status: 503 });
+    }
 
     return NextResponse.json({
       orderId,
@@ -145,6 +170,7 @@ export async function POST(request: Request) {
       referralApplied: referral !== null,
     });
   } catch (err) {
+    await giveBack();
     if (err instanceof PricingError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }

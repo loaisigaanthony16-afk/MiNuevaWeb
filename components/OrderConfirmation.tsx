@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import Wordmark from "@/components/Wordmark";
-import { confirmPendingOrder, loadPendingOrder } from "@/lib/pending-order";
+import { confirmPendingOrder, getPendingOrder } from "@/lib/pending-order";
 import OrderChat from "@/components/OrderChat";
 import { fetchOrderStatus, deliveryMessageFor, type OrderStatusValue } from "@/lib/checkout-client";
 import { deliveryFor } from "@/lib/checkout-util";
@@ -87,8 +87,8 @@ export default function OrderConfirmation() {
     settled.current = true;
 
     // El token del chat se guardó al pagar; el mensaje de entrega también.
-    const saved = loadPendingOrder();
-    if (saved && saved.ref === orderId) {
+    const saved = getPendingOrder(orderId);
+    if (saved) {
       const subtotal = items.reduce((a, it) => a + it.price * it.qty, 0);
       const msg = saved.message || deliveryMessageFor(orderId, items, delivery, subtotal + deliveryFor(subtotal));
       setChat({ token: saved.token, message: msg });

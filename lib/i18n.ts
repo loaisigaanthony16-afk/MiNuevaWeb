@@ -37,18 +37,12 @@ const es = {
   "hero.kicker": "Vapes premium · Estelí",
   "hero.title": "Recibí sin nombre.",
   "hero.lede":
-    "Conexión cifrada de extremo a extremo. Compra anónima y empaque neutro.",
+    "Sin cuenta. Empaque neutro. Entrega en Estelí.",
   "hero.cta": "Comprar ahora",
-  "hero.how": "Cómo funciona",
-  "hero.scroll": "Deslizá",
-  "hero.allAt": "Todos a",
 
   // --- Barra de anuncios ---
   "ann.delivery": "Entrega en Estelí · C$150",
   "ann.price": "Todos los vapes a $45 (antes $55)",
-  "ann.discount": "Descuento activo",
-  "ann.whatsapp": "Chat cifrado con tu pedido",
-  "ann.neutral": "Empaque neutro y sellado",
 
   // --- Menú de categorías ---
   "menu.label": "Secciones",
@@ -58,28 +52,16 @@ const es = {
   "menu.opinions": "Opiniones",
   "menu.how": "Cómo comprar",
 
-  // --- Barra de servicio ---
-  "svc.pay": "Pago",
-  "svc.payStrong": "100% cifrado",
-  "svc.ship": "Entrega",
-  "svc.shipStrong": "solo en Estelí",
-  "svc.human": "Atención humana",
-  "svc.humanStrong": "por chat cifrado",
-  "svc.neutral": "Empaque",
-  "svc.neutralStrong": "sin marcas",
-
   // --- Colecciones ---
   "col.kicker": "Explorá por marca",
   "col.title": "Colecciones principales",
-  "col.body": "Dos marcas, tres perfiles. Tocá una colección y te llevamos directo.",
   "col.refs": "sabores",
   "col.view": "Ver colección",
   "col.strains": "Por perfil",
   "col.brands": "Nuestras marcas",
 
   // --- Descuento ---
-  "promo.label": "Descuento",
-  "promo.only": "termina en",
+  "promo.label": "Antes",
 
   // --- Reels ---
   "reels.kicker": "Reels",
@@ -104,7 +86,6 @@ const es = {
   // --- Catálogo ---
   "cat.kicker": "Catálogo",
   "cat.title": "Todos los sabores.",
-  "cat.body": "Mismo precio en todo el catálogo. Cada 3 compras, un cupón de $10.",
   "cat.brandAll": "Todas",
   "cat.strainAll": "Todas",
   "cat.results": "resultado",
@@ -216,21 +197,20 @@ const es = {
   // --- Cómo comprar ---
   "how.kicker": "Cómo comprar",
   "how.title": "Cuatro pasos. Sin nombre.",
-  "how.body": "Sin cuenta ni registro. Tu dirección nunca pasa por nuestro servidor.",
   "how.s1t": "Elegí tus sabores",
-  "how.s1b": "Añadilos a la bolsa. Todos con el mismo precio.",
+  "how.s1b": "Todos al mismo precio.",
   "how.s2t": "Pagá con tarjeta",
-  "how.s2b": "En pasarela cifrada. Nunca vemos los datos de tu tarjeta.",
+  "how.s2b": "Pasarela cifrada. No vemos tu tarjeta.",
   "how.s3t": "Coordiná por el chat",
-  "how.s3b": "Al pagar se abre un chat cifrado en la misma página con tus datos de entrega.",
+  "how.s3b": "Se abre un chat privado para la entrega.",
   "how.s4t": "Recibí en Estelí",
-  "how.s4b": "Te lo llevamos en empaque neutro. Entrega C$150.",
-  "how.p1t": "Un apodo basta",
-  "how.p1b": "No verificamos identidad ni creamos cuentas.",
-  "how.p2t": "Se queda en tu equipo",
-  "how.p2b": "Tu dirección no pasa por nuestro servidor ni por la pasarela.",
-  "how.p3t": "Solo por el chat",
-  "how.p3b": "Va cifrada por el chat del pedido y se borra cuando lo entregamos.",
+  "how.s4b": "Empaque neutro. C$150.",
+  "how.p1t": "Sin cuenta",
+  "how.p1b": "Un apodo basta.",
+  "how.p2t": "Chat cifrado",
+  "how.p2b": "Viaja por HTTPS y se guarda con AES-256.",
+  "how.p3t": "Se borra al entregar",
+  "how.p3b": "No queda rastro de la conversación.",
 
   // --- Accesos flotantes ---
   "float.help": "¿Dudas? Escribinos",
@@ -240,8 +220,6 @@ const es = {
   // --- Opiniones ---
   "op.kicker": "Comunidad",
   "op.title": "Opiniones reales.",
-  "op.body":
-    "Lo que escriben las personas que compran acá. Sin filtros de marketing: cualquiera puede opinar y responder.",
   "op.count": "opiniones",
   "op.count1": "opinión",
   "op.empty": "Todavía no hay opiniones. Sé la primera persona en dejar una.",
@@ -411,17 +389,11 @@ const en: Partial<Record<Key, string>> = {
   "hero.kicker": "Premium vapes · Estelí",
   "hero.title": "Get it with no name.",
   "hero.lede":
-    "End-to-end encrypted connection. Anonymous purchase and plain packaging.",
+    "No account. Plain packaging. Delivery in Estelí.",
   "hero.cta": "Shop now",
-  "hero.how": "How it works",
-  "hero.scroll": "Scroll",
-  "hero.allAt": "All at",
 
   "ann.delivery": "Delivery in Estelí · C$150",
   "ann.price": "Every vape $45 (was $55)",
-  "ann.discount": "Discount active",
-  "ann.whatsapp": "Encrypted chat with your order",
-  "ann.neutral": "Plain, sealed packaging",
 
   "menu.label": "Sections",
   "menu.home": "Home",
@@ -430,25 +402,14 @@ const en: Partial<Record<Key, string>> = {
   "menu.opinions": "Opinions",
   "menu.how": "How to buy",
 
-  "svc.pay": "Payment",
-  "svc.payStrong": "100% encrypted",
-  "svc.ship": "Delivery",
-  "svc.shipStrong": "Estelí only",
-  "svc.human": "Real people",
-  "svc.humanStrong": "via encrypted chat",
-  "svc.neutral": "Packaging",
-  "svc.neutralStrong": "unbranded",
-
   "col.kicker": "Browse by brand",
   "col.title": "Main collections",
-  "col.body": "Two brands, three profiles. Tap a collection and we take you straight there.",
   "col.refs": "flavors",
   "col.view": "View collection",
   "col.strains": "By profile",
   "col.brands": "Our brands",
 
-  "promo.label": "Discount",
-  "promo.only": "ends in",
+  "promo.label": "Was",
 
   "reels.kicker": "Reels",
   "reels.title": "See every flavor.",
@@ -471,7 +432,6 @@ const en: Partial<Record<Key, string>> = {
 
   "cat.kicker": "Catalog",
   "cat.title": "Every flavor.",
-  "cat.body": "Same price across the catalog. Every 3 purchases, a $10 coupon.",
   "cat.brandAll": "All",
   "cat.strainAll": "All",
   "cat.results": "result",
@@ -578,21 +538,20 @@ const en: Partial<Record<Key, string>> = {
 
   "how.kicker": "How to buy",
   "how.title": "Four steps. No name.",
-  "how.body": "No account, no sign-up. Your address never touches our server.",
   "how.s1t": "Pick your flavors",
-  "how.s1b": "Add them to your bag. Same price for all.",
+  "how.s1b": "Same price for all.",
   "how.s2t": "Pay by card",
-  "how.s2b": "On an encrypted gateway. We never see your card details.",
+  "how.s2b": "Encrypted gateway. We never see your card.",
   "how.s3t": "Coordinate in the chat",
-  "how.s3b": "After paying, an encrypted chat opens on the same page with your delivery details.",
+  "how.s3b": "A private chat opens for delivery.",
   "how.s4t": "Receive in Estelí",
-  "how.s4b": "We bring it in plain packaging. Delivery C$150.",
-  "how.p1t": "A nickname is enough",
-  "how.p1b": "We do not verify identity or create accounts.",
-  "how.p2t": "It stays on your device",
-  "how.p2b": "Your address never goes through our server or the gateway.",
-  "how.p3t": "Only in the chat",
-  "how.p3b": "It travels encrypted through the order chat and is deleted once delivered.",
+  "how.s4b": "Plain packaging. C$150.",
+  "how.p1t": "No account",
+  "how.p1b": "A nickname is enough.",
+  "how.p2t": "Encrypted chat",
+  "how.p2b": "Sent over HTTPS, stored with AES-256.",
+  "how.p3t": "Deleted on delivery",
+  "how.p3b": "No trace of the conversation is kept.",
 
   "float.help": "Questions? Message us",
   "float.bag": "Your bag",
@@ -600,8 +559,6 @@ const en: Partial<Record<Key, string>> = {
 
   "op.kicker": "Community",
   "op.title": "Real opinions.",
-  "op.body":
-    "What people who buy here write. No marketing filter: anyone can post and reply.",
   "op.count": "opinions",
   "op.count1": "opinion",
   "op.empty": "No opinions yet. Be the first to leave one.",

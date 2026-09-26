@@ -1,7 +1,6 @@
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import ServiceBar from "@/components/ServiceBar";
 import Collections from "@/components/Collections";
 import Catalog from "@/components/Catalog";
 import HowItWorks from "@/components/HowItWorks";
@@ -19,7 +18,6 @@ export default function HomePage() {
       <AnnouncementBar />
       <Navbar />
       <Hero />
-      <ServiceBar />
       <div className="max-md:order-2">
         <Collections />
       </div>

@@ -75,9 +75,6 @@ export default function Community() {
               {t("op.kicker")}
             </p>
             <h2 className="display-lg mt-5 text-ink-50">{t("op.title")}</h2>
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-ink-400">
-              {t("op.body")}
-            </p>
 
             {threads && threads.length > 0 && (
               <div className="mt-6 flex items-center gap-3 text-[13px] text-ink-300">

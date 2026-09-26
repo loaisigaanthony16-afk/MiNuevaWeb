@@ -81,9 +81,6 @@ export default function HowItWorks() {
             <span className="h-px w-8 bg-gold-400/60" />
           </p>
           <h2 className="display-lg mt-5 text-ink-50">{t("how.title")}</h2>
-          <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-ink-400">
-            {t("how.body")}
-          </p>
         </div>
 
         <ol ref={ref} data-active-step="0" className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">

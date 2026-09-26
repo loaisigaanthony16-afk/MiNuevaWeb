@@ -68,11 +68,6 @@ export default function Catalog() {
                   : t("cat.title")}
               </span>
             </h2>
-            {!searching && (
-              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-400">
-                {t("cat.body")}
-              </p>
-            )}
           </div>
           {searching && (
             <button

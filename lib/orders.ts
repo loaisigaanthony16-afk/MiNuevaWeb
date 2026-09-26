@@ -13,7 +13,7 @@ import { notifyPaidOrder } from "@/lib/notify-email";
 import { ensureWelcome } from "@/lib/chat-server";
 import { pushShop } from "@/lib/push-server";
 import { decrementStock } from "@/lib/stock";
-import { ensureCode, redeem } from "@/lib/referrals";
+import { ensureCode, redeem, returnCredit } from "@/lib/referrals";
 import type { PricedOrder } from "@/lib/pricing";
 
 export type OrderStatus =
@@ -138,20 +138,49 @@ export async function applyPayment(update: PaymentUpdate): Promise<void> {
 
   if (current.status === "paid" && status !== "refunded") return;
 
-  await db(`orders?order_id=eq.${encodeURIComponent(update.orderId)}`, {
-    method: "PATCH",
-    prefer: "return=minimal",
-    body: {
-      status,
-      stripe_payment_intent: update.paymentIntent,
-      ...(status === "paid" && !current.paid_at ? { paid_at: new Date().toISOString(), fulfillment_at: new Date().toISOString() } : {}),
-    },
-  });
+  // Pasar a pagado (o a cerrado sin pago) se reclama en la misma escritura:
+  // si el webhook, el cron y la página de confirmación llegan a la vez,
+  // solo uno recibe la fila de vuelta y dispara los efectos.
+  const becomesPaid = status === "paid";
+  const becomesDead = status === "expired" || status === "failed";
+  const guard = becomesPaid
+    ? "&status=neq.paid"
+    : becomesDead
+      ? "&status=not.in.(paid,expired,failed,refunded)"
+      : "";
+  const updated = await db<{ order_id: string }[]>(
+    `orders?order_id=eq.${encodeURIComponent(update.orderId)}${guard}&select=order_id`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: {
+        status,
+        stripe_payment_intent: update.paymentIntent,
+        ...(becomesPaid && !current.paid_at ? { paid_at: new Date().toISOString(), fulfillment_at: new Date().toISOString() } : {}),
+      },
+    }
+  );
 
-  // Solo la primera vez que el pedido queda pagado (los eventos repetidos
-  // de Stripe no vuelven a escribir).
-  if (status === "paid" && current.status !== "paid") {
+  if (becomesPaid && updated?.length) {
     await onPaid(current);
+  }
+  // Sin pago: el cupón reservado al iniciar el cobro vuelve al código.
+  if (becomesDead && updated?.length) {
+    const use = parseReferral(current.referral_used);
+    if (use?.kind === "credit") {
+      await returnCredit(use.code).catch((err) =>
+        console.error("No se pudo devolver el cupón:", err instanceof Error ? err.message : "desconocido")
+      );
+    }
+  }
+}
+
+function parseReferral(raw: string | null): ReferralUse | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as ReferralUse;
+  } catch {
+    return null;
   }
 }
 
@@ -172,7 +201,7 @@ async function onPaid(order: OrderRow): Promise<void> {
   if (order.referral_used) {
     await safe("Cliente frecuente", async () => {
       const use = JSON.parse(order.referral_used as string) as ReferralUse;
-      await redeem(order.order_id, use.code, use.kind);
+      await redeem(order.order_id, use.code);
     });
   } else {
     await safe("Código de cliente", () => ensureCode(order.order_id));

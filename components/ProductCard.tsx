@@ -5,7 +5,6 @@ import { Check, Plus } from "lucide-react";
 import { getBrand, STRAIN_LABEL, type Product } from "@/lib/data";
 import { useUi } from "@/components/ui-context";
 import { useStore } from "@/lib/store";
-import { formatNIO } from "@/lib/checkout-util";
 import { useT } from "@/components/locale-context";
 import PriceTag from "@/components/PriceTag";
 import { flyToCart } from "@/lib/fly";
@@ -130,10 +129,7 @@ export default function ProductCard({
 
       {/* Precio y botón de compra a todo el ancho: comprar es un solo toque */}
       <div className="mt-auto px-3.5 pb-3.5 pt-3 sm:px-4 sm:pb-4">
-        <div className="flex items-end justify-between gap-2">
-          <PriceTag price={product.price} listPrice={product.listPrice} />
-          <span className="pb-0.5 text-[11px] tabular-nums text-ink-500">{formatNIO(product.price)}</span>
-        </div>
+        <PriceTag price={product.price} listPrice={product.listPrice} />
         <button
           key={bounceKey}
           onClick={handleAdd}
