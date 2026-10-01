@@ -30,6 +30,7 @@ export default function ProductPage({ product: p }: { product: Product }) {
   const { openDrawer } = useUi();
   const info = useShopInfo();
   const [added, setAdded] = useState(false);
+  const [shot, setShot] = useState(0);
   const [notify, setNotify] = useState<"idle" | "on" | "fail">("idle");
   const imgRef = useRef<HTMLImageElement>(null);
   const brand = getBrand(p.brand);
@@ -41,6 +42,7 @@ export default function ProductPage({ product: p }: { product: Product }) {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
+    setShot(0);
   }, [p.id]);
 
   function handleAdd() {
@@ -73,7 +75,12 @@ export default function ProductPage({ product: p }: { product: Product }) {
         <div className="rise" style={{ "--i": 1 } as React.CSSProperties}>
           <div className="relative overflow-hidden rounded-[24px] border border-white/8 bg-gradient-to-b from-white/[0.04] to-transparent">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img ref={imgRef} src={p.img} alt={p.name} className="mx-auto aspect-[4/5] w-full max-w-[520px] object-contain p-6" />
+            <img
+              ref={imgRef}
+              src={p.shots[shot] ?? p.img}
+              alt={shot === 0 ? p.name : t("quick.openAlt").replace("{name}", p.name)}
+              className={`mx-auto aspect-[4/5] w-full max-w-[520px] object-contain ${shot === 0 ? "p-6" : "p-1"}`}
+            />
             {soldOut && (
               <span className="absolute left-4 top-4 rounded-full bg-ink-900/90 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-ink-200 ring-1 ring-white/15">
                 {t("cat.soldOut")}
@@ -85,6 +92,24 @@ export default function ProductPage({ product: p }: { product: Product }) {
               </span>
             )}
           </div>
+          {p.shots.length > 1 && (
+            <div className="mt-3 flex gap-3">
+              {p.shots.map((src, i) => (
+                <button
+                  key={src}
+                  onClick={() => setShot(i)}
+                  aria-label={i === 0 ? t("quick.shotBox") : t("quick.shotOpen")}
+                  aria-pressed={shot === i}
+                  className={`grid h-[74px] w-[74px] shrink-0 place-items-center overflow-hidden rounded-2xl border bg-white/[0.03] transition ${
+                    shot === i ? "border-gold-400" : "border-white/8 hover:border-white/20"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt="" className="h-full w-full object-contain p-1.5" />
+                </button>
+              ))}
+            </div>
+          )}
           {reel && (
             <div className="mt-4 flex items-center gap-4">
               <video

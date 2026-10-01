@@ -104,6 +104,9 @@ const es = {
   "quick.flavor": "Perfil de sabor",
   "quick.added": "Añadido",
   "quick.delivery": "+ C$150 de entrega en Estelí",
+  "quick.shotBox": "Ver la caja",
+  "quick.shotOpen": "Ver el equipo",
+  "quick.openAlt": "{name}: caja abierta con el equipo",
 
   // --- Carrito ---
   "cart.title": "Tu bolsa",
@@ -448,6 +451,9 @@ const en: Partial<Record<Key, string>> = {
   "quick.flavor": "Flavor profile",
   "quick.added": "Added",
   "quick.delivery": "+ C$150 delivery in Estelí",
+  "quick.shotBox": "View the box",
+  "quick.shotOpen": "View the device",
+  "quick.openAlt": "{name}: open box with the device",
 
   "cart.title": "Your bag",
   "cart.empty": "Your bag is empty",

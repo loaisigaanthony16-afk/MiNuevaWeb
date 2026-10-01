@@ -12,6 +12,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  BRANDS,
   getProduct,
   type BrandId,
   type Product,
@@ -227,7 +228,7 @@ function SearchParamsSync() {
     if (!ui || !searchParams) return;
     const marca = searchParams.get("marca");
     const q = searchParams.get("q");
-    if (marca === "muha" || marca === "muhav2" || marca === "packwoods") ui.setCatalogBrand(marca);
+    if (BRANDS.some((b) => b.id === marca)) ui.setCatalogBrand(marca as BrandId);
     if (typeof q === "string") ui.setSearch(q);
   }, [searchParams, ui]);
 

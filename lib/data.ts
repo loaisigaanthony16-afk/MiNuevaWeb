@@ -8,7 +8,7 @@
 // =====================================================================
 
 export type Strain = "sativa" | "indica" | "hybrid";
-export type BrandId = "muha" | "muhav2" | "packwoods";
+export type BrandId = "muha" | "muhav2" | "packwoods" | "cookies";
 
 export interface Brand {
   id: BrandId;
@@ -30,6 +30,10 @@ export interface Product {
   listPrice: number;
   flavor: string;
   img: string;
+  /** Toma de la caja abierta con el equipo a la vista, si existe. */
+  openImg?: string;
+  /** Todas las fotos del producto, la principal primero. */
+  shots: string[];
   /** Identificador en la URL de la ficha (/p/slug). */
   slug: string;
 }
@@ -78,6 +82,14 @@ export const BRANDS: Brand[] = [
     description:
       "Sabores intensos de postre y fruta en un equipo compacto.",
   },
+  {
+    id: "cookies",
+    name: "Cookies × The Freak Brothers",
+    short: "Cookies",
+    kicker: "Liquid diamonds",
+    description:
+      "Edición Liquid Diamonds de resina viva, con dos sabores y modo dual en el mismo equipo.",
+  },
 ];
 
 export function getBrand(id: BrandId): Brand {
@@ -113,25 +125,53 @@ const ROWS: Row[] = [
   ["Runtz + Horchata", "v2-runtz-horchata", "muhav2", "hybrid", "Dulce y cremoso"],
   ["Blue Slushie + Habibi", "v2-blue-slushie-habibi", "muhav2", "indica", "Helado y floral"],
   ["Watermelon Moonshine + Frozen Pomegranate", "v2-watermelon-pomegranate", "muhav2", "hybrid", "Sandía y granada"],
-  ["Rainbow Belts Dúo", "v2-rainbow-belts", "muhav2", "hybrid", "Ácido y dulce"],
+  ["Rainbow Belts + Purple Champagne", "v2-rainbow-belts", "muhav2", "hybrid", "Ácido y afrutado"],
   ["Dúo V2 Aqua", "v2-aqua", "muhav2", "sativa", "Dos sabores en una caja"],
   ["Dúo V2 Holo", "v2-holo", "muhav2", "hybrid", "Dos sabores en una caja"],
   ["Pineapple Paradise + Bubblegum Burst", "v2-pineapple-bubblegum", "muhav2", "hybrid", "Tropical y chicle"],
+
+  // Altas nuevas. Van al final para no mover los ids de las bolsas guardadas.
+  ["Jedi Kush + Purple Champagne", "v2-jedi-purple-champagne", "muhav2", "hybrid", "Terroso y uva"],
+  ["Liquid Diamonds Live Resin", "cookies-freak-brothers", "cookies", "hybrid", "Resina viva, dos sabores"],
 ];
+
+/** Sabores que además tienen la foto de la caja abierta con el equipo. */
+const WITH_OPEN_SHOT = new Set([
+  "pineapple-paradise",
+  "watermelon-moonshine",
+  "blue-slushie",
+  "bubblegum-burst",
+  "dragon-berry-runtz",
+  "horchata",
+  "unicorn-sherbet",
+  "guava-bubblegum",
+  "black-cherry-gelato",
+  "v2-galactic-pineapple",
+  "v2-blue-slushie-habibi",
+  "v2-rainbow-belts",
+  "v2-jedi-purple-champagne",
+  "cookies-freak-brothers",
+]);
 
 // Los ids arrancan en 101 para no chocar con bolsas guardadas del
 // catálogo anterior.
-export const products: Product[] = ROWS.map(([name, slug, brand, strain, flavor], i) => ({
-  id: 101 + i,
-  name,
-  brand,
-  strain,
-  price: UNIT_PRICE,
-  listPrice: LIST_PRICE,
-  flavor,
-  img: `/catalogo/${slug}.webp`,
-  slug,
-}));
+export const products: Product[] = ROWS.map(([name, slug, brand, strain, flavor], i) => {
+  const img = `/catalogo/${slug}.webp`;
+  const openImg = WITH_OPEN_SHOT.has(slug) ? `/catalogo/${slug}-abierto.webp` : undefined;
+  return {
+    id: 101 + i,
+    name,
+    brand,
+    strain,
+    price: UNIT_PRICE,
+    listPrice: LIST_PRICE,
+    flavor,
+    img,
+    openImg,
+    shots: openImg ? [img, openImg] : [img],
+    slug,
+  };
+});
 
 export function getProduct(id: number): Product | undefined {
   return products.find((p) => p.id === id);

@@ -89,10 +89,21 @@ export default function ProductCard({
             draggable={false}
             onLoad={() => setLoaded(true)}
             onError={() => setLoaded(true)}
-            className={`card-media relative h-full w-full object-contain p-2 transition-transform duration-[900ms] ease-smooth group-hover:scale-[1.06] ${
-              loaded ? "opacity-100" : "opacity-0"
-            }`}
+            className={`card-media relative h-full w-full object-contain p-2 transition-[transform,opacity] duration-[900ms] ease-smooth group-hover:scale-[1.06] ${
+              product.openImg ? "group-hover:opacity-0" : ""
+            } ${loaded ? "opacity-100" : "opacity-0"}`}
           />
+          {product.openImg && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={product.openImg}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-contain p-2 opacity-0 transition-opacity duration-[600ms] ease-smooth group-hover:opacity-100"
+            />
+          )}
           <span className="sheen" aria-hidden />
           {soldOut && (
             <span className="absolute left-2.5 top-2.5 rounded-full bg-ink-900/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-200 ring-1 ring-white/15">

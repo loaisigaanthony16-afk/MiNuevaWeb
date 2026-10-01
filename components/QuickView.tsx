@@ -24,11 +24,13 @@ export default function QuickView() {
   const { quickProduct: p, closeQuick, openDrawer } = useUi();
   const { add } = useStore();
   const [added, setAdded] = useState(false);
+  const [shot, setShot] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   const info = useShopInfo();
 
   useEffect(() => {
     setAdded(false);
+    setShot(0);
   }, [p?.id]);
 
   if (!p) return null;
@@ -67,14 +69,32 @@ export default function QuickView() {
 
         <div className="grid flex-1 grid-cols-1 overflow-y-auto sm:grid-cols-2">
           {/* Foto */}
-          <div className="grid place-items-center bg-ink-950 p-6">
+          <div className="grid place-items-center content-center bg-ink-950 p-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={imgRef}
-              src={p.img}
-              alt={p.name}
-              className="aspect-square w-full max-w-[360px] object-contain"
+              src={p.shots[shot] ?? p.img}
+              alt={shot === 0 ? p.name : t("quick.openAlt").replace("{name}", p.name)}
+              className={`w-full max-w-[360px] object-contain ${shot === 0 ? "aspect-square" : "aspect-[4/3]"}`}
             />
+            {p.shots.length > 1 && (
+              <div className="mt-4 flex gap-2.5">
+                {p.shots.map((src, i) => (
+                  <button
+                    key={src}
+                    onClick={() => setShot(i)}
+                    aria-label={i === 0 ? t("quick.shotBox") : t("quick.shotOpen")}
+                    aria-pressed={shot === i}
+                    className={`grid h-[58px] w-[58px] shrink-0 place-items-center overflow-hidden rounded-xl border bg-white/[0.03] transition ${
+                      shot === i ? "border-gold-400" : "border-white/10 hover:border-white/25"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-full w-full object-contain p-1" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Detalle */}
