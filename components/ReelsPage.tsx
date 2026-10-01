@@ -44,7 +44,7 @@ function writeJson(key: string, value: unknown) {
 }
 
 /**
- * Pestaña de reels: galería de los 15 videos y visor a pantalla completa
+ * Pestaña de reels: galería de los videos y visor a pantalla completa
  * con gestos de redes sociales. Todo lo relacionado a reels vive acá.
  */
 export default function ReelsPage() {
@@ -89,7 +89,7 @@ export default function ReelsPage() {
         <div className="mt-5 flex flex-wrap items-end justify-between gap-5">
           <div className="max-w-xl">
             <h1 className="display-lg text-ink-50">{t("reels.title")}</h1>
-            <p className="mt-4 text-[15px] leading-relaxed text-ink-400">{t("reels.body")}</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink-400">{t("reels.body").replace("{n}", String(REELS.length))}</p>
           </div>
           <button onClick={() => setOpen(0)} className="btn-gold group">
             <Play className="h-4 w-4 fill-current transition-transform duration-300 group-hover:scale-110" />
@@ -184,17 +184,13 @@ function GalleryCard({
       <span className="absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition-transform duration-500 group-hover:scale-110">
         <Play className="h-3.5 w-3.5 translate-x-px fill-current" />
       </span>
-      <span className="absolute bottom-3 left-3 right-14">
-        <span className="block font-display text-[13px] font-bold uppercase leading-tight text-white sm:text-[14px]">
-          {reel.title}
+      {product && (
+        /* El nombre va dentro del video, así que acá sólo el precio. */
+        <span className="absolute bottom-3 left-3 flex items-baseline gap-1.5 text-[12px]">
+          <span className="font-bold tabular-nums text-white">${product.price}</span>
+          <span className="tabular-nums text-white/50 line-through">${product.listPrice}</span>
         </span>
-        {product && (
-          <span className="mt-0.5 flex items-baseline gap-1.5 text-[12px]">
-            <span className="font-bold tabular-nums text-white">${product.price}</span>
-            <span className="tabular-nums text-white/50 line-through">${product.listPrice}</span>
-          </span>
-        )}
-      </span>
+      )}
     </button>
   );
 }

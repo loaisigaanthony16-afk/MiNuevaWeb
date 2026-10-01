@@ -66,7 +66,7 @@ const es = {
   // --- Reels ---
   "reels.kicker": "Reels",
   "reels.title": "Mirá cada sabor.",
-  "reels.body": "15 reels con música. Deslizá como en tus redes, mantené presionado para pausar y añadí a la bolsa sin salir.",
+  "reels.body": "{n} reels con música. Deslizá como en tus redes, mantené presionado para pausar y añadí a la bolsa sin salir.",
   "reels.watch": "Ver reels",
   "reels.hint": "Deslizá para ver más",
   "reels.like": "Me gusta",
@@ -416,7 +416,7 @@ const en: Partial<Record<Key, string>> = {
 
   "reels.kicker": "Reels",
   "reels.title": "See every flavor.",
-  "reels.body": "15 reels with music. Swipe like on your socials, press and hold to pause, add to your bag without leaving.",
+  "reels.body": "{n} reels with music. Swipe like on your socials, press and hold to pause, add to your bag without leaving.",
   "reels.watch": "Watch reels",
   "reels.hint": "Swipe for more",
   "reels.like": "Like",

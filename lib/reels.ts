@@ -1,9 +1,12 @@
 // =====================================================================
 // Reels de la pestaña /reels.
 //
-// Los videos viven en public/reels (720x1280 con música original) y sus
-// portadas en public/reels/portadas. Se generan con el script de
-// reels-revision/generador, fuera de la web.
+// Los videos viven en public/reels (1080x1920, 6 s, con música original)
+// y sus portadas en public/reels/portadas. Se generan con
+// reels-revision/generador/render_reel_min.py, fuera de la web.
+//
+// El nombre del archivo es el mismo slug del producto, así que basta con
+// anotar qué sabores tienen reel.
 // =====================================================================
 
 import { products, type Strain } from "@/lib/data";
@@ -18,45 +21,34 @@ export interface Reel {
   poster: string;
 }
 
-const SLUGS: Record<string, string> = {
-  "Pineapple Paradise": "pineapple-paradise",
-  "Watermelon Moonshine": "watermelon-moonshine",
-  "Blue Slushie": "blue-slushie",
-  "Bubblegum Burst": "bubblegum-burst",
-  "Frozen Pomegranate": "frozen-pomegranate",
-  Habibi: "habibi",
-  "Dragon Berry Runtz": "dragon-berry-runtz",
-  "Galactic Diesel": "galactic-diesel",
-  Horchata: "horchata",
-  "Black Cherry Gelato": "black-cherry-gelato",
-  "Guava Bubblegum": "guava-bubblegum",
-  "Unicorn Sherbet": "unicorn-sherbet",
-  "Banana Flambé": "banana-flambe",
-  "Jelly Dulce": "jelly-dulce",
-};
+/** Sabores con reel grabado. El resto no aparece en la pestaña. */
+const WITH_REEL = new Set([
+  "pineapple-paradise",
+  "watermelon-moonshine",
+  "blue-slushie",
+  "bubblegum-burst",
+  "dragon-berry-runtz",
+  "horchata",
+  "black-cherry-gelato",
+  "guava-bubblegum",
+  "unicorn-sherbet",
+  "v2-galactic-pineapple",
+  "v2-blue-slushie-habibi",
+  "v2-rainbow-belts",
+  "v2-jedi-purple-champagne",
+  "cookies-freak-brothers",
+]);
 
-function files(slug: string) {
-  return { video: `/reels/${slug}.mp4`, poster: `/reels/portadas/${slug}.jpg` };
-}
-
-export const REELS: Reel[] = [
-  {
-    slug: "todo-el-catalogo",
-    title: "Todo el catálogo",
-    productId: null,
-    strain: null,
-    ...files("todo-el-catalogo"),
-  },
-  ...products
-    .filter((p) => SLUGS[p.name])
-    .map((p) => ({
-      slug: SLUGS[p.name],
-      title: p.name,
-      productId: p.id,
-      strain: p.strain,
-      ...files(SLUGS[p.name]),
-    })),
-];
+export const REELS: Reel[] = products
+  .filter((p) => WITH_REEL.has(p.slug))
+  .map((p) => ({
+    slug: p.slug,
+    title: p.name,
+    productId: p.id,
+    strain: p.strain,
+    video: `/reels/${p.slug}.mp4`,
+    poster: `/reels/portadas/${p.slug}.jpg`,
+  }));
 
 /** Preguntas de las encuestas; rotan entre reels. */
 export const POLLS: [question: string, a: string, b: string][] = [
