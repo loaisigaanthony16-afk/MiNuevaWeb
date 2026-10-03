@@ -1,140 +1,88 @@
 # Conectar Instagram para que el cron publique solo
 
-Guía para dejar andando `/api/cron/social-post`. Son tres cosas: darle a
-la app acceso a la cuenta, sacar los dos IDs y generar un token que no
-venza.
+**Estado: ya está casi todo listo.** No hace falta crear una app, ni pedir
+App Review, ni generar un token nuevo.
 
-**No hace falta App Review.** Eso solo aplica si publicás en cuentas de
-otra gente. Para publicar en la tuya alcanza con darle a la cuenta de
-Instagram el rol de *Instagram Tester* en la app.
+El usuario de sistema **ClaudeBot**, el que ya usa la automatización de
+Pide Fácil, alcanza también a Vibe 505. Verificado el 2026-10-03 contra la
+API: el token tiene `instagram_basic`, `instagram_content_publish`,
+`pages_read_engagement`, `pages_show_list` y `pages_manage_posts`, y llega
+a estas cuatro páginas:
 
----
+| Página | page_id | Instagram |
+|---|---|---|
+| **VIBE 505** | 1320417081162690 | @vibe505.nic (17841435896984638) |
+| Peak Goods | 1359789783879378 | @peakgoodsofficial |
+| Pide Fácil Nicaragua | 1035367996317961 | @pidefacil.nic |
+| Loaisiga Cigars | 115709504858400 | sin IG ligado |
 
-## Antes de empezar: tres requisitos
-
-1. **La cuenta de Instagram tiene que ser Profesional** (Empresa o
-   Creador). Si es personal, la API no la deja tocar. Se cambia desde la
-   app de Instagram, en Configuración → Tipo de cuenta.
-
-2. **Tiene que estar ligada a la página de Facebook de Vibe 505.** El
-   permiso viaja por la página, no por la cuenta.
-
-3. **La página y la cuenta tienen que estar en el mismo Business Manager
-   que la app.** Acá está el punto a revisar en tu caso: la app se llama
-   "Pide Facil IA". Si esa app vive en un Business Manager distinto al de
-   Vibe 505, el usuario de sistema de uno **no puede** tocar los activos
-   del otro. Si están separados, hay dos salidas: agregar la página y la
-   cuenta de Vibe 505 como activos del Business Manager de la app, o
-   crear una app aparte dentro del Business Manager de Vibe 505.
+La cuenta @vibe505.nic responde como profesional y el cupo de publicación
+está en 0 de 100 por día. Nosotros usamos una.
 
 ---
 
-## Paso 1 — Preparar la app
+## Lo que falta (dos cosas)
 
-En [developers.facebook.com](https://developers.facebook.com) → tu app:
+### 1. Subir los videos al bucket de Supabase
 
-1. **Agregá el producto "Instagram"**, variante *Instagram API with
-   Facebook Login*. Es la que usa el código, porque los IDs salen de la
-   página.
+Meta descarga el video desde una URL pública, así que los archivos tienen
+que estar colgados. La clave está en Supabase → Project Settings → API →
+`service_role`:
 
-2. **Permisos.** Que la app tenga pedidos:
-   - `instagram_basic`
-   - `instagram_content_publish`
-   - `pages_read_engagement`
-   - `pages_show_list`
+```bash
+cd "/c/Users/loais/MiNuevaWeb/reels-revision/generador" && SUPABASE_SERVICE_ROLE_KEY=pega_tu_clave python subir_storage.py
+```
 
-   Si además tenés un rol de Business Manager sobre la página, Meta pide
-   también `ads_management` y `ads_read`. No es que vayas a pautar: es
-   cómo Meta resuelve los permisos cuando la página está en un Business.
+### 2. Poner tres variables en Vercel
 
-3. **Roles → Instagram Testers:** agregá la cuenta de Instagram de
-   Vibe 505. Después, **desde Instagram** hay que aceptar la invitación:
-   Configuración → Apps y sitios web → Invitaciones de tester.
-   Si no aceptás ahí, nada funciona y el error no lo dice claro.
+En el proyecto → Settings → Environment Variables → Production:
+
+```
+META_IG_USER_ID = 17841435896984638
+META_PAGE_ID    = 1320417081162690
+META_ACCESS_TOKEN = (el token de ClaudeBot)
+```
+
+El token está en `C:\automatizacion pide facil\pidefacil-nube\.env`, en la
+línea que empieza con `EAA`. Copialo de ahí.
+
+Después de guardarlas hay que **volver a desplegar** para que las tome.
 
 ---
 
-## Paso 2 — Sacar los dos IDs
-
-Andá al [Explorador de la API Graph](https://developers.facebook.com/tools/explorer/),
-elegí tu app arriba a la derecha, generá un token de usuario con los
-permisos de arriba y corré:
-
-```
-GET /me/accounts
-```
-
-Buscá la página de Vibe 505 y copiá su `id`. Ese es **META_PAGE_ID**
-(aunque el cron ahora publique solo en Instagram, conviene tenerlo).
-
-```
-GET /{el-id-de-la-pagina}?fields=instagram_business_account{id,username}
-```
-
-El `id` que devuelve adentro de `instagram_business_account` es
-**META_IG_USER_ID**. Verificá que el `username` sea el de Vibe 505: es
-fácil copiar el de otra cuenta sin darse cuenta.
-
-Comprobá que la cuenta puede publicar:
-
-```
-GET /{el-id-de-instagram}/content_publishing_limit
-```
-
-Si responde con el cupo usado, está todo bien. El límite son 100
-publicaciones por día; nosotros usamos una.
-
----
-
-## Paso 3 — El token que no vence
-
-**No uses el token del Explorador.** Dura una hora. El token de página
-largo dura 60 días y después el cron se muere sin avisar: no falla de
-forma visible, simplemente deja de publicar.
-
-Lo correcto es un **usuario de sistema**:
-
-1. [Business Manager](https://business.facebook.com/settings) →
-   Usuarios → Usuarios del sistema → Agregar.
-2. Rol: Administrador.
-3. **Asignar activos:** la página de Facebook y la cuenta de Instagram de
-   Vibe 505, con control total.
-4. Generar token → elegí la app → marcá `instagram_basic`,
-   `instagram_content_publish`, `pages_read_engagement`,
-   `pages_show_list`.
-5. Copialo apenas aparece. No se vuelve a mostrar.
-
-Ese es **META_ACCESS_TOKEN**.
-
----
-
-## Paso 4 — Configurar y probar
-
-En Vercel → el proyecto → Settings → Environment Variables, agregá las
-tres en Production:
-
-```
-META_ACCESS_TOKEN
-META_IG_USER_ID
-META_PAGE_ID
-```
-
-Volvé a desplegar para que las tome. Después, prueba en seco:
+## Probar antes de soltarlo
 
 ```bash
 curl -H "Authorization: Bearer TU_CRON_SECRET" "https://www.vibe505.com/api/cron/social-post?dry=1"
 ```
 
-Tiene que responder qué publicaría, sin publicar. Si eso sale bien, corré
-la misma sin `?dry=1` para la primera publicación de verdad. Revisá el
-Instagram antes de dejarlo solo.
+Responde qué publicaría, sin publicar. Si sale bien, corré la misma sin
+`?dry=1` para la primera publicación real y revisá el Instagram antes de
+dejarlo andando solo.
+
+De ahí en adelante el cron de Vercel lo llama todos los días a las 19:00
+de Estelí.
+
+---
+
+## Por qué publica en el momento y no programado
+
+Facebook sí acepta `scheduled_publish_time` y se puede dejar agendado en
+los servidores de Meta hasta 30 días adelante. **Instagram no**: la API de
+contenido (`/media` + `/media_publish`) publica en el instante en que se la
+llama. Toda herramienta que dice "programar Instagram" en realidad guarda
+el contenido y ejecuta la llamada a la hora exacta desde su propio
+servidor. Acá ese servidor es el cron de Vercel.
+
+Es la misma razón por la que la automatización de Pide Fácil usa GitHub
+Actions.
 
 ---
 
 ## Si algo falla
 
-El error queda guardado en la tabla `social_posts` de Supabase, en la
-columna `error`, con el texto que devolvió Meta. Para ver los últimos:
+El error queda en la tabla `social_posts` de Supabase con el texto que
+devolvió Meta:
 
 ```sql
 select posted_at, slug, platform, status, error
@@ -147,27 +95,38 @@ Lo que más aparece:
 
 - **"Page Publishing Authorization required"** — la página pide
   verificación de identidad antes de dejar publicar por API. Se resuelve
-  en la configuración de la página; no hay forma de saltearlo.
-- **"The user is not an Instagram Business"** — la cuenta sigue siendo
-  personal, o no aceptaste la invitación de tester.
-- **"Unsupported get request" sobre el ID de Instagram** — el token no
-  tiene asignado ese activo. Volvé al paso 3, punto 3.
-- **Contenedor atascado en procesando** — no es error: el cron lo guarda
-  y lo termina en la corrida siguiente.
+  en la configuración de la página, no hay forma de saltearlo.
+- **Contenedor atascado en procesando** — no es error. El cron lo guarda y
+  lo termina en la corrida siguiente.
+- **Token vencido** — no debería pasar: el de usuario de sistema no vence.
+  Si pasa, es que se regeneró o se le quitaron activos.
 
 ---
 
-## Qué publica hoy
+## Qué publica, y en qué red
 
-14 piezas, una por día, rotando. El ciclo completo es de dos semanas y
-después se repite. Conviene ir sumando contenido:
+Solo **Instagram**. Facebook lo cubre el bot de Business Suite, así que si
+publicara en las dos redes cada reel saldría duplicado en la página.
+
+Para volver a las dos:
+
+```sql
+update public.social_queue set platforms = array['instagram','facebook'];
+```
+
+Son 14 piezas, una por día. El ciclo completo es de dos semanas y después
+se repite, así que conviene ir sumando:
 
 ```sql
 insert into public.social_queue (slug, video_url, caption, position)
 values ('nombre-del-sabor', 'https://.../video.mp4', 'El texto.', 14);
 ```
 
-Para pausar una sin borrarla: `update public.social_queue set enabled =
-false where slug = '...';`
+Para pausar una sin borrarla:
 
-Las reglas de qué escribir y qué no están en `reels redes/LEEME.md`.
+```sql
+update public.social_queue set enabled = false where slug = '...';
+```
+
+Las reglas de qué escribir en el pie de foto están en
+`reels redes/LEEME.md`.
