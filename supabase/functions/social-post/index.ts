@@ -1,27 +1,26 @@
 // =====================================================================
-// Publicación diaria en Instagram (y Facebook si se habilita).
+// Publicación diaria en Instagram y Facebook.
 //
-// Corre en Supabase Edge Functions. La dispara pg_cron, que la llama por
-// HTTP una vez al día. Así la cola, los videos y el reloj viven en el
-// mismo lugar y esto no depende del sitio ni de Vercel.
+// Corre en Supabase Edge Functions y la dispara pg_cron una vez al día.
+// La cola, los secretos y el reloj viven todos en este proyecto.
 //
-// Secretos que hay que cargar en Edge Functions -> Secrets:
-//   META_ACCESS_TOKEN   token del usuario de sistema ClaudeBot
-//   META_IG_USER_ID     17841435896984638  (@vibe505.nic)
-//   META_PAGE_ID        1320417081162690
+// Los secretos salen de Vault, no de variables de entorno, así que se
+// cargan con una línea de SQL y no hay que tocar el panel:
+//   meta_access_token    token del usuario de sistema ClaudeBot
+//   social_trigger_key   la genera la base sola; valida quién dispara
 //
-// SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta la plataforma.
+// La función no exige JWT (verify_jwt=false) porque el cron no manda uno:
+// manda la llave de disparo en la cabecera x-trigger-key. Sin esa llave
+// la llamada se rechaza.
 // =====================================================================
 
-const GRAPH = `https://graph.facebook.com/${Deno.env.get("META_GRAPH_VERSION") ?? "v21.0"}`;
-
+const GRAPH = "https://graph.facebook.com/v21.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Instagram procesa el video antes de dejarlo publicar. Un reel de 6 s y
-// 2 MB tarda bastante menos que esto; el tope es para no acercarse al
-// límite de la Edge Function. Si igual no termina, el contenedor queda
-// guardado y lo retoma la corrida siguiente.
+// Un reel de 6 s y 2 MB se procesa mucho antes de esto. El tope es para
+// no acercarse al límite de la Edge Function; si igual no termina, el
+// contenedor queda guardado y lo retoma la corrida siguiente.
 const ESPERA_MAX_MS = 60_000;
 const ESPERA_ENTRE_SONDEOS_MS = 4_000;
 
@@ -36,7 +35,6 @@ interface Fila {
 
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Acceso a la base por PostgREST con la clave de servicio. */
 async function db<T = unknown>(
   path: string,
   init: { method?: string; body?: unknown; prefer?: string } = {},
@@ -60,18 +58,21 @@ async function db<T = unknown>(
   return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
-/**
- * Llama a la API de Meta. El token nunca entra en el mensaje de error:
- * estos errores se guardan en la base.
- */
+/** Lee un secreto de Vault. Devuelve null si no está cargado. */
+async function secreto(nombre: string): Promise<string | null> {
+  const valor = await db<string | null>("rpc/social_leer_secreto", {
+    method: "POST",
+    body: { p_nombre: nombre },
+  });
+  return valor ?? null;
+}
+
 async function graph<T>(
   path: string,
   params: Record<string, string>,
+  token: string,
   method: "GET" | "POST" = "GET",
 ): Promise<T> {
-  const token = Deno.env.get("META_ACCESS_TOKEN");
-  if (!token) throw new Error("falta META_ACCESS_TOKEN");
-
   const query = new URLSearchParams({ ...params, access_token: token });
   const res = await fetch(
     method === "GET" ? `${GRAPH}/${path}?${query}` : `${GRAPH}/${path}`,
@@ -79,6 +80,7 @@ async function graph<T>(
   );
   const body = await res.json().catch(() => null);
   if (!res.ok || body?.error) {
+    // El token nunca entra en el mensaje: estos errores se guardan.
     throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
   }
   return body as T;
@@ -99,10 +101,7 @@ async function registrar(
 }
 
 /** Crea el contenedor (o retoma el que quedó a medias) y lo publica. */
-async function publicarInstagram(fila: Fila): Promise<string> {
-  const igUser = Deno.env.get("META_IG_USER_ID");
-  if (!igUser) throw new Error("falta META_IG_USER_ID");
-
+async function publicarInstagram(fila: Fila, token: string, igUser: string): Promise<string> {
   let creationId = fila.ig_creation_id;
   if (!creationId) {
     const creado = await graph<{ id: string }>(
@@ -113,6 +112,7 @@ async function publicarInstagram(fila: Fila): Promise<string> {
         caption: fila.caption,
         share_to_feed: "true",
       },
+      token,
       "POST",
     );
     creationId = creado.id;
@@ -127,9 +127,11 @@ async function publicarInstagram(fila: Fila): Promise<string> {
 
   const limite = Date.now() + ESPERA_MAX_MS;
   for (;;) {
-    const r = await graph<{ status_code?: string; status?: string }>(creationId, {
-      fields: "status_code,status",
-    });
+    const r = await graph<{ status_code?: string; status?: string }>(
+      creationId,
+      { fields: "status_code,status" },
+      token,
+    );
     if (r.status_code === "FINISHED" || r.status_code === "PUBLISHED") break;
     if (r.status_code !== "IN_PROGRESS") {
       throw new Error(`Instagram rechazó el video: ${r.status ?? r.status_code}`);
@@ -143,18 +145,18 @@ async function publicarInstagram(fila: Fila): Promise<string> {
   const publicado = await graph<{ id: string }>(
     `${igUser}/media_publish`,
     { creation_id: creationId },
+    token,
     "POST",
   );
   return publicado.id;
 }
 
 /** Facebook acepta el video en una sola llamada: se le pasa la URL. */
-async function publicarFacebook(fila: Fila): Promise<string> {
-  const page = Deno.env.get("META_PAGE_ID");
-  if (!page) throw new Error("falta META_PAGE_ID");
+async function publicarFacebook(fila: Fila, token: string, page: string): Promise<string> {
   const r = await graph<{ id: string }>(
     `${page}/videos`,
     { file_url: fila.video_url, description: fila.caption },
+    token,
     "POST",
   );
   return r.id;
@@ -163,12 +165,22 @@ async function publicarFacebook(fila: Fila): Promise<string> {
 Deno.serve(async (req) => {
   const seco = new URL(req.url).searchParams.get("dry") === "1";
 
-  if (!Deno.env.get("META_ACCESS_TOKEN")) {
-    return Response.json({ ok: false, reason: "falta META_ACCESS_TOKEN" });
+  const llave = await secreto("social_trigger_key");
+  if (!llave || req.headers.get("x-trigger-key") !== llave) {
+    return new Response(JSON.stringify({ error: "no autorizado" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  // El turno es de quien hace más que no sale. nullsfirst pone primero lo
-  // que nunca se publicó.
+  const token = await secreto("meta_access_token");
+  if (!token) {
+    return Response.json({ ok: false, reason: "falta meta_access_token en Vault" });
+  }
+  const igUser = (await secreto("meta_ig_user_id")) ?? "17841435896984638";
+  const page = (await secreto("meta_page_id")) ?? "1320417081162690";
+
+  // El turno es de quien hace más que no sale.
   const filas = await db<Fila[]>(
     "social_queue?enabled=is.true" +
       "&select=id,slug,video_url,caption,platforms,ig_creation_id" +
@@ -181,7 +193,12 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       seco: true,
-      publicaria: { slug: fila.slug, platforms: fila.platforms, caption: fila.caption },
+      publicaria: {
+        slug: fila.slug,
+        platforms: fila.platforms,
+        caption: fila.caption,
+        video: fila.video_url,
+      },
     });
   }
 
@@ -192,9 +209,9 @@ Deno.serve(async (req) => {
   for (const red of fila.platforms) {
     try {
       const id = red === "instagram"
-        ? await publicarInstagram(fila)
+        ? await publicarInstagram(fila, token, igUser)
         : red === "facebook"
-        ? await publicarFacebook(fila)
+        ? await publicarFacebook(fila, token, page)
         : null;
       if (id === null) {
         fallos[red] = "red desconocida";
@@ -209,8 +226,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  // La fila pasa al final de la rotación solo si salió en alguna red. Si
-  // fallaron todas, conserva el turno y se reintenta mañana.
+  // La fila pasa al final de la rotación solo si salió en alguna red.
   if (Object.keys(publicado).length > 0) {
     await db("rpc/social_marcar_publicado", {
       method: "POST",
