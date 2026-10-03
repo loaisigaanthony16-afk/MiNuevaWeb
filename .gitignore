@@ -35,3 +35,6 @@ dev.err.log
 
 # masters de los reels para pautar: pesan y se regeneran con el script
 /reels publicidad
+
+# tandas de reels para redes: pesan y se regeneran con el script
+/reels redes
