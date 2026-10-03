@@ -15,6 +15,7 @@ import AbandonedCartToast from "@/components/AbandonedCartToast";
 import PromoPopup from "@/components/PromoPopup";
 import PwaSetup from "@/components/PwaSetup";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL } from "@/lib/seo";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({
@@ -24,12 +25,31 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vibe 505 · Vapes premium con entrega en Estelí",
+  // Sin metadataBase, las imágenes de Open Graph salen con ruta relativa y
+  // WhatsApp, Facebook y Google no las resuelven: el enlace se comparte sin
+  // vista previa.
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Vibe 505 · Vapes premium con entrega en Estelí",
+    template: "%s · Vibe 505",
+  },
   description:
-    "Muha Meds y Packwoods. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
+    "Muha Meds, Packwoods y Cookies. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
+  alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Vibe 505" },
+  openGraph: {
+    type: "website",
+    siteName: "Vibe 505",
+    locale: "es_NI",
+    url: SITE_URL,
+    title: "Vibe 505 · Vapes premium con entrega en Estelí",
+    description:
+      "Muha Meds, Packwoods y Cookies. Pedido anónimo sin cuenta, empaque neutro y entrega en Estelí.",
+    images: [{ url: "/og/default.jpg", width: 1200, height: 630, alt: "Vibe 505" }],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
