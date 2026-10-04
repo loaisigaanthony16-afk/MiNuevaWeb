@@ -38,3 +38,6 @@ dev.err.log
 
 # tandas de reels para redes: pesan y se regeneran con el script
 /reels redes
+
+# tanda de contenido para redes: pesa y se regenera con los scripts
+/contenido redes
