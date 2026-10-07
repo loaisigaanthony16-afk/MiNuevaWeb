@@ -71,11 +71,18 @@ export default function Medidor() {
       if (document.visibilityState === "hidden") salida();
     }
 
+    // Medida inicial: lo que se ve sin bajar nada. Sin esto, quien no
+    // hace scroll quedaba en 0 %, porque al descargarse la página las
+    // medidas del documento ya no son fiables y la cuenta del final
+    // devolvía cero.
+    const inicial = setTimeout(alScroll, 300);
+
     window.addEventListener("scroll", alScroll, { passive: true });
     document.addEventListener("visibilitychange", alOcultar);
     window.addEventListener("pagehide", salida);
 
     return () => {
+      clearTimeout(inicial);
       window.removeEventListener("scroll", alScroll);
       document.removeEventListener("visibilitychange", alOcultar);
       window.removeEventListener("pagehide", salida);
