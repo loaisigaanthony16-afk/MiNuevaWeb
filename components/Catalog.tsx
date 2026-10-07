@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, startTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, startTransition } from "react";
 import { SearchX } from "lucide-react";
 import {
   BRANDS,
@@ -13,6 +13,7 @@ import ProductCard from "@/components/ProductCard";
 import { useUi } from "@/components/ui-context";
 import { useReveal } from "@/hooks/useReveal";
 import { useT } from "@/components/locale-context";
+import { marcar } from "@/lib/medidor";
 
 const STRAINS: ("all" | Strain)[] = ["all", "indica", "sativa", "hybrid"];
 
@@ -54,6 +55,28 @@ export default function Catalog() {
   );
 
   useReveal([matches.length, brand, strain, q]);
+
+  // Qué busca la gente en el catálogo. Se anota la búsqueda terminada,
+  // no cada tecla: sin la espera, "horchata" dejaría ocho renglones
+  // ("h", "ho", "hor"…) y el informe sería ilegible.
+  const buscado = useRef("");
+  useEffect(() => {
+    if (!q || q.length < 3 || q === buscado.current) return;
+    const id = setTimeout(() => {
+      buscado.current = q;
+      marcar("buscar", { texto: q, resultados: matches.length });
+    }, 900);
+    return () => clearTimeout(id);
+  }, [q, matches.length]);
+
+  // Los filtros, solo cuando dejan de estar en "todos".
+  useEffect(() => {
+    if (brand === "all" && strain === "all") return;
+    marcar("filtro", { marca: brand, tipo: strain, resultados: matches.length });
+    // `matches.length` a propósito fuera: interesa el cambio de filtro,
+    // no que el conteo se recalcule.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brand, strain]);
 
   return (
     <section id="catalogo" className="scroll-mt-[var(--nav-min)] pb-24">

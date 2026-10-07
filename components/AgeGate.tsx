@@ -6,6 +6,7 @@ import Wordmark from "@/components/Wordmark";
 import { useT } from "@/components/locale-context";
 // La clave cambió al pasar de 18+ a 21+: quien confirmó 18 vuelve a confirmar.
 import { AGE_KEY } from "@/lib/legal";
+import { marcar } from "@/lib/medidor";
 
 function subscribe(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -100,7 +101,13 @@ export default function AgeGate() {
               {t("gate.yes")}
             </button>
             <button
-              onClick={() => setDenied(true)}
+              onClick={() => {
+                // Cuánta gente se va en el portal de edad. Si fuera una
+                // parte grande del tráfico, el problema estaría acá y no
+                // en el catálogo.
+                marcar("edad_no");
+                setDenied(true);
+              }}
               className="btn-ghost w-full sm:w-auto"
             >
               {t("gate.no")}

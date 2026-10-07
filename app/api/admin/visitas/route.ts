@@ -17,12 +17,18 @@ export async function GET(request: Request) {
   const dias = [7, 30, 90].includes(pedido) ? pedido : 30;
 
   try {
-    // Una sola llamada: la función en Postgres ya devuelve todo armado.
-    const resumen = await db<unknown>("rpc/visitas_resumen", {
-      method: "POST",
-      body: { dias },
-    });
-    return NextResponse.json(resumen, { headers: { "Cache-Control": "no-store" } });
+    // Dos funciones en Postgres que ya devuelven todo armado: el resumen
+    // del período y los últimos recorridos, paso a paso.
+    const [resumen, recorridos] = await Promise.all([
+      db<Record<string, unknown>>("rpc/visitas_resumen", { method: "POST", body: { dias } }),
+      db<unknown[]>("rpc/visitas_sesiones", { method: "POST", body: { dias, limite: 40 } }),
+    ]);
+    return NextResponse.json(
+      // `sesiones` dentro del resumen es el CONTEO de visitantes; la
+      // lista paso a paso va aparte para no pisarlo.
+      { ...resumen, recorridos },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (err) {
     console.error("Error leyendo visitas:", err instanceof Error ? err.message : "desconocido");
     return NextResponse.json({ error: "error" }, { status: 500 });

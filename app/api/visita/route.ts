@@ -14,7 +14,22 @@ import { db, ordersDbConfigured } from "@/lib/supabase-server";
 /** Nada de esto debe cachearse ni prerrenderizarse. */
 export const dynamic = "force-dynamic";
 
-const TIPOS = new Set(["vista", "carrito", "checkout", "pedido", "reels", "contacto"]);
+// Lo que se puede anotar. Es una lista cerrada a propósito: si mañana
+// alguien manda un tipo inventado desde la consola del navegador, no
+// entra y no ensucia los informes.
+const TIPOS = new Set([
+  "vista",     // abrió una página
+  "producto",  // abrió la ficha rápida de un sabor
+  "buscar",    // escribió algo en el buscador
+  "filtro",    // tocó un filtro de marca o de tipo
+  "reel",      // puso un reel
+  "carrito",   // agregó al carrito
+  "checkout",  // pidió pagar
+  "pedido",    // pagó
+  "contacto",  // tocó un botón de contacto
+  "edad_no",   // dijo que no tiene 21
+  "salida",    // se fue de la página: cuánto se quedó y hasta dónde bajó
+]);
 
 /** Un host limpio desde una URL cualquiera; null si no sirve. */
 function host(valor: unknown): string | null {

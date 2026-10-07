@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import { marcar } from "@/lib/medidor";
 import {
   BRANDS,
   getProduct,
@@ -121,7 +122,11 @@ export function UIContextProvider({ children }: { children: ReactNode }) {
   const closeQuick = useCallback(() => setQuickProduct(null), []);
   const openQuick = useCallback((id: number) => {
     const p = getProduct(id);
-    if (p) setQuickProduct(p);
+    if (!p) return;
+    // Abrir la ficha rápida es interés real por ese sabor, aunque no
+    // llegue a agregarlo: en el panel se ve qué se mira y no se compra.
+    marcar("producto", { slug: p.slug });
+    setQuickProduct(p);
   }, []);
   const openAddress = useCallback(() => setAddressOpen(true), []);
   const closeAddress = useCallback(() => setAddressOpen(false), []);

@@ -74,19 +74,24 @@ function origen(): Origen {
 }
 
 /**
- * Manda un aviso. `tipo` es "vista" para una página o un paso del
- * embudo: "carrito", "checkout", "pedido", "contacto".
+ * Manda un aviso. `tipo` es "vista" para una página o una acción:
+ * "producto", "buscar", "filtro", "reel", "carrito", "checkout",
+ * "pedido", "contacto", "edad_no", "salida".
+ *
+ * `ruta` solo se pasa para la salida de una página: cuando se cambia de
+ * ruta, `window.location` ya apunta a la nueva, así que sin esto el
+ * tiempo de permanencia quedaría anotado en la página equivocada.
  *
  * Usa sendBeacon cuando existe: así el aviso sale aunque la persona
  * cierre la pestaña en ese mismo instante, que es justo cuando se perdía
  * el dato más interesante.
  */
-export function marcar(tipo: string, dato?: Record<string, unknown>) {
+export function marcar(tipo: string, dato?: Record<string, unknown>, ruta?: string) {
   if (typeof window === "undefined") return;
 
   const cuerpo = JSON.stringify({
     tipo,
-    ruta: window.location.pathname,
+    ruta: ruta ?? window.location.pathname,
     sesion: sesion(),
     ...origen(),
     dato,

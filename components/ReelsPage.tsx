@@ -21,6 +21,7 @@ import { useStore } from "@/lib/store";
 import { useUi } from "@/components/ui-context";
 import { useT } from "@/components/locale-context";
 import { flyToCart } from "@/lib/fly";
+import { marcar } from "@/lib/medidor";
 
 const LIKES_KEY = "vibeReelLikes";
 const VOTES_KEY = "vibeReelVotes";
@@ -50,6 +51,13 @@ function writeJson(key: string, value: unknown) {
 export default function ReelsPage() {
   const t = useT();
   const [open, setOpen] = useState<number | null>(null);
+
+  // Abrir el visor a pantalla completa es "vio el reel". Pasa por acá
+  // tanto el botón de arriba como cada miniatura.
+  const verReel = useCallback((i: number) => {
+    setOpen(i);
+    marcar("reel", { slug: REELS[i]?.slug });
+  }, []);
   const [likes, setLikes] = useState<string[]>([]);
 
   useEffect(() => {
@@ -91,7 +99,7 @@ export default function ReelsPage() {
             <h1 className="display-lg text-ink-50">{t("reels.title")}</h1>
             <p className="mt-4 text-[15px] leading-relaxed text-ink-400">{t("reels.body").replace("{n}", String(REELS.length))}</p>
           </div>
-          <button onClick={() => setOpen(0)} className="btn-gold group">
+          <button onClick={() => verReel(0)} className="btn-gold group">
             <Play className="h-4 w-4 fill-current transition-transform duration-300 group-hover:scale-110" />
             {t("reels.watch")}
           </button>
@@ -104,7 +112,7 @@ export default function ReelsPage() {
               reel={reel}
               index={i}
               liked={likes.includes(reel.slug)}
-              onOpen={() => setOpen(i)}
+              onOpen={() => verReel(i)}
             />
           ))}
         </div>
