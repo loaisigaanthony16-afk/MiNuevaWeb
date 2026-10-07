@@ -30,16 +30,42 @@ Cada página abierta manda un aviso a `/api/visita`, que lo guarda en la
 tabla `visitas` de Supabase. No hay servicio externo: los datos son
 nuestros y no caducan.
 
-Los pasos del embudo se marcan desde el código, no se adivinan:
+### Qué se anota y dónde
 
-| Paso | Dónde se marca |
-| --- | --- |
-| `carrito` | `lib/store.tsx`, al agregar un producto |
-| `checkout` | `components/CheckoutModal.tsx`, al pedir pagar |
-| `pedido` | `components/OrderConfirmation.tsx`, al confirmarse el pago |
+Nada se adivina: cada acción se marca desde el código.
 
-Para agregar otro paso: `marcar("nombre", { … })` desde `lib/medidor.ts`,
-y sumar ese nombre al conjunto `TIPOS` de `app/api/visita/route.ts`.
+| Acción | Dónde se marca | Qué guarda además |
+| --- | --- | --- |
+| `vista` | `components/Medidor.tsx` | — |
+| `salida` | `components/Medidor.tsx` | segundos en la página y hasta qué % bajó |
+| `producto` | `components/ui-context.tsx`, al abrir la ficha rápida | el sabor |
+| `buscar` | `components/Catalog.tsx` | qué escribió y cuántos resultados salieron |
+| `filtro` | `components/Catalog.tsx` | marca y tipo elegidos |
+| `reel` | `components/ReelsPage.tsx` | qué reel |
+| `carrito` | `lib/store.tsx`, al agregar | el sabor |
+| `checkout` | `components/CheckoutModal.tsx`, al pedir pagar | cuántos artículos |
+| `pedido` | `components/OrderConfirmation.tsx`, al confirmarse el pago | la referencia |
+| `edad_no` | `components/AgeGate.tsx` | — |
+
+Para agregar otra: `marcar("nombre", { … })` desde `lib/medidor.ts`, y
+sumar ese nombre al conjunto `TIPOS` de `app/api/visita/route.ts`. Si no
+está en esa lista no entra, aunque alguien lo mande a mano.
+
+Dos detalles que no son obvios:
+
+- **La búsqueda espera 900 ms.** Sin eso, escribir "horchata" dejaba ocho
+  renglones ("h", "ho", "hor"…) y el informe no se podía leer.
+- **La salida lleva la ruta explícita.** Al cambiar de página
+  `window.location` ya apunta a la nueva, así que el tiempo quedaba
+  anotado en la página equivocada. Y el scroll se mide al entrar, no solo
+  al salir: cuando la página se está descargando, las medidas del
+  documento ya no son fiables y daban 0 %.
+
+### Recorridos
+
+Debajo del resumen está la lista de recorridos: una línea por visita, y
+al tocarla se abre el paso a paso con la hora de cada acción. Ahí se ve
+*por qué* alguien no compró, que es lo que el resumen no puede decir.
 
 ### Qué NO se guarda
 
