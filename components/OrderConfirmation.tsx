@@ -11,6 +11,7 @@ import { confirmPendingOrder, getPendingOrder } from "@/lib/pending-order";
 import OrderChat from "@/components/OrderChat";
 import { fetchOrderStatus, deliveryMessageFor, type OrderStatusValue } from "@/lib/checkout-client";
 import { deliveryFor } from "@/lib/checkout-util";
+import { marcar } from "@/lib/medidor";
 
 const POLL_MS = 3000;
 
@@ -92,6 +93,10 @@ export default function OrderConfirmation() {
       const subtotal = items.reduce((a, it) => a + it.price * it.qty, 0);
       const msg = saved.message || deliveryMessageFor(orderId, items, delivery, subtotal + deliveryFor(subtotal));
       setChat({ token: saved.token, message: msg });
+      // Último paso del embudo. Solo cuenta la primera confirmación: si
+      // la persona vuelve a abrir esta página, el pedido ya está en
+      // "pagado" y no se marca otra vez.
+      if (saved.stage !== "pagado") marcar("pedido", { ref: orderId });
       confirmPendingOrder(orderId);
     }
     clear();

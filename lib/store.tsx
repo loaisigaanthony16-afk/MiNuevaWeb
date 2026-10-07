@@ -11,6 +11,7 @@ import {
 } from "react";
 import { getProduct } from "@/lib/data";
 import { deliveryFor } from "@/lib/checkout-util";
+import { marcar } from "@/lib/medidor";
 
 export interface CartItem {
   id: number;
@@ -90,6 +91,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     function add(id: number) {
       const product = getProduct(id);
       if (!product) return;
+      // Paso del embudo: sin esto el panel sabría cuánta gente entra pero
+      // no cuánta llega a interesarse por un producto concreto.
+      marcar("carrito", { slug: product.slug });
       setItems((prev) => {
         const found = prev.find((it) => it.id === product.id);
         if (found) {

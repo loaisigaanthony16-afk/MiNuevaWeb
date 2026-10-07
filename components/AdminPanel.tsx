@@ -7,6 +7,7 @@ import { currentPushState, enableShopPush, type PushState } from "@/lib/push-cli
 import { FULFILLMENT_LABEL, FULFILLMENT_STEPS, stepIndex, type Fulfillment } from "@/lib/fulfillment";
 import { products } from "@/lib/data";
 import OrderStepper from "@/components/OrderStepper";
+import AdminVisitas from "@/components/AdminVisitas";
 
 const KEY = "vibeAdminKey";
 const POLL_MS = 5000;
@@ -30,7 +31,7 @@ interface Sale {
   refunded?: boolean;
 }
 
-type Tab = "pedidos" | "ventas" | "stock";
+type Tab = "pedidos" | "ventas" | "visitas" | "stock";
 
 /**
  * Panel del comercio: pedidos pagados con chat abierto, estado de entrega,
@@ -212,6 +213,7 @@ export default function AdminPanel() {
             [
               ["pedidos", `Pedidos${orders ? ` · ${orders.length}` : ""}`],
               ["ventas", "Ventas"],
+              ["visitas", "Visitas"],
               ["stock", "Stock"],
             ] as [Tab, string][]
           ).map(([id, label]) => (
@@ -370,6 +372,7 @@ export default function AdminPanel() {
       )}
 
       {tab === "ventas" && <SalesTab headers={headers} />}
+      {tab === "visitas" && <AdminVisitas headers={headers} />}
       {tab === "stock" && <StockTab headers={headers} />}
     </div>
   );

@@ -14,6 +14,7 @@ import CheckoutModal from "@/components/CheckoutModal";
 import AbandonedCartToast from "@/components/AbandonedCartToast";
 import PromoPopup from "@/components/PromoPopup";
 import PwaSetup from "@/components/PwaSetup";
+import Medidor from "@/components/Medidor";
 import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL } from "@/lib/seo";
 
@@ -50,6 +51,13 @@ export const metadata: Metadata = {
     images: [{ url: "/og/default.jpg", width: 1200, height: 630, alt: "Vibe 505" }],
   },
   twitter: { card: "summary_large_image" },
+  // Código que da Google Search Console para comprobar que el dominio es
+  // nuestro. Sin él, Search Console no muestra qué busca la gente para
+  // llegar al sitio. Se pega como variable en Vercel; si falta, no se
+  // escribe ninguna etiqueta.
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export const viewport: Viewport = {
@@ -96,7 +104,10 @@ export default function RootLayout({
             </UIContextProvider>
           </StoreProvider>
         </LocaleProvider>
+        {/* Vercel cuenta visitas desde su panel; Medidor las guarda en
+            nuestra propia base, con el origen y el embudo. */}
         <Analytics />
+        <Medidor />
       </body>
     </html>
   );

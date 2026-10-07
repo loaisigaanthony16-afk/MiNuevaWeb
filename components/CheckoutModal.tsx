@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { marcar } from "@/lib/medidor";
 import Link from "next/link";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
@@ -57,6 +58,9 @@ function Checkout() {
     setPhase("creating");
     setError(null);
     setSession(null);
+    // Paso del embudo: confirmó la edad y pidió pagar. Se marca acá y no
+    // al abrir el modal, que se abre también de curiosidad.
+    marcar("checkout", { articulos: items.length });
     try {
       const data = await initCheckout(items);
       // Antes de pagar queda guardado el acceso al chat del pedido y los

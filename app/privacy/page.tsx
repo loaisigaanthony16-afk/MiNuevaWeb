@@ -36,6 +36,7 @@ const sections: LegalSection[] = [
         "Chat del pedido: los datos de entrega que enviás y la conversación para coordinarla. Se guardan cifrados y se borran cuando el pedido se entrega.",
         "Opiniones: el apodo, la calificación y el texto que publicás, que son públicos. No guardamos tu dirección IP con la opinión.",
         "Registros técnicos: nuestro proveedor de alojamiento registra datos técnicos básicos de las visitas (por ejemplo, fecha, página y dirección IP) por seguridad y funcionamiento.",
+        "Medición de visitas: contamos las páginas que se abren para saber qué se mira y de dónde llega la gente. Guardamos la página, el sitio que te trajo, el país, si entraste desde celular o computadora y un número al azar que identifica la pestaña mientras está abierta. No guardamos tu dirección IP junto a la visita, no usamos cookies para esto y no se puede saber quién sos a partir de esos datos.",
       ],
     ],
   },
@@ -50,7 +51,7 @@ const sections: LegalSection[] = [
     body: [
       [
         "Vercel: alojamiento del sitio.",
-        "Supabase: base de datos de pedidos y opiniones.",
+        "Supabase: base de datos de pedidos, opiniones y conteo de visitas.",
         `${LEGAL.paymentProcessor}: procesamiento de pagos con tarjeta.`,
               ],
       "No vendemos tus datos ni los usamos para publicidad. No usamos cookies de publicidad ni de rastreo de terceros.",
